@@ -134,6 +134,7 @@ def main():
     if not re.fullmatch(r"/(?:[A-Za-z0-9_-]+/)*", args.base_href):
         parser.error("base href must be an absolute directory path")
     subprocess.run(["python3", "tool/version_sync.py"], cwd=ROOT, check=True)
+    subprocess.run(["python3", "tool/information_sync.py"], cwd=ROOT, check=True)
     compile_web(args.base_href)
     import sys
     sys.path.insert(0, str(ROOT))

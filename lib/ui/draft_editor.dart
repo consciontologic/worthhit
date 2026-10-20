@@ -281,19 +281,6 @@ class DraftEditorState extends State<DraftEditor> {
                   maxLength: 300,
                 ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  children: [
-                    _goal(
-                      'buy',
-                      'Buy well',
-                      WorthhitIcons.shopping_bag_outlined,
-                    ),
-                    _goal('sell', 'Sell fairly', WorthhitIcons.sell_outlined),
-                  ],
-                ),
-                const SizedBox(height: 16),
                 _pair(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,30 +503,6 @@ class DraftEditorState extends State<DraftEditor> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _goal(String value, String label, IconData icon) {
-    final selected = widget.controller.draft.goal == value;
-    return Semantics(
-      selected: selected,
-      child: OutlinedButton.icon(
-        onPressed: () => _write(widget.controller.draft.copyWith(goal: value)),
-        style: OutlinedButton.styleFrom(
-          backgroundColor: selected
-              ? WorthhitPalette.of(context).lime
-              : WorthhitPalette.of(context).surface,
-          foregroundColor: selected
-              ? WorthhitPalette.of(context).onLime
-              : WorthhitPalette.of(context).ink,
-          side: BorderSide(
-            color: WorthhitPalette.of(context).ink,
-            width: selected ? 2 : 1.5,
-          ),
-        ),
-        icon: Icon(icon, size: 20),
-        label: AppText(label),
-      ),
     );
   }
 }

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-10-21
+
+- Replace buy/sell modes with one neutral product-worth check; older saved drafts and reports remain readable.
+- Read About, Terms and conditions, and Liability within the app, with browser history and preserved workspace/settings state.
+
 ## [1.1.2] - 2026-10-20
 
 - Open information pages directly from mobile navigation while preserving the active price check.

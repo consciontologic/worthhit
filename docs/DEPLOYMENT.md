@@ -5,7 +5,39 @@ Static destination: [consciontologic/worthhit.com](https://github.com/conscionto
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
-## 1.1.2 mobile fix — prepared 2026-10-20
+## Prepared 1.1.3 — 2026-10-21
+
+One neutral valuation replaces buying/selling modes. Strict legacy buy/sell inputs
+remain readable and canonical matching preserves existing reports; new inputs,
+exports and provider prompts omit the role. The deterministic evidence arithmetic
+is unchanged.
+
+Information pages use Flutter hash routes above retained workspace/settings pages.
+Browser Back/Forward and in-app Back preserve the current editing session. Direct
+hash entry returns safely to the workspace. Reload starts a new in-memory UI
+session, restores persisted drafts/preferences and clears the key. Canonical static
+HTML remains available, and generated in-app prose is checked against it before
+builds. Inline actions support keyboard activation, visible focus and text copying;
+hidden retained pages cannot capture focus or shortcuts.
+
+The full local gate passed 240 Flutter, 28 Node and 52 Python tests, both compiled
+Dart-to-JavaScript bridges, analyzer, formatting, hygiene, version and content-sync
+checks. Independent review passed after repairing keyboard access, hidden-page
+focus and navigation racing an asynchronous Back action. Public build and archive
+preparation passed. Desktop Chromium at phone width verified same-tab information
+navigation, Settings/Back/Forward, retained draft/session settings, Arabic chrome,
+English document direction and light/dark appearance. With the preview origin
+returning HTTP 503, the final hash route reloaded from cache and restored the saved
+draft/language; the key cleared as designed. Keyboard traversal/activation and
+complete paragraph copying at 320px with 200% text have deterministic widget
+coverage. These checks do not establish physical Android performance or live model
+accuracy; no provider inference was requested. The strict nginx smoke runs in CI,
+with the existing local Docker Snap limitation described below.
+
+Publication remains subject to validated-source promotion and the owner's
+production approval. No 1.1.3 production publication is claimed by these local checks.
+
+## Verified 1.1.2 publication — 2026-10-20
 
 About, Terms and Liability now dispatch their final URLs directly during the
 compact-menu tap, without a blank-window handoff. The compiled production bridge
@@ -31,8 +63,38 @@ final build reloaded its saved synthetic draft while the server returned HTTP 50
 all three information pages also rendered from cache. PWA registration waits for
 the first Flutter frame; deterministic lifecycle/integrity tests retain explicit
 update activation and bounded recovery. Browser checks also observed the update
-notice and explicit reload between candidate builds. CI and owner production
-approval remain required before publication.
+notice and explicit reload between candidate builds.
+
+[Required CI](https://github.com/consciontologic/worthhit/actions/runs/39491652108)
+passed, including the strict nginx smoke. Source [#23](https://github.com/consciontologic/worthhit/pull/23)
+and exact-tree promotion [#24](https://github.com/consciontologic/worthhit/pull/24)
+are merged. [Release 1.1.2](https://github.com/consciontologic/worthhit/releases/tag/1.1.2)
+was published from `29ff51531308200b13130e71a247c36edeffe9c4` after
+consciontologic approved [production run 39492160387](https://github.com/consciontologic/worthhit/actions/runs/39492160387).
+The release name and tag are both exactly `1.1.2`.
+
+GitOps published website commit `f396f2da5d44c57e2e11da56b703a347faab80f7`;
+[Pages deployment](https://github.com/consciontologic/worthhit.com/actions/runs/39492724240)
+succeeded. All 54 public files (52 manifest assets plus manifest and worker) match
+the release archive by byte count and SHA-256. The generation is
+`4dd3835793bd30e08b4fafdc69ecabdc90160c7e73281c0fef1f4fdf2cce0039`.
+Canonical HTTPS redirects, all four page canonicals, versions and single Google tag
+loader/configuration per page passed.
+
+The live browser discovered an update from cached 1.1.1, activated it only on
+Update and displayed Version 1.1.2. At 390px width, About, Terms and Liability each
+opened their final URL from the compact menu and rendered their content with the
+1.1.2 footer. No app console warnings/errors were observed. This verification did
+not edit product details, enter a key or request an appraisal.
+
+All five public release assets passed checksum/identity verification. The
+anonymously accessible Linux amd64 GHCR manifest/configuration matches the archive,
+source/version labels and UID/GID 101:101. All 11 archive layers match the config
+hashes; compressed registry layer blobs were not downloaded. Its registry
+digest is `sha256:0c46aceef585d447ed1c7b36cf2ab4ee2b1c09df1b106ec6244f39b30bd8ee75`;
+configuration digest is `sha256:66c7ca07ab1848470f1cb38ae1c53a31669296d5bdf476f7dc9b9a4ad5658d5a`.
+Physical Android installation/timings, search indexing and Google property receipt
+are not established by these checks.
 
 ## Verified 1.1.1 publication — 2026-10-20
 
