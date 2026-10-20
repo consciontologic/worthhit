@@ -23,8 +23,8 @@ full local gate/public build, independent review and browser checks.
 - [x] Enable selection/copy across app content, dialogs and reports without breaking input.
 - [x] Discover remote releases and show an accessible dismissible update notice.
 - [x] Set 1.1.0, finish localization, documentation, tests and browser validation.
-- [ ] Publish protected source/promotion and prepare 1.1.0 for owner production approval.
-- [ ] After owner approval, verify the live release, package and PWA update.
+- [x] Publish protected source/promotion and prepare 1.1.0 for owner production approval.
+- [x] After owner approval, verify the live release, package and PWA update.
 
 Risks: overly small controls harm touch access; retain at least 44px hit targets
 and let large text expand. Icon-only actions need tooltips/semantics. Update discovery
@@ -121,15 +121,15 @@ Test schema drift/zero prices/refresh/error/cancel boundaries; prohibited and in
 Live providers may reject a schema or be unavailable; preserve drafts and allow explicit retry/model choice. Search snippets may lack real sold comparables; abstain and request evidence. Browser storage is origin-local and may be cleared; surface save failures and export reports. Pages publication requires protection-compliant source promotion and human production approval.
 
 ## Publication status
-[Worthhit 1.0.0 is live](https://worthhit.com), with HTTPS and canonical
-www/HTTP redirects. Feature and promotion PRs [#10](https://github.com/consciontologic/worthhit/pull/10)
-and [#11](https://github.com/consciontologic/worthhit/pull/11), plus registry fix and
-promotion [#12](https://github.com/consciontologic/worthhit/pull/12) and
-[#13](https://github.com/consciontologic/worthhit/pull/13), are merged; the owner-approved
-[release run](https://github.com/consciontologic/worthhit/actions/runs/39471637467)
+[Worthhit 1.1.0 is live](https://worthhit.com), with HTTPS and canonical
+www/HTTP redirects. Feature [#17](https://github.com/consciontologic/worthhit/pull/17)
+and promotion [#18](https://github.com/consciontologic/worthhit/pull/18) are merged;
+the owner-approved
+[release run](https://github.com/consciontologic/worthhit/actions/runs/39481827330)
 published the matching GitHub release, public GHCR image and GitOps website.
-All 67 public release files passed byte-count/hash checks. See
-[publication evidence and limits](../DEPLOYMENT.md#verified-publication--2026-10-20).
+All 68 public release files passed byte-count/hash checks, and the browser updated
+from cached 1.0.0 to 1.1.0.
+See [publication evidence and limits](../DEPLOYMENT.md#verified-110-publication--2026-10-20).
 
 ### Historical 0.1.0 deployment
 
