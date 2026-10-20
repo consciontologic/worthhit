@@ -192,7 +192,7 @@ class DeliveryTests(unittest.TestCase):
         expected = {p.name: self.release.fingerprint(p) for p in output.iterdir()}
         sha = 'b' * 40
         base = '/repos/consciontologic/worthhit'
-        draft = {'id': 73, 'tag_name': '0.2.0', 'draft': True,
+        draft = {'id': 73, 'tag_name': '0.2.0', 'name': 'Worthhit 0.2.0', 'draft': True,
                  'body': 'Source: consciontologic/worthhit@' + sha}
         writes = []
         def api(path, data=None, method='GET', optional=False, binary=None):
@@ -221,6 +221,54 @@ class DeliveryTests(unittest.TestCase):
             (base + '/releases/73/assets?name=release-notes.md', 'POST'),
             (base + '/releases/73', 'PATCH')])
         self.assertEqual(writes[0][3], (output / 'release-notes.md').read_bytes())
+        self.assertEqual(writes[1][2], {
+            'name': '0.2.0', 'draft': False, 'make_latest': 'false'})
+
+    def test_new_release_creation_and_publication_use_plain_semver_names(self):
+        from unittest.mock import patch
+        from tool import release_guard
+        output = self.root / 'bundle'
+        output.mkdir()
+        sha = 'b' * 40
+        notes = 'Release notes.\n\nSource: consciontologic/worthhit@' + sha + '\n'
+        for name in ['release-identity.json', 'SHA256SUMS']:
+            (output / name).write_text(name)
+        (output / 'release-notes.md').write_text(notes)
+        expected = {p.name: self.release.fingerprint(p) for p in output.iterdir()}
+        base = '/repos/consciontologic/worthhit'
+        writes = []
+        def api(path, data=None, method='GET', optional=False, binary=None):
+            if method != 'GET':
+                writes.append((path, method, data, binary))
+                if path == base + '/git/refs':
+                    return {}
+                if path == base + '/releases':
+                    return {'id': 73, **data}
+                if path.startswith(base + '/releases/73/assets?name='):
+                    name = path.split('?name=', 1)[1]
+                    return {'digest': 'sha256:' + expected[name]['sha256']}
+                if path == base + '/releases/73' and method == 'PATCH':
+                    return {'id': 73, **data}
+                self.fail('Unexpected API write: ' + path)
+            if path in [base + '/git/ref/tags/1.0.0', base + '/releases/tags/1.0.0']:
+                return None
+            if path == base + '/releases?per_page=100&page=1':
+                return []
+            self.fail('Unexpected API request: ' + path)
+        identity = {'version': '1.0.0', 'source_sha': sha,
+                    'artifacts': {'release-notes.md': expected['release-notes.md']}}
+        with patch.object(self.release, 'verify_bundle', return_value=identity), \
+                patch.object(self.release, 'api', api), \
+                patch.object(release_guard, 'approval') as approval:
+            self.release.publish(output, apply=True)
+        approval.assert_called_once_with()
+        self.assertEqual(writes[0], (base + '/git/refs', 'POST', {
+            'ref': 'refs/tags/1.0.0', 'sha': sha}, None))
+        self.assertEqual(writes[1], (base + '/releases', 'POST', {
+            'tag_name': '1.0.0', 'target_commitish': sha, 'name': '1.0.0',
+            'draft': True, 'prerelease': False, 'body': notes}, None))
+        self.assertEqual(writes[-1], (base + '/releases/73', 'PATCH', {
+            'name': '1.0.0', 'draft': False, 'make_latest': 'false'}, None))
 
     def test_release_resume_accepts_only_exact_source_and_asset_bytes(self):
         expected = {'release-identity.json': {'bytes': 4, 'sha256': 'a' * 64}}

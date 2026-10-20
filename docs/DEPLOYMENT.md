@@ -87,8 +87,10 @@ count was not rechecked for 1.0.0.
    receipt, workflow path, dispatch event, source SHA and environment policy.
 6. The gated job downloads and verifies those exact bytes without rebuilding,
    rejects existing version conflicts, publishes GHCR, pushes managed website
-   artifacts to `worthhit.com/main`, then publishes a plain SemVer tag and GitHub
-   release. The website repository's Pages branch deployment serves `/`.
+   artifacts to `worthhit.com/main`, then publishes a Git tag and GitHub release
+   both named exactly `MAJOR.MINOR.PATCH`, without a product-name or `v` prefix.
+   Resumed drafts receive the same plain version name when finalized.
+   The website repository's Pages branch deployment serves `/`.
 7. Verify HTTPS/domain redirects, `release.json` plus all asset hashes, browser
    rendering and the package/release links. A green unit suite does not prove DNS,
    search-engine indexing or real-device PWA installation.
