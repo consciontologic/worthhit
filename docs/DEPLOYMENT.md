@@ -2,10 +2,34 @@
 
 Source: [consciontologic/worthit](https://github.com/consciontologic/worthit).
 Pages destination: [consciontologic.github.io/worthit](https://consciontologic.github.io/worthit/).
-The first human-approved deployment completed on 2026-10-20. Public checks found
-a hidden build metadata file missing from the Pages archive; the follow-up build
-excludes hidden paths from the offline manifest. Verify all listed assets after
-the corrected deployment. No custom domain is configured.
+The corrected human-approved deployment completed on 2026-10-20.
+No custom domain is configured.
+
+## Verified release
+[Run 39440088378](https://github.com/consciontologic/worthit/actions/runs/39440088378)
+successfully deployed source `d314ef56c9b6f2f6a59c885b9c30b15de4d0cae9`
+after the approval receipt identified `consciontologic` and `production`.
+Public release generation:
+`47b35b34791a9581f29f05ae24d1b7a0a7bbbb2214ff3a6b7b5c0c751ea46389`.
+All 41 manifest assets (42,471,679 bytes) returned HTTP 200 and matched their
+recorded size and SHA-256. The standalone manifest and versioned worker were
+available. The first release included `.last_build_id`, which Pages omits;
+the corrected manifest excludes hidden paths and retains strict integrity checks.
+
+The public browser rendered the app, refreshed 19 free OpenRouter models, and
+restored its saved synthetic report after reloading the corrected release.
+No browser warnings or errors were captured. Phone, tablet and desktop flows
+were separately checked in the local production build. Local verification passed
+127 Flutter tests, the compiled JavaScript pricing regression, 8 worker tests and
+10 Python build/release tests. Independent review and an archive-level check
+using the pinned Pages action's exclusions passed.
+
+Worker tests and public asset verification do not establish real-device
+installation, airplane-mode operation or the full browser update lifecycle;
+those checks remain unverified. Live OpenRouter outcomes and their limitations
+are recorded separately in [LIVE_EVAL.md](LIVE_EVAL.md).
+
+## Release procedure
 
 1. Work on a `codex/feature/*` or `codex/bugfix/*` branch from `develop`.
 2. Run `make verify` and `make build.public`. Append a conventional completion
@@ -39,8 +63,8 @@ configuration paths. It admits only manifest-listed static bytes.
 Updates are prepared in the background. In-session activation requires an
 explicit app action after the draft is saved; the browser can also activate a
 waiting worker after all controlled tabs close. An incomplete/corrupt shell is
-removed. Older tab generations are retained until safe cleanup. Stored reports are dated observations, not
-automatically refreshed market prices.
+removed. Older tab generations are retained until safe cleanup. Stored reports
+are dated observations, not automatically refreshed market prices.
 
 Validation evidence must distinguish deterministic tests, actual browser checks,
 bounded authenticated OpenRouter evaluations and public deployment checks. A green

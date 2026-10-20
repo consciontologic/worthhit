@@ -20,10 +20,10 @@ Test schema drift/zero prices/refresh/error/cancel boundaries; prohibited and in
 - [x] Build verified PWA assets and secret-free GitHub CI/deployment workflow.
 - [x] Complete independent review, verification, browser checks and bounded live evaluation.
 - [x] Publish work branch and PR; complete protected promotion.
-- [ ] Complete human-approved production deployment and public checks.
+- [x] Complete human-approved production deployment and public checks.
 
 ## Risks
 Live providers may reject a schema or be unavailable; preserve drafts and allow explicit retry/model choice. Search snippets may lack real sold comparables; abstain and request evidence. Browser storage is origin-local and may be cleared; surface save failures and export reports. Pages publication requires protection-compliant source promotion and human production approval.
 
 ## Publication status
-Source PR [#1](https://github.com/consciontologic/worthit/pull/1) and exact-tree promotion [#2](https://github.com/consciontologic/worthit/pull/2) are merged. [Release run](https://github.com/consciontologic/worthit/actions/runs/39437847160) deployed `b12b6475d11725e9c8d571cdfc3cc4ce1a27f1dc` after the owner approved production. The public app and example estimate render correctly, but the asset check found `.last_build_id` missing from GitHub's archive. The manifest fix excludes hidden paths, with a regression test; corrected deployment and complete public verification remain required.
+[Worthit is live](https://consciontologic.github.io/worthit/). Source PRs [#1](https://github.com/consciontologic/worthit/pull/1) and [#3](https://github.com/consciontologic/worthit/pull/3), and exact-tree promotions [#2](https://github.com/consciontologic/worthit/pull/2) and [#4](https://github.com/consciontologic/worthit/pull/4), are merged. The first deployment exposed a hidden-file archive mismatch; the corrected [release run](https://github.com/consciontologic/worthit/actions/runs/39440088378) deployed `d314ef56c9b6f2f6a59c885b9c30b15de4d0cae9` after the owner's production approval. All 41 published manifest assets passed size/hash verification, and the public UI restored its saved example after reload. See [deployment evidence and limits](../DEPLOYMENT.md) and [live evaluation](../LIVE_EVAL.md).
