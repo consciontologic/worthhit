@@ -1,8 +1,8 @@
 FLUTTER ?= flutter
 DART ?= dart
-.PHONY: help deps format analyze test verify build.public release.prepare image image.test serve repository.check git.dry git
+.PHONY: help deps format analyze test verify version.sync version.check build.public release.prepare image image.test serve repository.check git.dry git
 help:
-	@echo "deps format analyze test verify build.public release.prepare image image.test serve repository.check git.dry git"
+	@echo "deps format analyze test verify version.sync version.check build.public release.prepare image image.test serve repository.check git.dry git"
 deps:
 	$(FLUTTER) pub get --enforce-lockfile
 format:
@@ -17,7 +17,11 @@ test:
 	python3 -m unittest discover -s test -p '*_test.py'
 repository.check:
 	python3 tool/repository_check.py
-verify: format analyze test repository.check
+version.sync:
+	python3 tool/version_sync.py --write
+version.check:
+	python3 tool/version_sync.py
+verify: format analyze test repository.check version.check
 build.public:
 	python3 tool/build.py --base-href "$(or $(BASE_HREF),/)"
 release.prepare:

@@ -3,4 +3,7 @@ void updateDocumentPreferences({
   required bool dark,
 }) {}
 
-void openAboutPage() {}
+Uri resolvePage(String destination) =>
+    Uri.parse('https://worthhit.com/').resolve(destination);
+
+bool openPage(Uri uri) => false;

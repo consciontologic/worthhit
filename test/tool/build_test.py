@@ -88,9 +88,11 @@ class BuildTests(unittest.TestCase):
         self.assertTrue(check.contains_secret(b"github_pat_" + b"B" * 60))
         self.assertFalse(check.contains_secret(b"OPENROUTER_API_KEY"))
 
-    def test_public_bootstrap_has_no_analytics_or_api_secrets(self):
+    def test_public_bootstrap_has_only_the_owned_google_tag_and_no_api_secrets(self):
         index = (ROOT / "web/index.html").read_text()
-        self.assertNotIn("googletagmanager", index)
+        self.assertEqual(index.count('https://www.googletagmanager.com/gtag/js?id=G-G4SYW37S81'), 1)
+        self.assertNotIn("G-P3K2ZN7YTL", index)
+        self.assertFalse(load("repository_check").contains_secret(index.encode()))
         self.assertNotIn("wfform.com", index)
         self.assertIn("Worthhit", index)
 

@@ -157,7 +157,13 @@ self.addEventListener('fetch', event => {
   const versioned = /^__releases\/([a-f0-9]{64})\/(.+)$/.exec(relative);
   const requestedBuild = url.searchParams.get('build');
   if (url.search && (url.searchParams.size !== 1 || !isVersion(requestedBuild))) return;
-  const navigation = request.mode === 'navigate' && (relative === '' || relative === 'index.html');
+  // Only known public directory documents map to their exact manifest entry.
+  // Unknown routes must reach the host's 404; queries/private requests exit above.
+  const directoryDocuments = {'': 'index.html', 'about/': 'about/index.html',
+    'terms/': 'terms/index.html', 'liability/': 'liability/index.html'};
+  const documentPath = Object.hasOwn(directoryDocuments, relative) ? directoryDocuments[relative] : relative;
+  const navigation = request.mode === 'navigate' &&
+    Object.values(directoryDocuments).includes(documentPath);
   // Resolve the client's release before admitting an asset: a newer manifest
   // may have removed fonts or chunks still needed by an open older tab.
   event.respondWith((async () => {
@@ -169,7 +175,7 @@ self.addEventListener('fetch', event => {
         const clientVersion = record ? await record.text() : '';
         if (isVersion(clientVersion)) version = clientVersion;
       }
-      const path = navigation ? 'index.html' : versioned ? versioned[2] : relative;
+      const path = navigation ? documentPath : versioned ? versioned[2] : relative;
       const name = PREFIX + version;
       // Migration only: older pages ask for unversioned lazy assets. Keep their
       // latest legacy shell available; current pages identify their cache build.
