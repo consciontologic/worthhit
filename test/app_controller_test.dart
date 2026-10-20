@@ -306,6 +306,135 @@ void main() {
     expect(store.updateChecks, 2);
   });
 
+  testWidgets(
+    'update discovery is independent of a pending catalogue request',
+    (tester) async {
+      final store = UpdateStore()..waiting = true;
+      final api = DelayedApi();
+      final controller = AppController(store: store, api: api);
+      final initialization = controller.initialize();
+      await tester.pump();
+
+      expect(api.refreshCalls, 1);
+      expect(controller.catalogLoading, isTrue);
+      expect(store.updateChecks, 1);
+      expect(controller.updateAvailable, isTrue);
+      api.finishRefresh();
+      await initialization;
+      controller.dispose();
+    },
+  );
+
+  testWidgets('a failed update lookup can recover on the next interval', (
+    tester,
+  ) async {
+    final store = UpdateStore()..lookupFails = true;
+    final controller = AppController(store: store, api: FakeApi());
+    await controller.initialize();
+    expect(controller.updateAvailable, isFalse);
+    store.lookupFails = false;
+    store.waiting = true;
+
+    await tester.pump(const Duration(seconds: 30));
+
+    expect(store.updateChecks, 2);
+    expect(controller.updateAvailable, isTrue);
+    expect(controller.error, isNull);
+    controller.dispose();
+  });
+
+  test('busy and unsaved drafts prevent update activation', () async {
+    final store = UpdateStore();
+    final controller = AppController(store: store, api: FakeApi());
+    controller.busy = true;
+    await controller.applyUpdate();
+    expect(store.activations, 0);
+    controller.busy = false;
+    store.saveFails = true;
+    await controller.applyUpdate();
+    expect(store.activations, 0);
+    expect(controller.persistenceError, isNotNull);
+    controller.dispose();
+  });
+
+  test(
+    'update activation saves the draft but never the memory-only key',
+    () async {
+      final store = UpdateStore();
+      final controller = AppController(store: store, api: FakeApi());
+      controller.draft = savedInput();
+      controller.setApiKey('synthetic-update-key');
+      await controller.applyUpdate();
+      expect(store.activations, 1);
+      expect(store.values['worthit.draft.v1'], contains('Desk lamp'));
+      expect(
+        store.values.values.join(),
+        isNot(contains('synthetic-update-key')),
+      );
+      controller.dispose();
+    },
+  );
+
+  test(
+    'a dismissed update remains available without interrupting the draft',
+    () {
+      final controller = AppController(store: MemoryStore());
+      controller.updateAvailable = true;
+      controller.draft = savedInput();
+      expect(controller.updateNoticeVisible, isTrue);
+      controller.dismissUpdateNotice();
+      expect(controller.updateNoticeVisible, isFalse);
+      expect(controller.updateAvailable, isTrue);
+      expect(controller.draft.product, 'Desk lamp');
+      controller.dispose();
+    },
+  );
+
+  test(
+    'activation joins neither another activation nor an appraisal',
+    () async {
+      final store = UpdateStore()..activation = Completer<void>();
+      final api = FakeApi();
+      final controller = AppController(store: store, api: api);
+      controller.draft = savedInput();
+      controller.setApiKey('synthetic-update-key');
+      controller.selectModel(api.model);
+      final update = controller.applyUpdate();
+      expect(controller.updating, isTrue);
+      await controller.applyUpdate();
+      await controller.appraise();
+      expect(store.activations, 1);
+      expect(api.completionCalls, 0);
+      store.activation!.completeError(StateError('Activation failed'));
+      await update;
+      expect(controller.updating, isFalse);
+      expect(controller.updateError, contains('could not be activated'));
+      store.activation = null;
+      await controller.applyUpdate();
+      expect(store.activations, 2);
+      expect(controller.updateError, isNull);
+      controller.dispose();
+    },
+  );
+
+  test(
+    'dispose releases update resources and ignores late activation failure',
+    () async {
+      final store = UpdateStore()..activation = Completer<void>();
+      final controller = AppController(store: store);
+      var changes = 0;
+      controller.addListener(() => changes++);
+      final applying = controller.applyUpdate();
+      final beforeDisposal = changes;
+      controller.dispose();
+      expect(store.disposed, isTrue);
+      store.activation!.completeError(StateError('Late activation failure'));
+      await applying;
+      expect(changes, beforeDisposal);
+      expect(controller.updateError, isNull);
+    },
+  );
+
   testWidgets('dispose prevents later checks and late update state writes', (
     tester,
   ) async {
@@ -514,14 +643,35 @@ class FakeApi extends OpenRouterClient {
 
 class UpdateStore extends MemoryStore {
   bool waiting = false;
+  bool lookupFails = false;
+  bool saveFails = false;
+  bool disposed = false;
   int updateChecks = 0;
+  int activations = 0;
   Completer<bool>? pending;
+  Completer<void>? activation;
 
   @override
   Future<bool> hasWaitingUpdate() {
     updateChecks++;
+    if (lookupFails) return Future.error(StateError('Update lookup failed'));
     return pending?.future ?? Future.value(waiting);
   }
+
+  @override
+  void write(String key, String value) {
+    if (saveFails) throw StateError('Storage unavailable');
+    super.write(key, value);
+  }
+
+  @override
+  Future<void> applyUpdate() async {
+    activations++;
+    await activation?.future;
+  }
+
+  @override
+  void dispose() => disposed = true;
 }
 
 class DelayedApi extends FakeApi {

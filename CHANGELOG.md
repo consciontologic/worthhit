@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-20
+
+- Make phone and tablet navigation more compact while retaining accessible touch targets and large-text layouts.
+- Add a Worthhit icon family and contextual help to reduce repeated interface copy.
+- Enable selection and copying across the workspace, settings, help, hints and reports without disrupting form input.
+- Discover remote app updates while the app is open and offer a dismissible, explicit update action that protects drafts.
+
 - Use plain SemVer for GitHub release names, including resumed drafts; existing release names were normalized without changing tags or assets.
 
 ## [1.0.0] - 2026-10-20

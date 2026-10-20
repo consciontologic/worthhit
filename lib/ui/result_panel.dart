@@ -4,6 +4,8 @@ import '../app/app_controller.dart';
 import '../domain/appraisal.dart';
 import '../l10n/app_strings.dart';
 import 'worthhit_theme.dart';
+import 'selectable_surface.dart';
+import 'worthhit_icons.dart';
 
 class ResultPanel extends StatelessWidget {
   const ResultPanel({
@@ -18,7 +20,7 @@ class ResultPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
     key: const ValueKey('result-panel'),
-    padding: const EdgeInsets.all(26),
+    padding: const EdgeInsets.all(20),
     child: SelectionArea(
       child: controller.busy
           ? _working(context)
@@ -33,7 +35,7 @@ class ResultPanel extends StatelessWidget {
     children: [
       Row(
         children: [
-          const Icon(Icons.receipt_long_outlined, size: 26),
+          const Icon(WorthhitIcons.receipt_long_outlined, size: 26),
           const SizedBox(width: 10),
           Expanded(
             child: AppText(
@@ -43,46 +45,56 @@ class ResultPanel extends StatelessWidget {
           ),
         ],
       ),
-      const SizedBox(height: 28),
-      const Divider(height: 1),
-      const SizedBox(height: 30),
-      AppText(
-        'A fair price starts with good evidence.',
-        style: Theme.of(context).textTheme.headlineMedium,
+      const SizedBox(height: 20),
+      Row(
+        children: [
+          Expanded(
+            child: AppText(
+              'A fair price starts with good evidence.',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          ContextHelp(
+            title: 'How it works',
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const AppText(
+                  'Describe the item and bring comparable prices. We’ll put the range, '
+                  'the reasons, and the unknowns in one place.',
+                ),
+                const SizedBox(height: 20),
+                _explanation(
+                  context,
+                  WorthhitIcons.compare_arrows,
+                  'Comparable, not just similar',
+                  'Model, condition, market, and date matter.',
+                ),
+                const SizedBox(height: 16),
+                _explanation(
+                  context,
+                  WorthhitIcons.visibility_outlined,
+                  'See where the price comes from',
+                  'Source excerpts stay attached to the estimate.',
+                ),
+                const SizedBox(height: 16),
+                _explanation(
+                  context,
+                  WorthhitIcons.handshake_outlined,
+                  'A calmer way to negotiate',
+                  'Use the facts. Leave pressure and guesswork out.',
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      const SizedBox(height: 14),
-      const AppText(
-        'Describe the item and bring comparable prices. We’ll put the range, '
-        'the reasons, and the unknowns in one place.',
-      ),
-      const SizedBox(height: 30),
-      const Divider(),
-      const SizedBox(height: 16),
-      _explanation(
-        context,
-        Icons.compare_arrows,
-        'Comparable, not just similar',
-        'Model, condition, market, and date matter.',
-      ),
-      const SizedBox(height: 18),
-      _explanation(
-        context,
-        Icons.visibility_outlined,
-        'See where the price comes from',
-        'Source excerpts stay attached to the estimate.',
-      ),
-      const SizedBox(height: 18),
-      _explanation(
-        context,
-        Icons.handshake_outlined,
-        'A calmer way to negotiate',
-        'Use the facts. Leave pressure and guesswork out.',
-      ),
-      const SizedBox(height: 28),
+      const SizedBox(height: 20),
       OutlinedButton.icon(
         onPressed: controller.loadExample,
-        icon: const Icon(Icons.play_arrow_outlined),
-        label: const AppText('Explore a synthetic example'),
+        icon: const Icon(WorthhitIcons.play_arrow_outlined),
+        label: const AppText('Try an example'),
       ),
       const SizedBox(height: 16),
       AppText(
@@ -133,7 +145,7 @@ class ResultPanel extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text(AppStrings.of(context).safeMessage(controller.statusText)),
-        const SizedBox(height: 28),
+        const SizedBox(height: 20),
         const LinearProgressIndicator(minHeight: 7),
         const SizedBox(height: 22),
         const AppText(
@@ -143,7 +155,7 @@ class ResultPanel extends StatelessWidget {
         const SizedBox(height: 24),
         OutlinedButton.icon(
           onPressed: controller.cancel,
-          icon: const Icon(Icons.close),
+          icon: const Icon(WorthhitIcons.close),
           label: const AppText('Cancel price check'),
         ),
       ],
@@ -191,7 +203,7 @@ class ResultPanel extends StatelessWidget {
             result.low != null &&
             result.median != null &&
             result.high != null) ...[
-          const SizedBox(height: 26),
+          const SizedBox(height: 20),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -253,7 +265,7 @@ class ResultPanel extends StatelessWidget {
         if (result.questions.isNotEmpty)
           _list(context, 'What to check next', result.questions),
         if (result.comparables.isNotEmpty) ...[
-          const SizedBox(height: 28),
+          const SizedBox(height: 20),
           const Divider(),
           const SizedBox(height: 18),
           AppText(
@@ -277,6 +289,7 @@ class ResultPanel extends StatelessWidget {
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
             title: const AppText('Evidence left out'),
+            trailing: const Icon(WorthhitIcons.expand_more, size: 18),
             children: [
               for (final reason in result.rejectedReasons)
                 Padding(
@@ -289,19 +302,19 @@ class ResultPanel extends StatelessWidget {
             ],
           ),
         ],
-        const SizedBox(height: 28),
+        const SizedBox(height: 20),
         Wrap(
           spacing: 10,
           runSpacing: 10,
           children: [
             OutlinedButton.icon(
               onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined),
+              icon: const Icon(WorthhitIcons.edit_outlined),
               label: const AppText('Refine the details'),
             ),
             OutlinedButton.icon(
               onPressed: controller.exportReport,
-              icon: const Icon(Icons.download_outlined),
+              icon: const Icon(WorthhitIcons.download_outlined),
               label: const AppText('Export report'),
             ),
           ],
@@ -324,7 +337,7 @@ class ResultPanel extends StatelessWidget {
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 26),
+          const SizedBox(height: 20),
           AppText(title, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 10),
           for (final item in items)
@@ -335,7 +348,7 @@ class ResultPanel extends StatelessWidget {
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(top: 7),
-                    child: Icon(Icons.remove, size: 14),
+                    child: Icon(WorthhitIcons.remove, size: 14),
                   ),
                   const SizedBox(width: 10),
                   Expanded(

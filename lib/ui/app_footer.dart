@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../app/app_identity.dart';
 import '../l10n/app_strings.dart';
 import '../platform/document_preferences.dart';
+import 'selectable_surface.dart';
+import 'worthhit_icons.dart';
 import 'worthhit_theme.dart';
 
 typedef PageOpener = bool Function(Uri uri);
@@ -21,7 +23,7 @@ void openInformationLink(
   } catch (_) {
     // The fallback must also work when a platform denies access to window.open.
   }
-  showDialog<void>(
+  showSelectableDialog<void>(
     context: context,
     builder: (context) => _LinkFallback(uri: uri),
   );
@@ -78,7 +80,11 @@ class _LinkFallbackState extends State<_LinkFallback> {
         onPressed: () => Navigator.pop(context),
         child: const AppText('Close'),
       ),
-      FilledButton(onPressed: _copy, child: const AppText('Copy link')),
+      FilledButton.icon(
+        onPressed: _copy,
+        icon: const Icon(WorthhitIcons.content_copy, size: 18),
+        label: const AppText('Copy link'),
+      ),
     ],
   );
 }
@@ -107,15 +113,23 @@ class AppFooter extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         textStyle: Theme.of(context).textTheme.bodySmall,
       );
+      IconData symbol(String label) => switch (label) {
+        'GitHub' => WorthhitIcons.code,
+        'About' => WorthhitIcons.info_outline,
+        'Terms and conditions' => WorthhitIcons.receipt_long_outlined,
+        'Liability' => WorthhitIcons.shield_outlined,
+        _ => WorthhitIcons.open_in_new,
+      };
       Widget link(String label, String destination, {String? key}) => Semantics(
         key: ValueKey(key ?? 'footer-${destination.split('/').first}'),
         link: true,
         hint: strings.text('Opens in a new tab'),
-        child: TextButton(
+        child: SelectableIconButton(
+          tooltip: strings.text(label),
           onPressed: () =>
               openInformationLink(context, destination, opener: opener),
           style: buttonStyle,
-          child: AppText(label),
+          icon: Icon(symbol(label), size: 18),
         ),
       );
       return Container(
@@ -155,12 +169,18 @@ class AppFooter extends StatelessWidget {
                     openInformationLink(context, destination, opener: opener),
                 itemBuilder: (context) => [
                   for (final entry in information.entries)
-                    PopupMenuItem(
+                    SelectablePopupMenuItem(
                       value: entry.value,
                       child: Semantics(
                         link: true,
                         hint: strings.text('Opens in a new tab'),
-                        child: AppText(entry.key),
+                        child: Row(
+                          children: [
+                            Icon(symbol(entry.key), size: 18),
+                            const SizedBox(width: 10),
+                            Flexible(child: AppText(entry.key)),
+                          ],
+                        ),
                       ),
                     ),
                 ],
@@ -170,13 +190,10 @@ class AppFooter extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppText(
-                          'Info',
-                          style: buttonStyle.textStyle?.resolve({}),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.expand_less, size: 18),
+                      children: const [
+                        Icon(WorthhitIcons.info_outline, size: 18),
+                        SizedBox(width: 4),
+                        Icon(WorthhitIcons.expand_less, size: 16),
                       ],
                     ),
                   ),

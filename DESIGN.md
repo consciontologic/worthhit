@@ -97,6 +97,10 @@ Keyboard focus, disabled states and warnings retain textual/structural cues.
 
 Phones use sequential item/evidence/result steps; tablets switch editing and
 result views; desktops show both together. Large text uses the compact flow.
+At standard text size, the phone action/step dock is at most 104px before device
+safe-area insets; controls keep at least 44px touch targets. Tablet tabs and the
+pinned action are compact too. Larger text can expand these regions. Optional
+explanations move to selectable contextual help; costs and privacy stay visible.
 Arabic uses directional padding and RTL. UI and explanatory text follow the
 selected language; evidence quotations do not change language.
 
@@ -127,3 +131,12 @@ The image-generation concept is not shipped as an app asset.
 
 The design exploration seed was `7aba5435`; the user's explicit approved
 direction takes precedence over generated challenger suggestions.
+
+## Interface symbols
+
+`assets/icons/` holds 35 original transparent SVG symbols and the 4.9KB
+WorthhitIcons font used by Flutter. `tool/generate_icons.py` reproduces both from
+shared vector geometry. Use 18–24px symbols with theme-provided colors, plus
+localized tooltips and semantic names for icon-only controls. Only the forward
+action arrow mirrors with RTL. Source, estimate, evidence and trust symbols are
+navigation cues, never proof of verification or a guaranteed price.

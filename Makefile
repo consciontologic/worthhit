@@ -12,7 +12,7 @@ analyze:
 test:
 	$(FLUTTER) test
 	python3 tool/test_api_web.py
-	node --test test/pwa_worker_test.mjs test/preferences_bootstrap_test.mjs
+	node --test test/pwa_worker_test.mjs test/preferences_bootstrap_test.mjs test/pwa_bootstrap_test.mjs
 	python3 -m unittest discover -s test/tool -p '*_test.py'
 	python3 -m unittest discover -s test -p '*_test.py'
 repository.check:

@@ -21,6 +21,41 @@ void main() {
     await tester.pump();
   }
 
+  testWidgets('empty report keeps explanations in selectable contextual help', (
+    tester,
+  ) async {
+    final controller = AppController();
+    addTearDown(controller.dispose);
+    await mount(tester, controller);
+    expect(
+      find.text('Source excerpts stay attached to the estimate.'),
+      findsNothing,
+    );
+    expect(
+      find.text(
+        'An estimate is a starting point, not a guaranteed sale price.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('How it works'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Source excerpts stay attached to the estimate.'),
+      findsOneWidget,
+    );
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(
+      find.ancestor(
+        of: find.byType(AlertDialog),
+        matching: find.byType(SelectionArea),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('ready estimates keep observed range and source facts visible', (
     tester,
   ) async {

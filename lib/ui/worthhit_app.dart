@@ -10,6 +10,9 @@ import 'app_footer.dart';
 import 'draft_editor.dart';
 import 'result_panel.dart';
 import 'settings_panel.dart';
+import 'selectable_surface.dart';
+import 'update_notice.dart';
+import 'worthhit_icons.dart';
 import 'worthhit_theme.dart';
 
 class WorthhitApp extends StatefulWidget {
@@ -73,10 +76,12 @@ class _WorthhitAppState extends State<WorthhitApp> {
       localizationsDelegates: AppStrings.localizationsDelegates,
       localeListResolutionCallback: AppStrings.resolveLocales,
       builder: (context, child) => _DocumentPreferences(child: child!),
-      home: _Workspace(
-        controller: widget.controller,
-        preferences: _preferences,
-        opener: widget.opener,
+      home: SelectionArea(
+        child: _Workspace(
+          controller: widget.controller,
+          preferences: _preferences,
+          opener: widget.opener,
+        ),
       ),
     ),
   );
@@ -189,15 +194,17 @@ class _WorkspaceState extends State<_Workspace> {
     isScrollControlled: true,
     useSafeArea: true,
     constraints: const BoxConstraints(maxWidth: 640),
-    builder: (_) => SettingsPanel(
-      controller: widget.controller,
-      preferences: widget.preferences,
-      opener: widget.opener,
+    builder: (_) => SelectionArea(
+      child: SettingsPanel(
+        controller: widget.controller,
+        preferences: widget.preferences,
+        opener: widget.opener,
+      ),
     ),
   );
 
   Future<void> _clear() async {
-    final clear = await showDialog<bool>(
+    final clear = await showSelectableDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const AppText('Start a fresh check?'),
@@ -315,26 +322,7 @@ class _WorkspaceState extends State<_Workspace> {
                                 ),
                               ),
                             ),
-                          if (widget.controller.updateAvailable)
-                            Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                20,
-                                0,
-                                20,
-                                12,
-                              ),
-                              child: StatusNotice(
-                                message:
-                                    'A new version is ready. Your draft '
-                                    'will stay; you’ll need to re-enter your key.',
-                                action: TextButton(
-                                  onPressed: widget.controller.busy
-                                      ? null
-                                      : widget.controller.applyUpdate,
-                                  child: const AppText('Update app'),
-                                ),
-                              ),
-                            ),
+                          UpdateNotice(controller: widget.controller),
                           if (!phone && !desktop) _tabletTabs(),
                           Expanded(
                             child: desktop
@@ -398,10 +386,10 @@ class _WorkspaceState extends State<_Workspace> {
 
   Widget _header(bool phone, bool desktop) => Padding(
     padding: EdgeInsetsDirectional.fromSTEB(
-      phone ? 20 : 28,
-      phone ? 16 : 28,
-      phone ? 14 : 28,
-      phone ? 14 : 24,
+      phone ? 12 : 24,
+      phone ? 6 : 16,
+      phone ? 12 : 24,
+      phone ? 6 : 12,
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,11 +397,11 @@ class _WorkspaceState extends State<_Workspace> {
         Row(
           children: [
             if (!desktop) ...[
-              IconButton(
+              SelectableIconButton(
                 key: const ValueKey('navigation-menu'),
                 tooltip: AppStrings.of(context).text('Open navigation'),
                 onPressed: () => _scaffold.currentState?.openDrawer(),
-                icon: const Icon(Icons.menu),
+                icon: const Icon(WorthhitIcons.menu),
               ),
               const SizedBox(width: 6),
             ],
@@ -429,7 +417,7 @@ class _WorkspaceState extends State<_Workspace> {
                 ),
               ),
             const SizedBox(width: 10),
-            IconButton(
+            SelectableIconButton(
               key: const ValueKey('settings-button'),
               tooltip: AppStrings.of(context).text('Settings'),
               onPressed: _settings,
@@ -442,20 +430,10 @@ class _WorkspaceState extends State<_Workspace> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              icon: const Icon(Icons.tune),
+              icon: const Icon(WorthhitIcons.tune),
             ),
           ],
         ),
-        if (!phone) ...[
-          const SizedBox(height: 8),
-          AppText(
-            widget.controller.selectedModel == null
-                ? 'Second-hand prices, grounded in evidence. Connect a model '
-                      'to check your item.'
-                : 'Second-hand prices, grounded in evidence.',
-            style: TextStyle(color: WorthhitPalette.of(context).muted),
-          ),
-        ],
       ],
     ),
   );
@@ -464,77 +442,84 @@ class _WorkspaceState extends State<_Workspace> {
     width: (MediaQuery.sizeOf(context).width - 24).clamp(240.0, 360.0),
     backgroundColor: WorthhitPalette.of(context).paper,
     shape: const RoundedRectangleBorder(),
-    child: SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          key: const ValueKey('navigation-scroll'),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          const Expanded(child: WorthhitBrand()),
-                          IconButton(
-                            tooltip: AppStrings.of(context)
-                                .text('Close navigation'),
-                            onPressed: () =>
-                                _scaffold.currentState?.closeDrawer(),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(),
-                    for (final action in [
-                      ('Price check', Icons.sell_outlined, _edit, true),
-                      (
-                        'Start fresh',
-                        Icons.add,
-                        _clear,
-                        !widget.controller.busy,
-                      ),
-                      (
-                        'Try an example',
-                        Icons.play_arrow_outlined,
-                        widget.controller.loadExample,
-                        !widget.controller.busy,
-                      ),
-                      ('Settings', Icons.tune, _settings, true),
-                    ])
+    child: SelectionArea(
+      child: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            key: const ValueKey('navigation-scroll'),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: TextButton.icon(
-                          onPressed: !action.$4
-                              ? null
-                              : () {
-                                  _scaffold.currentState?.closeDrawer();
-                                  action.$3();
-                                },
-                          style: TextButton.styleFrom(
-                            alignment: AlignmentDirectional.centerStart,
-                            minimumSize: const Size(48, 56),
-                          ),
-                          icon: Icon(action.$2),
-                          label: AppText(action.$1),
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Expanded(child: WorthhitBrand()),
+                            SelectableIconButton(
+                              tooltip: AppStrings.of(context)
+                                  .text('Close navigation'),
+                              onPressed: () =>
+                                  _scaffold.currentState?.closeDrawer(),
+                              icon: const Icon(WorthhitIcons.close),
+                            ),
+                          ],
                         ),
                       ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
-                AppFooter(
-                  key: const ValueKey('sidebar-app-footer'),
-                  inDrawer: true,
-                  opener: widget.opener,
-                ),
-              ],
+                      const Divider(),
+                      for (final action in [
+                        (
+                          'Price check',
+                          WorthhitIcons.sell_outlined,
+                          _edit,
+                          true,
+                        ),
+                        (
+                          'Start fresh',
+                          WorthhitIcons.add,
+                          _clear,
+                          !widget.controller.busy,
+                        ),
+                        (
+                          'Try an example',
+                          WorthhitIcons.play_arrow_outlined,
+                          widget.controller.loadExample,
+                          !widget.controller.busy,
+                        ),
+                        ('Settings', WorthhitIcons.tune, _settings, true),
+                      ])
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: TextButton.icon(
+                            onPressed: !action.$4
+                                ? null
+                                : () {
+                                    _scaffold.currentState?.closeDrawer();
+                                    action.$3();
+                                  },
+                            style: TextButton.styleFrom(
+                              alignment: AlignmentDirectional.centerStart,
+                              minimumSize: const Size(44, 48),
+                            ),
+                            icon: Icon(action.$2),
+                            label: AppText(action.$1),
+                          ),
+                        ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                  AppFooter(
+                    key: const ValueKey('sidebar-app-footer'),
+                    inDrawer: true,
+                    opener: widget.opener,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -544,8 +529,8 @@ class _WorkspaceState extends State<_Workspace> {
 
   Widget _rail(bool expanded) => Container(
     key: expanded ? const ValueKey('desktop-rail') : null,
-    width: expanded ? 208 : 80,
-    padding: EdgeInsets.symmetric(horizontal: expanded ? 20 : 12, vertical: 28),
+    width: expanded ? 196 : 64,
+    padding: EdgeInsets.symmetric(horizontal: expanded ? 16 : 8, vertical: 20),
     decoration: BoxDecoration(
       color: WorthhitPalette.of(context).paper,
       border: BorderDirectional(
@@ -556,7 +541,7 @@ class _WorkspaceState extends State<_Workspace> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Center(child: WorthhitBrand(compact: !expanded)),
-        const SizedBox(height: 38),
+        const SizedBox(height: 28),
         if (expanded)
           FilledButton.icon(
             onPressed: _edit,
@@ -564,27 +549,31 @@ class _WorkspaceState extends State<_Workspace> {
               backgroundColor: WorthhitPalette.of(context).ink,
               foregroundColor: WorthhitPalette.of(context).paper,
             ),
-            icon: const Icon(Icons.sell_outlined, size: 20),
+            icon: const Icon(WorthhitIcons.sell_outlined, size: 20),
             label: const AppText('Price check'),
           )
         else
-          IconButton.filled(
-            tooltip: AppStrings.of(context).text('Edit price check'),
-            onPressed: _edit,
-            icon: const Icon(Icons.sell_outlined),
+          MergeSemantics(
+            child: SelectableTooltip(
+              message: AppStrings.of(context).text('Edit price check'),
+              child: IconButton.filled(
+                onPressed: _edit,
+                icon: const Icon(WorthhitIcons.sell_outlined),
+              ),
+            ),
           ),
         const SizedBox(height: 12),
         if (expanded)
           TextButton.icon(
             onPressed: widget.controller.busy ? null : _clear,
-            icon: const Icon(Icons.add, size: 20),
+            icon: const Icon(WorthhitIcons.add, size: 20),
             label: const AppText('Start fresh'),
           )
         else
-          IconButton(
+          SelectableIconButton(
             tooltip: AppStrings.of(context).text('Start a fresh check'),
             onPressed: widget.controller.busy ? null : _clear,
-            icon: const Icon(Icons.add),
+            icon: const Icon(WorthhitIcons.add),
           ),
         const SizedBox(height: 8),
         if (expanded)
@@ -592,36 +581,27 @@ class _WorkspaceState extends State<_Workspace> {
             onPressed: widget.controller.busy
                 ? null
                 : widget.controller.loadExample,
-            icon: const Icon(Icons.play_arrow_outlined, size: 20),
+            icon: const Icon(WorthhitIcons.play_arrow_outlined, size: 20),
             label: const AppText('Try an example'),
           )
         else
-          IconButton(
+          SelectableIconButton(
             tooltip: AppStrings.of(context).text('Try a synthetic example'),
             onPressed: widget.controller.busy
                 ? null
                 : widget.controller.loadExample,
-            icon: const Icon(Icons.play_arrow_outlined),
+            icon: const Icon(WorthhitIcons.play_arrow_outlined),
           ),
         const Spacer(),
         if (expanded) ...[
-          const Icon(Icons.devices_outlined, size: 26),
+          const Icon(WorthhitIcons.devices_outlined, size: 26),
           const SizedBox(height: 12),
           const AppText(
             'Your draft stays\non this device.',
             textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.w700, height: 1.5),
           ),
-          const SizedBox(height: 8),
-          AppText(
-            'Your API key stays in memory for this session only.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: WorthhitPalette.of(context).muted,
-            ),
-          ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
           OutlinedButton(
             onPressed: _settings,
             child: AppText(
@@ -631,24 +611,24 @@ class _WorkspaceState extends State<_Workspace> {
             ),
           ),
         ] else
-          Tooltip(
+          SelectableTooltip(
             message: AppStrings.of(context)
                 .text('Drafts are stored on this device'),
-            child: const Icon(Icons.devices_outlined),
+            child: const Icon(WorthhitIcons.devices_outlined),
           ),
       ],
     ),
   );
 
   Widget _tabletTabs() => Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(28, 0, 28, 8),
+    padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 8),
     child: Row(
       children: [
         Expanded(
           child: _tab(
             'tablet-editor-tab',
             'Edit item',
-            Icons.edit_outlined,
+            WorthhitIcons.edit_outlined,
             _tabletTab == 0,
             () => setState(() => _tabletTab = 0),
           ),
@@ -658,7 +638,7 @@ class _WorkspaceState extends State<_Workspace> {
           child: _tab(
             'tablet-estimate-tab',
             'Price picture',
-            Icons.receipt_long_outlined,
+            WorthhitIcons.receipt_long_outlined,
             _tabletTab == 1,
             () => setState(() => _tabletTab = 1),
           ),
@@ -679,6 +659,11 @@ class _WorkspaceState extends State<_Workspace> {
       key: ValueKey(key),
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
+        minimumSize: const Size(44, 44),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        textStyle: Theme.of(context).textTheme.labelLarge
+            ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
         backgroundColor: selected
             ? WorthhitPalette.of(context).lime
             : Colors.transparent,
@@ -686,12 +671,13 @@ class _WorkspaceState extends State<_Workspace> {
             ? WorthhitPalette.of(context).onLime
             : WorthhitPalette.of(context).ink,
       ),
-      icon: Icon(icon, size: 20),
+      icon: Icon(icon, size: 18),
       label: AppText(label),
     ),
   );
 
   Widget _phoneNavigation() => Container(
+    key: const ValueKey('phone-navigation'),
     decoration: BoxDecoration(
       color: WorthhitPalette.of(context).paper,
       border: Border(
@@ -701,24 +687,14 @@ class _WorkspaceState extends State<_Workspace> {
     child: SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 4),
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 4, 12, 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
               width: double.infinity,
-              child: FilledButton.icon(
-                key: ValueKey(_step == 0 ? 'next-step' : 'submit-check'),
-                onPressed: widget.controller.busy
-                    ? widget.controller.cancel
-                    : _step == 0
-                    ? () => setState(() => _step = 1)
-                    : _submit,
-                icon: Icon(
-                  widget.controller.busy ? Icons.close : Icons.arrow_forward,
-                  size: 20,
-                ),
-                label: AppText(
+              child: SelectableTooltip(
+                message: AppStrings.of(context).text(
                   widget.controller.busy
                       ? 'Cancel price check'
                       : _step == 0
@@ -727,15 +703,48 @@ class _WorkspaceState extends State<_Workspace> {
                       ? 'Find a fair price'
                       : 'Check again',
                 ),
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(44, 44),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    textStyle: Theme.of(context).textTheme.labelLarge
+                        ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  key: ValueKey(_step == 0 ? 'next-step' : 'submit-check'),
+                  onPressed: widget.controller.busy
+                      ? widget.controller.cancel
+                      : _step == 0
+                      ? () => setState(() => _step = 1)
+                      : _submit,
+                  icon: Icon(
+                    widget.controller.busy
+                        ? WorthhitIcons.close
+                        : WorthhitIcons.arrow_forward,
+                    size: 18,
+                  ),
+                  label: AppText(
+                    widget.controller.busy
+                        ? 'Cancel'
+                        : _step == 0
+                        ? 'Continue'
+                        : widget.controller.result == null
+                        ? 'Estimate'
+                        : 'Check again',
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 2),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _phoneTab(0, 'Details', Icons.edit_outlined),
-                _phoneTab(1, 'Evidence', Icons.search),
-                _phoneTab(2, 'Estimate', Icons.receipt_long_outlined),
+                _phoneTab(0, 'Details', WorthhitIcons.edit_outlined),
+                _phoneTab(1, 'Evidence', WorthhitIcons.search),
+                _phoneTab(2, 'Estimate', WorthhitIcons.receipt_long_outlined),
               ],
             ),
           ],
@@ -751,7 +760,9 @@ class _WorkspaceState extends State<_Workspace> {
         key: ValueKey('phone-${title.toLowerCase()}-tab'),
         onPressed: () => setState(() => _step = index),
         style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 4),
+          minimumSize: const Size(44, 48),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
           backgroundColor: index == _step
               ? WorthhitPalette.of(context).soft
               : null,
@@ -760,13 +771,14 @@ class _WorkspaceState extends State<_Workspace> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20),
-            const SizedBox(height: 4),
+            Icon(icon, size: 18),
+            const SizedBox(height: 2),
             AppText(
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
+                height: 1.1,
                 fontWeight: index == _step ? FontWeight.w700 : FontWeight.w400,
               ),
             ),

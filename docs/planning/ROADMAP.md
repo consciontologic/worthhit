@@ -1,5 +1,35 @@
 # Worthhit delivery plan
 
+## Worthhit 1.1.0 compact and usable interface — 2026-10-20
+
+Goal: give phone/tablet users more working space, concise icon-led controls,
+selectable content and a clear, safe notification when a new app release is ready.
+
+Boundaries: retain the graphite/neutral/lime identity, eight languages, accessible
+touch targets, financial/privacy disclosures, direct APIs and explicit update
+activation. No automatic reload, private-content clipboard writes or API resends.
+
+Files: adaptive workspace/editor/results/settings/footer, shared icons and theme,
+translations, update controller/browser bridge/bootstrap, matching tests and
+brand assets; version/changelog and existing architecture/deployment guides.
+
+Test plan: compact control heights at phone/tablet sizes, keyboard/large-text/RTL
+usability, selection and copy of visible content, preserved form editing, icon
+contrast/semantics, remote update discovery and offline/retry/busy/save failures,
+full local gate/public build, independent review and browser checks.
+
+- [x] Add a cohesive Worthhit vector icon family and integrate action/navigation symbols.
+- [x] Compact phone/tablet controls and reduce repeated guidance through contextual help.
+- [x] Enable selection/copy across app content, dialogs and reports without breaking input.
+- [x] Discover remote releases and show an accessible dismissible update notice.
+- [x] Set 1.1.0, finish localization, documentation, tests and browser validation.
+- [ ] Publish protected source/promotion and prepare 1.1.0 for owner production approval.
+- [ ] After owner approval, verify the live release, package and PWA update.
+
+Risks: overly small controls harm touch access; retain at least 44px hit targets
+and let large text expand. Icon-only actions need tooltips/semantics. Update discovery
+must be bounded and must not discard unsaved work or interrupt an active request.
+
 ## Worthhit 1.0.0 information and analytics — 2026-10-20
 
 Goal: publish version 1.0.0 with Google tag G-G4SYW37S81, useful public information

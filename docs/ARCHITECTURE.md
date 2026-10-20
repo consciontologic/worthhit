@@ -54,6 +54,26 @@ desktop footer and compact drawer without discarding the active appraisal sessio
 Their visible version and the Flutter footer derive from `pubspec.yaml`; source
 checks and public builds reject stale generated identities.
 
+The custom Worthhit icon font and matching transparent SVGs share reproducible
+vector geometry in `tool/generate_icons.py`. Icons inherit theme colors and keep
+localized labels/tooltips. Phone navigation uses a compact action and step row;
+large text can expand it instead of clipping labels or reducing touch targets.
+Optional explanations live in contextual help; fees, data transmission and
+estimate limitations remain visible where decisions are made.
+
+Selection areas belong below each route’s overlay, with independent scopes for
+the workspace, drawer, settings sheets, help dialogs, menus and hints. This enables touch copy
+toolbars and prevents Select all in a dialog from including background drafts.
+Editable fields retain their own selection and paste handling.
+
+The bootstrap checks for a remote worker at startup, every five visible/online
+minutes and on focus/reconnection, with a shared 30-second cooldown and one request
+in flight. Discovery never activates it. Waiting-worker checks run independently
+of the model catalogue. A dismissible notice and Settings offer explicit update;
+active appraisals block it, the draft must save first, and activation times out
+with a recoverable message after 15 seconds. Disposal removes the listener and
+prevents a delayed reload. The in-memory key must be entered again after reload.
+
 The owner's Google Analytics tag runs independently of Flutter on public pages.
 The app defines no analytics events containing inputs, keys, evidence or reports.
 Initial page configuration uses canonical page URLs, blank referrers and disabled

@@ -1,7 +1,11 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:worthhit/app/app_controller.dart';
+import 'package:worthhit/app/app_identity.dart';
+import 'package:worthhit/l10n/app_strings.dart';
 import 'package:worthhit/ui/worthhit_app.dart';
 import 'package:worthhit/app/preferences_controller.dart';
 import 'package:worthhit/platform/local_store.dart';
@@ -40,11 +44,11 @@ void main() {
     await tester.pumpAndSettle();
     final footer = find.byKey(const ValueKey('app-footer'));
     expect(footer, findsOneWidget);
-    expect(find.text('v1.0.0'), findsOneWidget);
-    expect(find.text('GitHub'), findsOneWidget);
-    expect(find.text('About'), findsOneWidget);
-    expect(find.text('Terms and conditions'), findsOneWidget);
-    expect(find.text('Liability'), findsOneWidget);
+    expect(find.text('v$appVersion'), findsOneWidget);
+    expect(find.byTooltip('GitHub'), findsOneWidget);
+    expect(find.byTooltip('About'), findsOneWidget);
+    expect(find.byTooltip('Terms and conditions'), findsOneWidget);
+    expect(find.byTooltip('Liability'), findsOneWidget);
     expect(tester.getRect(footer).bottom, 1000);
     expect(tester.takeException(), isNull);
   });
@@ -64,8 +68,8 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('navigation-menu')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('sidebar-app-footer')), findsOneWidget);
-      expect(find.text('v1.0.0'), findsOneWidget);
-      expect(find.text('GitHub'), findsOneWidget);
+      expect(find.text('v$appVersion'), findsOneWidget);
+      expect(find.byTooltip('GitHub'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('footer-info-menu')));
       await tester.pumpAndSettle();
       expect(find.text('About'), findsOneWidget);
@@ -97,6 +101,167 @@ void main() {
     expect(find.byKey(const ValueKey('desktop-layout')), findsOneWidget);
     expect(find.byKey(const ValueKey('desktop-rail')), findsOneWidget);
     expect(find.byKey(const ValueKey('result-panel')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'phone controls preserve workspace and accessible touch targets',
+    (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final controller = _UiController();
+      addTearDown(controller.dispose);
+      await size(tester, 390);
+      await tester.pumpWidget(WorthhitApp(controller: controller));
+      await tester.pumpAndSettle();
+      for (final destination in ['details', 'evidence', 'estimate']) {
+        await tester.tap(find.byKey(ValueKey('phone-$destination-tab')));
+        await tester.pump();
+        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+        expect(
+          tester.getSize(find.byWidget(scaffold.bottomNavigationBar!)).height,
+          lessThanOrEqualTo(104),
+        );
+        for (final key in ['details', 'evidence', 'estimate']) {
+          final target = find.byKey(ValueKey('phone-$key-tab'));
+          expect(tester.getSize(target).height, greaterThanOrEqualTo(44));
+          expect(tester.getSize(target).width, greaterThanOrEqualTo(44));
+        }
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
+  testWidgets('tablet controls leave space for the item and remain touchable', (
+    tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = _UiController();
+    addTearDown(controller.dispose);
+    await size(tester, 850);
+    await tester.pumpWidget(WorthhitApp(controller: controller));
+    await tester.pumpAndSettle();
+    for (final key in ['tablet-editor-tab', 'tablet-estimate-tab']) {
+      final target = find.byKey(ValueKey(key));
+      expect(tester.getSize(target).height, inInclusiveRange(44, 48));
+    }
+    expect(
+      tester.getSize(find.byKey(const ValueKey('editor-actions'))).height,
+      lessThanOrEqualTo(64),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('appraisal-submit'))).height,
+      greaterThanOrEqualTo(44),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tablet icon-only edit action has an accessible button name', (
+    tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final semantics = tester.ensureSemantics();
+    try {
+      final controller = _UiController();
+      addTearDown(controller.dispose);
+      await size(tester, 850);
+      await tester.pumpWidget(WorthhitApp(controller: controller));
+      await tester.pumpAndSettle();
+      final button = find.descendant(
+        of: find.byTooltip('Edit price check'),
+        matching: find.byType(IconButton),
+      );
+      final node = tester.getSemantics(find.byTooltip('Edit price check'));
+      // Flutter exposes icon-button names through the tooltip semantic field.
+      // The same exported node must carry both the name and the button action.
+      expect(node.getSemanticsData().tooltip, 'Edit price check');
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      expect(node.getSemanticsData().flagsCollection.isButton, isTrue);
+      await tester.tap(find.byKey(const ValueKey('tablet-estimate-tab')));
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('product-field')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  for (final language in ['ar', 'zh']) {
+    testWidgets('$language compact actions retain bundled font fallbacks', (
+      tester,
+    ) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final controller = _UiController();
+      final preferences = PreferencesController(store: MemoryStore())
+        ..setLocale(Locale(language));
+      addTearDown(controller.dispose);
+      addTearDown(preferences.dispose);
+      await size(tester, 390);
+      await tester.pumpWidget(
+        WorthhitApp(controller: controller, preferences: preferences),
+      );
+      await tester.pumpAndSettle();
+      for (final width in [390.0, 850.0, 1440.0]) {
+        await size(tester, width);
+        await tester.pumpAndSettle();
+        final actions = width < 700
+            ? {'next-step': 'Continue'}
+            : {
+                'appraisal-submit': 'Find a fair price',
+                if (width < 1100) ...{
+                  'tablet-editor-tab': 'Edit item',
+                  'tablet-estimate-tab': 'Price picture',
+                },
+              };
+        for (final action in actions.entries) {
+          final button = find.byKey(ValueKey(action.key));
+          final label = AppStrings.of(tester.element(button))
+              .text(action.value);
+          final rendered = tester
+              .widgetList<RichText>(
+                find.descendant(of: button, matching: find.byType(RichText)),
+              )
+              .singleWhere((widget) => widget.text.toPlainText() == label);
+          expect(rendered.text.style?.fontFamily, 'WorthhitSans');
+          expect(
+            rendered.text.style?.fontFamilyFallback,
+            containsAll(['WorthhitArabic', 'WorthhitChinese']),
+            reason: '$language $width ${action.key} must work offline',
+          );
+        }
+        expect(tester.takeException(), isNull);
+      }
+    });
+  }
+
+  testWidgets('item guidance is available without crowding the form', (
+    tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = _UiController();
+    addTearDown(controller.dispose);
+    await size(tester, 390);
+    await tester.pumpWidget(WorthhitApp(controller: controller));
+    await tester.pumpAndSettle();
+    const guidance =
+        'The specific model and its condition make the difference.';
+    expect(find.text(guidance), findsNothing);
+    await tester.tap(find.byTooltip('Item guidance'));
+    await tester.pumpAndSettle();
+    expect(find.text(guidance), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('product-field')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
