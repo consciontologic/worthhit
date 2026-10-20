@@ -1,0 +1,40 @@
+name: Worthit checks
+on:
+  pull_request:
+    branches: [develop]
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: '3.47.3'
+          channel: stable
+          cache: true
+          cache-key: flutter-${{ runner.os }}-3.47.3-${{ hashFiles('pubspec.lock') }}
+      - run: mkdir -p .local && make deps
+      - run: make verify
+      - run: make build.public
+  security:
+    name: Security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - run: python3 tool/repository_check.py
+      - name: Check workflow publishing boundaries
+        run: python3 -m unittest discover -s test/tool -p '*_test.py'
