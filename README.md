@@ -1,8 +1,9 @@
 # Worthhit
 
 **Know the range. Make a fair deal.** A Flutter PWA for evidence-led second-hand price
-checks, designed for buyers and sellers. Phone users get guided steps, tablets get
-a focused editing surface, and desktops get a comparison workbench.
+checks, with one neutral estimate regardless of whether you buy or sell. Phone
+users get guided steps, tablets get a focused editing surface, and desktops get
+a comparison workbench.
 
 Worthhit runs in your browser and calls OpenRouter directly with your own key.
 There is no Worthhit API server or remote database. Model inference is restricted
@@ -62,14 +63,16 @@ Do not include secrets, personal records or confidential documents in listings.
 MIT-licensed tooling and verified-shell patterns adapted from
 [wfform](https://github.com/consciontologic/wfform); bundled Space Grotesk and Noto fonts retain their OFL licenses in `assets/fonts/`.
 
-## Worthhit 1.1.0
+## App experience
 
 The app supports system/light/dark appearance and English, Turkish, German, French,
 Spanish, Portuguese, Arabic and Simplified Chinese. Browser language negotiation
 and manual overrides work without an IP lookup. Original evidence remains verbatim.
 Saved report protocols remain compatible. About, Terms and conditions, Liability,
 the source repository and the release version are available from the desktop
-footer and the smaller-screen drawer.
+footer and the smaller-screen drawer. Information opens within the app; Back returns
+to the previous workspace or settings without restarting the session. Existing
+buy/sell drafts remain readable, but new checks and requests use no trading role.
 Phone and tablet controls use a compact layout and the project’s own icons, with
 contextual help for longer explanations. Visible content supports selection/copy;
 input fields retain normal copy/paste. Available app updates appear in a dismissible
@@ -78,6 +81,8 @@ save the draft first and clear the memory-only key when the page reloads.
 
 `pubspec.yaml` owns the release version. After updating it and the dated changelog,
 run `make version.sync`; `make verify` and public builds reject visible version drift.
+After editing public information prose, run `make information.sync` to refresh
+the in-app copy; the same gates reject stale generated content.
 
 Production is [worthhit.com](https://worthhit.com/). Reviewed source changes flow
 through `develop` and exact-tree promotion to `main`; the owner approves each

@@ -82,7 +82,7 @@ class ResultPanel extends StatelessWidget {
                 _explanation(
                   context,
                   WorthhitIcons.handshake_outlined,
-                  'A calmer way to negotiate',
+                  'Practical checks',
                   'Use the facts. Leave pressure and guesswork out.',
                 ),
               ],

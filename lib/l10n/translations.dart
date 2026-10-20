@@ -1,5 +1,6 @@
 // Ordered translations: tr, de, fr, es, pt, ar, zh. Source keys remain stable.
 const translations = <String, List<String>>{
+  "Back": ["Geri", "Zurück", "Retour", "Atrás", "Voltar", "رجوع", "返回"],
   "About": [
     "Hakkında",
     "Über Worthhit",
@@ -310,33 +311,6 @@ const translations = <String, List<String>>{
     "مثال: سماعات Sony WH-1000XM4",
     "例如：索尼 WH-1000XM4 耳机",
   ],
-  "I’m looking to": [
-    "Amacım",
-    "Ich möchte",
-    "Je souhaite",
-    "Quiero",
-    "Quero",
-    "أرغب في",
-    "我想要",
-  ],
-  "Buy well": [
-    "İyi fiyata al",
-    "Gut kaufen",
-    "Bien acheter",
-    "Comprar bien",
-    "Comprar bem",
-    "شراء بسعر مناسب",
-    "合理买入",
-  ],
-  "Sell fairly": [
-    "Adil fiyata sat",
-    "Fair verkaufen",
-    "Vendre au juste prix",
-    "Vender a un precio justo",
-    "Vender por um preço justo",
-    "بيع بسعر عادل",
-    "公平出售",
-  ],
   "Condition": ["Durum", "Zustand", "État", "Estado", "Estado", "الحالة", "成色"],
   "Like new": [
     "Yeni gibi",
@@ -585,14 +559,14 @@ const translations = <String, List<String>>{
     "تبقى مقتطفات المصادر مرفقة بالتقدير.",
     "估价会保留来源摘录。",
   ],
-  "A calmer way to negotiate": [
-    "Daha sakin bir pazarlık",
-    "Entspannter verhandeln",
-    "Négocier plus sereinement",
-    "Negociar con más calma",
-    "Negociar com mais calma",
-    "طريقة أهدأ للتفاوض",
-    "更从容地议价",
+  "Practical checks": [
+    "Pratik kontroller",
+    "Praktische Prüfungen",
+    "Vérifications pratiques",
+    "Comprobaciones prácticas",
+    "Verificações práticas",
+    "فحوص عملية",
+    "实际检查",
   ],
   "Use the facts. Leave pressure and guesswork out.": [
     "Gerçekleri kullanın. Baskı ve tahminleri dışarıda bırakın.",
@@ -1309,15 +1283,6 @@ const translations = <String, List<String>>{
     "Use um código de moeda de três letras.",
     "استخدم رمز عملة من ثلاثة أحرف.",
     "请使用三字母货币代码。",
-  ],
-  "Choose buying or selling.": [
-    "Alım veya satımı seçin.",
-    "Kaufen oder Verkaufen wählen.",
-    "Choisissez achat ou vente.",
-    "Elige comprar o vender.",
-    "Escolha comprar ou vender.",
-    "اختر الشراء أو البيع.",
-    "请选择买入或卖出。",
   ],
   "Enter a finite, non-negative asking price.": [
     "Sonlu ve negatif olmayan bir fiyat girin.",

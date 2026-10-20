@@ -1,5 +1,32 @@
 # Worthhit delivery plan
 
+## Worthhit 1.1.3 neutral valuation and in-app navigation — 2026-10-21
+
+Goal: estimate a product's worth without buy/sell modes, and let people read
+information pages in the same app tab while retaining their draft and settings.
+
+Boundaries: preserve evidence gates, memory-only keys, selectable content, eight
+languages, static SEO documents and explicit updates. No new backend or redesign.
+
+Files: appraisal models/prompts/editor and migration tests; information navigation,
+workspace/settings routes, browser bridge and history tests; existing static pages,
+version/changelog and architecture/appraisal/delivery guides.
+
+Tests: prove neutral requests and legacy draft/report compatibility; verify app and
+browser Back/Forward with retained fields, settings and session keys; direct links,
+refresh/offline information pages, compact/RTL selection; full gate, public build,
+independent review, browser verification and protected release CI.
+
+- [x] Remove buy/sell choices and role-specific appraisal behavior with migration coverage.
+- [x] Add same-tab information navigation with retained workspace/settings state and history tests.
+- [x] Set 1.1.3 and complete documentation, local gates, browser checks and independent review.
+- [ ] Publish protected PR/promotion and prepare owner production approval.
+- [ ] After approval, verify the 1.1.3 website, navigation and container.
+
+Risks: document navigation discards in-memory keys; keep internal navigation within
+Flutter. Browser history must return to the correct context without duplicate
+entries. Legacy persisted drafts must load without reviving removed intent logic.
+
 ## Worthhit 1.1.2 mobile navigation and loading — 2026-10-20
 
 Goal: open About, Terms and Liability reliably from Android Chrome and reduce

@@ -5,18 +5,30 @@ import '../app/app_identity.dart';
 import '../l10n/app_strings.dart';
 import '../platform/document_preferences.dart';
 import 'selectable_surface.dart';
+import 'app_navigation.dart';
 import 'worthhit_icons.dart';
 import 'worthhit_theme.dart';
 
 typedef PageOpener = bool Function(Uri uri);
 
-/// Open synchronously so browser popup protection retains the user's activation.
-/// The active price check, session key and requests stay in their original tab.
+/// Internal information routes retain the active Flutter session. External links
+/// dispatch synchronously so browser popup protection retains user activation.
 void openInformationLink(
   BuildContext context,
   String destination, {
   PageOpener opener = openPage,
 }) {
+  final route = AppLocation.parse(Uri.parse(destination));
+  final navigation = AppNavigation.maybeOf(context);
+  if (route != null &&
+      route.name != '' &&
+      route.name != 'settings' &&
+      navigation != null) {
+    final scaffold = Scaffold.maybeOf(context);
+    if (scaffold?.isDrawerOpen == true) scaffold!.closeDrawer();
+    navigation.open(route);
+    return;
+  }
   final uri = resolvePage(destination);
   try {
     if (opener(uri)) return;
@@ -123,7 +135,7 @@ class AppFooter extends StatelessWidget {
       Widget link(String label, String destination, {String? key}) => Semantics(
         key: ValueKey(key ?? 'footer-${destination.split('/').first}'),
         link: true,
-        hint: strings.text('Opens in a new tab'),
+        hint: label == 'GitHub' ? strings.text('Opens in a new tab') : null,
         child: SelectableIconButton(
           tooltip: strings.text(label),
           onPressed: () =>
@@ -165,20 +177,14 @@ class AppFooter extends StatelessWidget {
               PopupMenuButton<String>(
                 key: const ValueKey('footer-info-menu'),
                 tooltip: strings.text('Information links'),
+                onSelected: (destination) =>
+                    openInformationLink(context, destination, opener: opener),
                 itemBuilder: (context) => [
                   for (final entry in information.entries)
                     SelectablePopupMenuItem(
                       value: entry.value,
-                      // The item callback stays in the input gesture; the menu's
-                      // onSelected callback runs after its route future resolves.
-                      onTap: () => openInformationLink(
-                        context,
-                        entry.value,
-                        opener: opener,
-                      ),
                       child: Semantics(
                         link: true,
-                        hint: strings.text('Opens in a new tab'),
                         child: Row(
                           children: [
                             Icon(symbol(entry.key), size: 18),

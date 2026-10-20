@@ -69,9 +69,10 @@ failures produce an evidence gap, never invented data.
 Worthit acknowledges endowment effects, anchoring, loss aversion, attachment and
 urgency without assigning fixed psychological coefficients. Purchase cost,
 sentiment, identity and financial pressure cannot alter local range arithmetic.
-Buyers receive respectful inspection, budget and offer guidance; sellers receive
-honest disclosure and proceeds-versus-waiting guidance. Neither receives
-fabricated scarcity, deceptive tactics or a promised sale time.
+A single neutral appraisal explains product worth, condition, evidence gaps and
+observable transaction safeguards regardless of whether the person buys or sells.
+The model must not choose a trading side or recommend role-specific negotiation
+tactics, fabricated scarcity, deception or a promised sale time.
 
 Trust is discussed through observable safeguards: inspection, ownership evidence,
 payment protection, delivery and written terms. Identity, friendliness and
@@ -102,6 +103,11 @@ Dates must be real calendar dates. URLs must use HTTP(S), have no credentials,
 and use a public-looking hostname. This is a link-admission check, not DNS
 verification or proof of site legitimacy. Unknown/private destinations are
 rejected. All text is data for Flutter rendering, not HTML or script.
+
+Current inputs contain no buy/sell goal. Strictly valid legacy inputs with a
+`buy` or `sell` goal remain readable; decoding discards that field. Canonical
+saving, report matching and provider prompts use the neutral input shape, without
+changing storage keys or historical report protocol identifiers.
 
 Saved reports round-trip through validated JSON and are historical observations.
 They must not be presented as freshly researched after restoration. The input

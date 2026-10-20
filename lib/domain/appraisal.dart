@@ -38,7 +38,6 @@ class AppraisalInput {
     this.currency = 'USD',
     this.details = '',
     this.evidence = '',
-    this.goal = 'buy',
     this.askingPrice,
     DateTime? asOf,
   }) : asOf = (asOf ?? DateTime.now()).toUtc();
@@ -49,7 +48,6 @@ class AppraisalInput {
   final String currency;
   final String details;
   final String evidence;
-  final String goal;
   final double? askingPrice;
   final DateTime asOf;
 
@@ -58,7 +56,6 @@ class AppraisalInput {
     if (condition.trim().isEmpty) return 'Describe its condition.';
     if (location.trim().isEmpty) return 'Add a city or market and country.';
     if (!_currencyCode(currency)) return 'Use a three-letter currency code.';
-    if (!{'buy', 'sell'}.contains(goal)) return 'Choose buying or selling.';
     if (askingPrice != null && !_validAmount(askingPrice!)) {
       return 'Enter a finite, non-negative asking price.';
     }
@@ -79,7 +76,6 @@ class AppraisalInput {
     String? currency,
     String? details,
     String? evidence,
-    String? goal,
     Object? askingPrice = _notProvided,
     bool clearAskingPrice = false,
     DateTime? asOf,
@@ -90,7 +86,6 @@ class AppraisalInput {
     currency: currency ?? this.currency,
     details: details ?? this.details,
     evidence: evidence ?? this.evidence,
-    goal: goal ?? this.goal,
     askingPrice: clearAskingPrice
         ? null
         : identical(askingPrice, _notProvided)
@@ -108,7 +103,6 @@ class AppraisalInput {
     'currency': currency,
     'details': details,
     'evidence': evidence,
-    'goal': goal,
     'asking_price': askingPrice,
     'as_of': asOf.toIso8601String(),
   };
@@ -121,10 +115,14 @@ class AppraisalInput {
       'currency',
       'details',
       'evidence',
-      'goal',
       'asking_price',
       'as_of',
+      // Version 1 drafts/reports may contain the removed intent field. Accept
+      // only its two former valid values, then discard it before matching,
+      // persisting or sending the canonical product context.
+      if (json.containsKey('goal')) 'goal',
     });
+    if (json.containsKey('goal')) _choice(json['goal'], {'buy', 'sell'});
     final timestamp = DateTime.tryParse(_string(json['as_of'], 40));
     if (timestamp == null) _invalid('Saved valuation date is invalid.');
     final amount = json['asking_price'];
@@ -135,7 +133,6 @@ class AppraisalInput {
       currency: _string(json['currency'], 3),
       details: _string(json['details'], 4000),
       evidence: _string(json['evidence'], 24000),
-      goal: _choice(json['goal'], {'buy', 'sell'}),
       askingPrice: amount == null ? null : _amount(amount),
       asOf: timestamp,
     );

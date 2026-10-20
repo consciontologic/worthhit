@@ -168,6 +168,115 @@ void main() {
     },
   );
 
+  for (final draftGoal in [null, 'buy', 'sell']) {
+    for (final reportGoal in [null, 'buy', 'sell']) {
+      test(
+        'restores matching draft $draftGoal and report $reportGoal without inference',
+        () async {
+          final store = MemoryStore();
+          seedReport(store);
+          for (final entry in {
+            'worthit.draft.v1': draftGoal,
+            'worthit.last-report.v1': reportGoal,
+          }.entries) {
+            final data =
+                jsonDecode(store.read(entry.key)!) as Map<String, dynamic>;
+            final input = data['input'] as Map<String, dynamic>;
+            input.remove('goal');
+            if (entry.value != null) input['goal'] = entry.value;
+            store.write(entry.key, jsonEncode(data));
+          }
+          final original = Map<String, String>.of(store.values);
+          final api = FakeApi();
+          final controller = AppController(store: store, api: api);
+          addTearDown(controller.dispose);
+
+          await controller.initialize();
+
+          expect(controller.result?.median, 120);
+          expect(controller.draft.toJson(), isNot(contains('goal')));
+          expect(controller.persistenceError, isNull);
+          expect(controller.apiKey, isEmpty);
+          expect(controller.selectedModel, isNull);
+          expect(api.completionCalls, 0);
+          expect(
+            store.values,
+            original,
+            reason: 'Loading must not rewrite history.',
+          );
+
+          await controller.exportReport();
+          final exported =
+              jsonDecode(store.lastDownload!) as Map<String, dynamic>;
+          expect(exported['format'], 'worthit.report.v1');
+          expect(exported['input'], isNot(contains('goal')));
+          expect((exported['result'] as Map)['median'], 120);
+
+          controller.setApiKey('synthetic-test-key');
+          controller.selectModel(api.model);
+          await controller.appraise();
+
+          expect(api.completionCalls, 1);
+          expect(
+            api.capturedMessages!.last['content'],
+            isNot(contains('"goal"')),
+          );
+          expect(
+            api.capturedMessages!.first['content'],
+            contains('Do not infer or assign a buyer or seller role'),
+          );
+          for (final key in ['worthit.draft.v1', 'worthit.last-report.v1']) {
+            final saved = jsonDecode(store.read(key)!) as Map<String, dynamic>;
+            expect(saved['input'], isNot(contains('goal')));
+          }
+        },
+      );
+    }
+  }
+
+  for (final key in ['worthit.draft.v1', 'worthit.last-report.v1']) {
+    test('malformed legacy role in $key is reported and preserved', () async {
+      final store = MemoryStore();
+      seedReport(store);
+      final data = jsonDecode(store.read(key)!) as Map<String, dynamic>;
+      (data['input'] as Map<String, dynamic>)['goal'] = 'auction';
+      store.write(key, jsonEncode(data));
+      final original = Map<String, String>.of(store.values);
+      final api = FakeApi();
+      final controller = AppController(store: store, api: api);
+      addTearDown(controller.dispose);
+
+      await controller.initialize();
+
+      expect(controller.persistenceError, isNotNull);
+      expect(controller.result, isNull);
+      expect(store.values, original);
+      expect(api.completionCalls, 0);
+    });
+  }
+
+  test(
+    'legacy roles do not attach reports with different product facts',
+    () async {
+      final store = MemoryStore();
+      seedReport(store);
+      final data =
+          jsonDecode(store.read('worthit.draft.v1')!) as Map<String, dynamic>;
+      (data['input'] as Map<String, dynamic>)
+        ..['product'] = 'A different product'
+        ..['goal'] = 'sell';
+      store.write('worthit.draft.v1', jsonEncode(data));
+      final controller = AppController(store: store, api: FakeApi());
+      addTearDown(controller.dispose);
+
+      await controller.initialize();
+
+      expect(controller.draft.product, 'A different product');
+      expect(controller.result, isNull);
+      expect(controller.persistenceError, isNull);
+    },
+  );
+
   test(
     'initialize does not attach an older report to a different draft',
     () async {

@@ -81,13 +81,78 @@ void main() {
       expect(restored.validate(), isNull);
     });
 
-    test('required context, invalid money and invalid goals are rejected', () {
+    test('required context and invalid money are rejected', () {
       expect(input(product: '').validate(), isNotNull);
       expect(input(currency: 'dollars').validate(), isNotNull);
       expect(input(askingPrice: double.nan).validate(), isNotNull);
       expect(input(askingPrice: -1).validate(), isNotNull);
-      expect(AppraisalInput(asOf: asOf, goal: 'auction').validate(), isNotNull);
     });
+
+    test(
+      'current input has no role and round-trips its exact current schema',
+      () {
+        final original = input(askingPrice: 125);
+        final current = original.toJson()..remove('goal');
+        expect(original.toJson(), isNot(contains('goal')));
+        expect(AppraisalInput.fromJson(current).toJson(), current);
+        expect(buildUserPrompt(original), isNot(contains('"goal"')));
+      },
+    );
+
+    for (final legacyGoal in ['buy', 'sell']) {
+      test('legacy $legacyGoal input migrates without retaining a role', () {
+        final current = input(askingPrice: 125).toJson()..remove('goal');
+        final legacy = {...current, 'goal': legacyGoal};
+        final restored = AppraisalInput.fromJson(legacy);
+        expect(restored.toJson(), current);
+        expect(restored.validate(), isNull);
+        expect(
+          buildUserPrompt(restored),
+          buildUserPrompt(input(askingPrice: 125)),
+        );
+        expect(legacy['goal'], legacyGoal, reason: 'Do not mutate saved data.');
+      });
+    }
+
+    test(
+      'current and legacy input schemas reject unknown or missing fields',
+      () {
+        final current = input().toJson()..remove('goal');
+        for (final json in [
+          current,
+          {...current, 'goal': 'buy'},
+        ]) {
+          expect(
+            () => AppraisalInput.fromJson({...json, 'intent': 'buy'}),
+            throwsFormatException,
+          );
+          expect(
+            () => AppraisalInput.fromJson({...json}..remove('product')),
+            throwsFormatException,
+          );
+        }
+      },
+    );
+
+    for (final invalidGoal in [
+      null,
+      '',
+      'auction',
+      'BUY',
+      1,
+      true,
+      ['buy'],
+    ]) {
+      test('malformed legacy role $invalidGoal is rejected', () {
+        expect(
+          () => AppraisalInput.fromJson({
+            ...input().toJson(),
+            'goal': invalidGoal,
+          }),
+          throwsFormatException,
+        );
+      });
+    }
 
     test('copyWith distinguishes omitted and cleared asking prices', () {
       final original = input(askingPrice: 125);

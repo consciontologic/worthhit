@@ -5,6 +5,38 @@ Static destination: [consciontologic/worthhit.com](https://github.com/conscionto
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
+## Prepared 1.1.3 — 2026-10-21
+
+One neutral valuation replaces buying/selling modes. Strict legacy buy/sell inputs
+remain readable and canonical matching preserves existing reports; new inputs,
+exports and provider prompts omit the role. The deterministic evidence arithmetic
+is unchanged.
+
+Information pages use Flutter hash routes above retained workspace/settings pages.
+Browser Back/Forward and in-app Back preserve the current editing session. Direct
+hash entry returns safely to the workspace. Reload starts a new in-memory UI
+session, restores persisted drafts/preferences and clears the key. Canonical static
+HTML remains available, and generated in-app prose is checked against it before
+builds. Inline actions support keyboard activation, visible focus and text copying;
+hidden retained pages cannot capture focus or shortcuts.
+
+The full local gate passed 240 Flutter, 28 Node and 52 Python tests, both compiled
+Dart-to-JavaScript bridges, analyzer, formatting, hygiene, version and content-sync
+checks. Independent review passed after repairing keyboard access, hidden-page
+focus and navigation racing an asynchronous Back action. Public build and archive
+preparation passed. Desktop Chromium at phone width verified same-tab information
+navigation, Settings/Back/Forward, retained draft/session settings, Arabic chrome,
+English document direction and light/dark appearance. With the preview origin
+returning HTTP 503, the final hash route reloaded from cache and restored the saved
+draft/language; the key cleared as designed. Keyboard traversal/activation and
+complete paragraph copying at 320px with 200% text have deterministic widget
+coverage. These checks do not establish physical Android performance or live model
+accuracy; no provider inference was requested. The strict nginx smoke runs in CI,
+with the existing local Docker Snap limitation described below.
+
+Publication remains subject to validated-source promotion and the owner's
+production approval. No 1.1.3 production publication is claimed by these local checks.
+
 ## Verified 1.1.2 publication — 2026-10-20
 
 About, Terms and Liability now dispatch their final URLs directly during the

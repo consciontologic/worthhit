@@ -101,6 +101,48 @@ void main() {
     },
   );
 
+  for (final compact in [false, true]) {
+    testWidgets(
+      'information prose copies without selecting private workspace data (compact=$compact)',
+      (tester) async {
+        await mount(tester);
+        await tester.enterText(
+          find.byKey(const ValueKey('product-field')),
+          'Private background draft',
+        );
+        await tester.tap(find.byKey(const ValueKey('footer-about')));
+        await tester.pumpAndSettle();
+        if (compact) {
+          tester.view.physicalSize = const Size(320, 700);
+          tester.platformDispatcher.textScaleFactorTestValue = 2;
+          addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+          await tester.pumpAndSettle();
+        }
+        await selectText(tester, 'Evidence before estimates.');
+        await shortcut(tester, LogicalKeyboardKey.keyA);
+        await shortcut(tester, LogicalKeyboardKey.keyC);
+        expect(copied, contains('Evidence before estimates.'));
+        expect(
+          copied,
+          contains('An asking price is not proof of a completed sale.'),
+        );
+        expect(copied, contains('data and analytics explanation'));
+        expect(copied, isNot(contains('\uFFFC')));
+        expect(
+          copied!.replaceAll(RegExp(r'\s+'), ' '),
+          contains(
+            'When you request an appraisal, submitted content goes directly to OpenRouter and the selected provider. '
+            'Optional paid research may also involve a search provider. Website usage is measured with Google Analytics, '
+            'a separate third-party service that may use cookies. See the data and analytics explanation for details.',
+          ),
+        );
+
+        expect(copied, isNot(contains('Private background draft')));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('settings selection stays inside its sheet', (tester) async {
     await mount(tester);
     await tester.tap(find.byKey(const ValueKey('settings-button')));
