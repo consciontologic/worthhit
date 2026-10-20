@@ -292,7 +292,7 @@ def publish(output, apply=False):
         api(base + '/git/refs', {'ref': 'refs/tags/' + version, 'sha': sha}, method='POST')
     if existing is None:
         existing = api(base + '/releases', {'tag_name': version, 'target_commitish': sha,
-                       'name': 'Worthhit ' + version, 'draft': True, 'prerelease': False,
+                       'name': version, 'draft': True, 'prerelease': False,
                        'body': (output / 'release-notes.md').read_text()}, method='POST')
     for name in missing:
         result = api(base + f'/releases/{existing["id"]}/assets?name=' + urllib.parse.quote(name),
@@ -300,7 +300,8 @@ def publish(output, apply=False):
         if result.get('digest') != 'sha256:' + expected[name]['sha256']:
             raise ValueError('Uploaded asset digest differs; release remains a draft.')
     if existing.get('draft'):
-        api(base + f'/releases/{existing["id"]}', {'draft': False, 'make_latest': 'false'}, method='PATCH')
+        api(base + f'/releases/{existing["id"]}', {
+            'name': version, 'draft': False, 'make_latest': 'false'}, method='PATCH')
     print(f'Immutable release {version} is published.')
 
 

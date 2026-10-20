@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Use plain SemVer for GitHub release names, including resumed drafts; existing release names were normalized without changing tags or assets.
+
 ## [1.0.0] - 2026-10-20
 
 - Fetch the pinned official nginx base from Docker Hub to avoid the public ECR mirror quota on GitHub-hosted release runners.
