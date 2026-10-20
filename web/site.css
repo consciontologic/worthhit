@@ -14,6 +14,8 @@ section{border-top:2px solid var(--line);margin-top:2rem;padding-top:1rem}
 .action{display:inline-block;padding:.65rem 1rem;background:var(--accent);color:#20241d;border:2px solid #252a25;font-weight:700;text-decoration:none}
 footer{margin-top:3rem;font-size:.875rem;border-top:2px solid var(--line);padding-top:1rem}
 flutter-view{outline:none}
+/* An engine may attach its full-page view before startup fails. */
+#startup-error:not([hidden]){position:fixed;inset:0;z-index:1000;max-width:none;margin:0;padding:2rem;background:var(--canvas)}
 /* Public reading pages share the application's saved appearance, not its language. */
 .information-page{font-size:1rem}
 .page-shell{width:calc(100% - 3rem);max-width:72rem;margin-inline:auto}

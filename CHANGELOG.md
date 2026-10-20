@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-20
+
+- Open directly into the price-check workspace without flashing the promotional startup page.
+
 ## [1.1.0] - 2026-10-20
 
 - Make phone and tablet navigation more compact while retaining accessible touch targets and large-text layouts.
