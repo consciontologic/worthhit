@@ -15,6 +15,15 @@ def load():
 
 
 class ContainerTests(unittest.TestCase):
+    def test_nginx_base_uses_official_hub_with_an_immutable_pin(self):
+        dockerfile = (ROOT / 'Dockerfile').read_text()
+        bases = [line for line in dockerfile.splitlines() if line.startswith('FROM ')]
+        self.assertEqual(len(bases), 1)
+        self.assertRegex(
+            bases[0],
+            r'^FROM docker\.io/library/nginx:\d+\.\d+\.\d+-alpine@sha256:[0-9a-f]{64}$',
+        )
+
     def test_existing_container_tag_must_match_exact_image(self):
         container = load()
         with patch.object(container, 'remote_exists', return_value=True), \
