@@ -5,7 +5,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:worthit/api/open_router_client.dart';
+import 'package:worthhit/api/open_router_client.dart';
 
 const successMarker = 'PASS: production API pricing on Dart JavaScript';
 

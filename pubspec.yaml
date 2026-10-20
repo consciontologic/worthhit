@@ -1,13 +1,16 @@
-name: worthit
+name: worthhit
 description: Evidence-led second-hand price estimates, made for real-world deals.
 publish_to: none
-version: 0.1.0
+version: 0.2.0
 environment:
   sdk: ^3.13.0
   flutter: '>=3.47.3'
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: 0.20.3
   http: ^1.6.0
   web: ^1.1.1
 dev_dependencies:
@@ -18,9 +21,17 @@ flutter:
   uses-material-design: true
   assets:
     - assets/appraisal_system_v1.txt
+    - assets/brand/
   fonts:
-    - family: WorthitSans
+    - family: WorthhitDisplay
       fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
+        - asset: assets/fonts/SpaceGrotesk.ttf
+    - family: WorthhitSans
+      fonts:
+        - asset: assets/fonts/NotoSans.ttf
+    - family: WorthhitArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic.ttf
+    - family: WorthhitChinese
+      fonts:
+        - asset: assets/fonts/NotoSansSC.ttf

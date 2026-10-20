@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:worthit/api/open_router_client.dart';
-import 'package:worthit/domain/appraisal.dart';
+import 'package:worthhit/api/open_router_client.dart';
+import 'package:worthhit/domain/appraisal.dart';
 
 const _usage = '''
-Bounded Worthit live evaluation (run from the repository root).
+Bounded Worthhit live evaluation (run from the repository root).
 
 dart run tool/live_eval.dart [--model <catalogue-id>] [--web-search] [--follow-up]
 
@@ -73,7 +73,7 @@ Future<void> main(List<String> args) async {
     final systemFile = File('assets/appraisal_system_v1.txt');
     if (!await package.exists() ||
         !await systemFile.exists() ||
-        !(await package.readAsString()).contains('name: worthit')) {
+        !(await package.readAsString()).contains('name: worthhit')) {
       report['status'] = 'wrong_working_directory';
       exitCode = 64;
       return;

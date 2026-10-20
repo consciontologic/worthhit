@@ -1,7 +1,7 @@
-name: Worthit checks
+name: Worthhit checks
 on:
   pull_request:
-    branches: [develop]
+    branches: [develop, main]
 permissions:
   contents: read
 concurrency:
@@ -10,8 +10,9 @@ concurrency:
 jobs:
   verify:
     name: Verify
+    if: github.base_ref == 'develop' || startsWith(github.head_ref, 'hotfix/') || startsWith(github.head_ref, 'codex/hotfix/') || startsWith(github.head_ref, 'claude/hotfix/')
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -23,11 +24,15 @@ jobs:
           channel: stable
           cache: true
           cache-key: flutter-${{ runner.os }}-3.47.3-${{ hashFiles('pubspec.lock') }}
-      - run: mkdir -p .local && make deps
-      - run: make verify
-      - run: make build.public
+      - run: mkdir -p .local && tool/ci-step.sh 'Dependencies' make deps
+      - run: tool/ci-step.sh 'Analyze and test' make verify
+      - run: tool/ci-step.sh 'Public static build' make build.public
+      - run: tool/ci-step.sh 'Versioned release archive' make release.prepare
+      - run: tool/ci-step.sh 'Allowlisted nginx image' make image
+      - run: tool/ci-step.sh 'Read-only container smoke' make image.test
   security:
     name: Security
+    if: github.base_ref == 'develop' || startsWith(github.head_ref, 'hotfix/') || startsWith(github.head_ref, 'codex/hotfix/') || startsWith(github.head_ref, 'claude/hotfix/')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -35,6 +40,5 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - run: python3 tool/repository_check.py
-      - name: Check workflow publishing boundaries
-        run: python3 -m unittest discover -s test/tool -p '*_test.py'
+      - run: tool/ci-step.sh 'Source credential boundaries' python3 tool/repository_check.py
+      - run: mkdir -p .local && tool/ci-step.sh 'Release and publication boundaries' python3 -m unittest discover -s test/tool -p '*_test.py'

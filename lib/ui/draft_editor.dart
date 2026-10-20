@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../app/app_controller.dart';
 import '../domain/appraisal.dart';
-import 'worthit_theme.dart';
+import '../l10n/app_strings.dart';
+import 'worthhit_theme.dart';
 
 /// Kept under one GlobalKey while the shell changes its navigation pattern.
 /// Controllers and focus nodes belong to this state, not to device layouts.
@@ -32,6 +33,24 @@ class DraftEditorState extends State<DraftEditor> {
   String? _priceError;
   AppraisalInput? _lastDraft;
   bool _editing = false;
+  AppStrings? _strings;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final next = AppStrings.of(context);
+    if (!identical(next, _strings)) {
+      _strings = next;
+      if (_priceError == null && widget.controller.draft.askingPrice != null) {
+        final field = _fields['askingPrice']!;
+        final text = next.formatAmount(widget.controller.draft.askingPrice!);
+        field.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        );
+      }
+    }
+  }
 
   bool validateForSubmit() {
     if (_priceError == null) return true;
@@ -80,7 +99,10 @@ class DraftEditorState extends State<DraftEditor> {
       'product': draft.product,
       'location': draft.location,
       'currency': draft.currency,
-      'askingPrice': draft.askingPrice?.toString() ?? '',
+      'askingPrice': draft.askingPrice == null
+          ? ''
+          : (_strings?.formatAmount(draft.askingPrice!) ??
+                draft.askingPrice!.toString()),
       'details': draft.details,
       'evidence': draft.evidence,
     };
@@ -133,7 +155,7 @@ class DraftEditorState extends State<DraftEditor> {
       case 'currency':
         _write(draft.copyWith(currency: value));
       case 'askingPrice':
-        final parsed = double.tryParse(value.trim());
+        final parsed = AppStrings.of(context).parseAmount(value);
         setState(() {
           _priceError =
               value.trim().isNotEmpty &&
@@ -162,7 +184,7 @@ class DraftEditorState extends State<DraftEditor> {
   }) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label, style: Theme.of(context).textTheme.titleMedium),
+      AppText(label, style: Theme.of(context).textTheme.titleMedium),
       const SizedBox(height: 8),
       TextField(
         key: ValueKey('$name-field'),
@@ -180,15 +202,23 @@ class DraftEditorState extends State<DraftEditor> {
               ]
             : null,
         keyboardType: keyboard,
+        textDirection: name == 'currency' || name == 'askingPrice'
+            ? TextDirection.ltr
+            : null,
         textCapitalization: name == 'currency'
             ? TextCapitalization.characters
             : TextCapitalization.sentences,
         onChanged: (value) => _update(name, value),
         decoration: InputDecoration(
-          hintText: hint,
-          helperText: helper,
+          hintText: AppStrings.of(context).text(hint),
+          helperText: helper == null
+              ? null
+              : AppStrings.of(context).text(helper),
           helperMaxLines: 3,
-          errorText: name == 'askingPrice' ? _priceError : null,
+          errorText: name == 'askingPrice' && _priceError != null
+              ? AppStrings.of(context).text(_priceError!)
+              : null,
+          errorMaxLines: 3,
           counterText: '',
         ),
       ),
@@ -215,7 +245,7 @@ class DraftEditorState extends State<DraftEditor> {
   @override
   Widget build(BuildContext context) {
     final draft = widget.controller.draft;
-    return SingleChildScrollView(
+    final form = SingleChildScrollView(
       controller: _scroll,
       padding: EdgeInsets.all(widget.compact ? 20 : 26),
       child: Column(
@@ -227,18 +257,18 @@ class DraftEditorState extends State<DraftEditor> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (widget.compact) ...[
-                  Text(
-                    'Good deals.\nLess guesswork.',
+                  AppText(
+                    'Know what it’s worth.',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 24),
                 ],
-                Text(
+                AppText(
                   'What’s the item?',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                const AppText(
                   'The specific model and its condition make the difference.',
                 ),
                 const SizedBox(height: 24),
@@ -249,7 +279,7 @@ class DraftEditorState extends State<DraftEditor> {
                   maxLength: 300,
                 ),
                 const SizedBox(height: 20),
-                Text(
+                AppText(
                   'I’m looking to',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
@@ -267,7 +297,7 @@ class DraftEditorState extends State<DraftEditor> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      AppText(
                         'Condition',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
@@ -275,7 +305,7 @@ class DraftEditorState extends State<DraftEditor> {
                       DropdownButtonFormField<String>(
                         key: ValueKey('condition-${draft.condition}'),
                         initialValue:
-                            const [
+                            [
                               'Like new',
                               'Good',
                               'Fair',
@@ -287,13 +317,19 @@ class DraftEditorState extends State<DraftEditor> {
                         items: const [
                           DropdownMenuItem(
                             value: 'Like new',
-                            child: Text('Like new'),
+                            child: AppText('Like new'),
                           ),
-                          DropdownMenuItem(value: 'Good', child: Text('Good')),
-                          DropdownMenuItem(value: 'Fair', child: Text('Fair')),
+                          DropdownMenuItem(
+                            value: 'Good',
+                            child: AppText('Good'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Fair',
+                            child: AppText('Fair'),
+                          ),
                           DropdownMenuItem(
                             value: 'For parts',
-                            child: Text('For parts / repair'),
+                            child: AppText('For parts / repair'),
                           ),
                         ],
                         onChanged: (value) {
@@ -301,8 +337,9 @@ class DraftEditorState extends State<DraftEditor> {
                             _write(draft.copyWith(condition: value));
                           }
                         },
-                        decoration: const InputDecoration(
-                          semanticCounterText: 'Item condition',
+                        decoration: InputDecoration(
+                          semanticCounterText: AppStrings.of(context)
+                              .text('Item condition'),
                         ),
                       ),
                     ],
@@ -315,6 +352,7 @@ class DraftEditorState extends State<DraftEditor> {
                       decimal: true,
                     ),
                     maxLength: 16,
+                    helper: 'Use a decimal separator, without digit grouping.',
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -335,7 +373,7 @@ class DraftEditorState extends State<DraftEditor> {
                 const SizedBox(height: 20),
                 _field(
                   'details',
-                  'The honest details',
+                  'Item details',
                   'Age, wear, repairs, missing parts, accessories, warranty…',
                   lines: 3,
                   maxLength: 4000,
@@ -353,12 +391,12 @@ class DraftEditorState extends State<DraftEditor> {
                   const Divider(),
                   const SizedBox(height: 20),
                 ],
-                Text(
+                AppText(
                   'Bring the evidence.',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                const AppText(
                   'Recent, similar items in the same market tell a better story '
                   'than the original price.',
                 ),
@@ -372,19 +410,19 @@ class DraftEditorState extends State<DraftEditor> {
                   maxLength: 20000,
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                AppText(
                   'Use public listing information. Leave out names, phone '
                   'numbers, addresses, and private messages.',
                   style: TextStyle(
-                    color: WorthitColors.muted,
+                    color: WorthhitPalette.of(context).muted,
                     fontSize: 12,
                     height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 20),
                 Material(
-                  color: WorthitColors.soft,
-                  borderRadius: BorderRadius.circular(6),
+                  color: WorthhitPalette.of(context).soft,
+                  borderRadius: BorderRadius.circular(2),
                   child: SwitchListTile.adaptive(
                     key: const ValueKey('web-search-toggle'),
                     value: widget.controller.webSearch,
@@ -392,49 +430,67 @@ class DraftEditorState extends State<DraftEditor> {
                         ? null
                         : widget.controller.setWebSearch,
                     contentPadding: const EdgeInsets.all(12),
-                    title: const Text(
+                    title: const AppText(
                       'Research the web too',
                       style: TextStyle(fontWeight: FontWeight.w700),
                     ),
-                    subtitle: const Text(
+                    subtitle: const AppText(
                       'Adds OpenRouter search fees, even with a free model '
                       '(about \$0.007 per search; pricing may change). '
                       'Off by default.',
                     ),
-                    activeTrackColor: WorthitColors.lime,
+                    activeTrackColor: WorthhitPalette.of(context).lime,
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                const AppText(
                   'A useful estimate needs enough comparable evidence. '
-                  'If it’s missing, Worthit will ask instead of making up a price.',
+                  'If it’s missing, Worthhit will ask instead of making up a price.',
                 ),
               ],
             ),
           ),
-          if (!widget.compact) ...[
-            const SizedBox(height: 26),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: widget.controller.busy || _priceError != null
-                    ? null
-                    : widget.onSubmit,
-                icon: const Icon(Icons.arrow_forward, size: 20),
-                label: const Text('Find a fair price'),
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Center(
-              child: Text(
-                'Ctrl / Command + Enter to check',
-                style: TextStyle(fontSize: 12, color: WorthitColors.muted),
-              ),
-            ),
-          ],
           const SizedBox(height: 10),
         ],
       ),
+    );
+    if (widget.compact) return form;
+    return Column(
+      children: [
+        Expanded(child: form),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsetsDirectional.fromSTEB(26, 14, 26, 14),
+          decoration: BoxDecoration(
+            color: WorthhitPalette.of(context).surface,
+            border: Border(
+              top: BorderSide(color: WorthhitPalette.of(context).line),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  key: const ValueKey('appraisal-submit'),
+                  onPressed: widget.controller.busy || _priceError != null
+                      ? null
+                      : widget.onSubmit,
+                  icon: const Icon(Icons.arrow_forward, size: 20),
+                  label: const AppText('Find a fair price'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              AppText(
+                'Ctrl / Command + Enter to check',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -445,11 +501,19 @@ class DraftEditorState extends State<DraftEditor> {
       child: OutlinedButton.icon(
         onPressed: () => _write(widget.controller.draft.copyWith(goal: value)),
         style: OutlinedButton.styleFrom(
-          backgroundColor: selected ? WorthitColors.lime : Colors.white,
-          side: BorderSide(color: WorthitColors.ink, width: selected ? 2 : 1.5),
+          backgroundColor: selected
+              ? WorthhitPalette.of(context).lime
+              : WorthhitPalette.of(context).surface,
+          foregroundColor: selected
+              ? WorthhitPalette.of(context).onLime
+              : WorthhitPalette.of(context).ink,
+          side: BorderSide(
+            color: WorthhitPalette.of(context).ink,
+            width: selected ? 2 : 1.5,
+          ),
         ),
         icon: Icon(icon, size: 20),
-        label: Text(label),
+        label: AppText(label),
       ),
     );
   }

@@ -1,4 +1,36 @@
-# Worthit delivery plan
+# Worthhit delivery plan
+
+## Worthhit identity, internationalization and releases — 2026-10-20
+
+Goal: launch Worthhit at worthhit.com with a mature neo-brutalist light/dark UI,
+localized workflows, adaptable identity, and reproducible static/container releases.
+
+Boundaries: all application logic remains in Flutter; nginx serves static bytes.
+Keep canonical appraisal schemas, legacy storage keys, explicit API actions and
+human production approval. Browser language preferences replace IP geolocation.
+
+Touched files: `lib/ui`, `lib/l10n`, preferences/controller integration, assets,
+`web`, build/release/container tools, workflows, matching tests and existing guides.
+
+Test plan: locale negotiation/override/RTL/numbers and persistence; theme changes
+with retained drafts; phone/tablet/desktop light/dark screenshots; metadata and
+public asset integrity; version/changelog/source/approval checks; ownership-safe
+website publication; nginx static-only and immutable GHCR release checks.
+
+- [x] Rename application/package/repository references to Worthhit without breaking stored data.
+- [x] Add persisted system/light/dark preference and redesign adaptive interfaces.
+- [x] Add translated UI, browser language negotiation, manual selection and RTL.
+- [x] Deliver transparent identity, small-size favicon and non-white app-icon variants.
+- [x] Add canonical metadata, crawler-readable content, sitemap and robots.
+- [x] Implement SemVer, changelog, protected Gitflow and grouped release logging.
+- [x] Implement ownership-safe GitOps publication to separate worthhit.com repository.
+- [x] Build and verify a static-only non-root nginx image and GHCR release workflow.
+- [x] Run independent review, required tests and bounded browser verification.
+- [ ] Publish protected source PRs, obtain human release approval and verify domain/package/release.
+
+Reference: the supplied image was blocked by browser safety policy. The user approved an independent graphite, warm-neutral and lime editorial direction; no claim is made that the image was analyzed. A destination-only deployment key is configured. Domain TLS propagation is external. Local
+browser data stays at its old origin; exports remain available. All validation limits
+must distinguish local tests, live domain checks and actual package publication.
 
 ## Goal
 Deliver a secure client-only Flutter PWA that turns evidenced second-hand comparables into an explainable estimate and fair negotiation guidance.

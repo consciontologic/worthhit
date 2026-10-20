@@ -2,33 +2,108 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app/app_controller.dart';
+import '../app/preferences_controller.dart';
 import '../domain/appraisal.dart';
+import '../l10n/app_strings.dart';
+import '../platform/document_preferences.dart';
 import 'draft_editor.dart';
 import 'result_panel.dart';
 import 'settings_panel.dart';
-import 'worthit_theme.dart';
+import 'worthhit_theme.dart';
 
-class WorthitApp extends StatefulWidget {
-  const WorthitApp({super.key, required this.controller});
+class WorthhitApp extends StatefulWidget {
+  const WorthhitApp({super.key, required this.controller, this.preferences});
   final AppController controller;
-
+  final PreferencesController? preferences;
   @override
-  State<WorthitApp> createState() => _WorthitAppState();
+  State<WorthhitApp> createState() => _WorthhitAppState();
 }
 
-class _WorthitAppState extends State<WorthitApp> {
+class _WorthhitAppState extends State<WorthhitApp> {
+  late PreferencesController _preferences;
+  bool _ownsPreferences = false;
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'Worthit — Good deals. Less guesswork.',
-    debugShowCheckedModeBanner: false,
-    theme: worthitTheme(),
-    home: _Workspace(controller: widget.controller),
+  void initState() {
+    super.initState();
+    _usePreferences();
+  }
+
+  void _usePreferences() {
+    _ownsPreferences = widget.preferences == null;
+    _preferences =
+        widget.preferences ??
+        PreferencesController(store: widget.controller.store);
+  }
+
+  @override
+  void didUpdateWidget(covariant WorthhitApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.preferences != widget.preferences ||
+        (widget.preferences == null &&
+            oldWidget.controller != widget.controller)) {
+      if (_ownsPreferences) _preferences.dispose();
+      _usePreferences();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_ownsPreferences) _preferences.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: _preferences,
+    builder: (context, _) => MaterialApp(
+      title: 'Worthhit — Second-hand prices, grounded in evidence',
+      debugShowCheckedModeBanner: false,
+      theme: worthhitTheme(),
+      darkTheme: worthhitTheme(brightness: Brightness.dark),
+      themeMode: _preferences.themeMode,
+      locale: _preferences.locale,
+      supportedLocales: AppStrings.supportedLocales,
+      localizationsDelegates: AppStrings.localizationsDelegates,
+      localeListResolutionCallback: AppStrings.resolveLocales,
+      builder: (context, child) => _DocumentPreferences(child: child!),
+      home: _Workspace(
+        controller: widget.controller,
+        preferences: _preferences,
+      ),
+    ),
   );
 }
 
+/// Applies effective browser language/theme after Flutter resolves system choices.
+class _DocumentPreferences extends StatefulWidget {
+  const _DocumentPreferences({required this.child});
+  final Widget child;
+  @override
+  State<_DocumentPreferences> createState() => _DocumentPreferencesState();
+}
+
+class _DocumentPreferencesState extends State<_DocumentPreferences> {
+  String? _applied;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final language = Localizations.localeOf(context).languageCode;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final identity = '$language:$dark';
+    if (_applied != identity) {
+      _applied = identity;
+      updateDocumentPreferences(languageCode: language, dark: dark);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class _Workspace extends StatefulWidget {
-  const _Workspace({required this.controller});
+  const _Workspace({required this.controller, required this.preferences});
   final AppController controller;
+  final PreferencesController preferences;
 
   @override
   State<_Workspace> createState() => _WorkspaceState();
@@ -85,7 +160,9 @@ class _WorkspaceState extends State<_Workspace> {
       _step = 2;
       _tabletTab = 1;
     });
-    widget.controller.appraise();
+    widget.controller.appraise(
+      responseLanguage: AppStrings.of(context).locale.languageCode,
+    );
   }
 
   void _edit() => setState(() {
@@ -98,31 +175,29 @@ class _WorkspaceState extends State<_Workspace> {
     isScrollControlled: true,
     useSafeArea: true,
     constraints: const BoxConstraints(maxWidth: 640),
-    backgroundColor: WorthitColors.paper,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      side: BorderSide(color: WorthitColors.ink, width: 2),
+    builder: (_) => SettingsPanel(
+      controller: widget.controller,
+      preferences: widget.preferences,
     ),
-    builder: (_) => SettingsPanel(controller: widget.controller),
   );
 
   Future<void> _clear() async {
     final clear = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Start a fresh check?'),
-        content: const Text(
+        title: const AppText('Start a fresh check?'),
+        content: const AppText(
           'This clears the current draft and report from this device. '
           'Export a report first if you want to keep it.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep this check'),
+            child: const AppText('Keep this check'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Start fresh'),
+            child: const AppText('Start fresh'),
           ),
         ],
       ),
@@ -177,7 +252,12 @@ class _WorkspaceState extends State<_Workspace> {
                         _header(phone, desktop),
                         if (widget.controller.error != null)
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                              20,
+                              0,
+                              20,
+                              12,
+                            ),
                             child: Semantics(
                               key: const ValueKey('error-banner'),
                               liveRegion: true,
@@ -187,20 +267,33 @@ class _WorkspaceState extends State<_Workspace> {
                               ),
                             ),
                           ),
-                        if (widget.controller.persistenceError != null)
+                        if (widget.controller.persistenceError != null ||
+                            widget.preferences.persistenceError != null)
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                              20,
+                              0,
+                              20,
+                              12,
+                            ),
                             child: Semantics(
                               liveRegion: true,
                               child: StatusNotice(
-                                message: widget.controller.persistenceError!,
+                                message:
+                                    widget.controller.persistenceError ??
+                                    widget.preferences.persistenceError!,
                                 warning: true,
                               ),
                             ),
                           ),
                         if (widget.controller.updateAvailable)
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                              20,
+                              0,
+                              20,
+                              12,
+                            ),
                             child: StatusNotice(
                               message:
                                   'A new version is ready. Your draft '
@@ -209,7 +302,7 @@ class _WorkspaceState extends State<_Workspace> {
                                 onPressed: widget.controller.busy
                                     ? null
                                     : widget.controller.applyUpdate,
-                                child: const Text('Update app'),
+                                child: const AppText('Update app'),
                               ),
                             ),
                           ),
@@ -217,7 +310,7 @@ class _WorkspaceState extends State<_Workspace> {
                         Expanded(
                           child: desktop
                               ? Padding(
-                                  padding: const EdgeInsets.fromLTRB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                     28,
                                     0,
                                     28,
@@ -233,7 +326,8 @@ class _WorkspaceState extends State<_Workspace> {
                                         flex: 10,
                                         child: _panel(
                                           result,
-                                          color: const Color(0xFFFFFDF7),
+                                          color: WorthhitPalette.of(context)
+                                              .soft,
                                         ),
                                       ),
                                     ],
@@ -258,18 +352,18 @@ class _WorkspaceState extends State<_Workspace> {
     ),
   );
 
-  Widget _panel(Widget child, {Color color = Colors.white}) => Container(
+  Widget _panel(Widget child, {Color? color}) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      color: color,
-      border: Border.all(color: WorthitColors.ink, width: 2),
-      borderRadius: BorderRadius.circular(10),
+      color: color ?? WorthhitPalette.of(context).surface,
+      border: Border.all(color: WorthhitPalette.of(context).ink, width: 2),
+      borderRadius: BorderRadius.zero,
     ),
     child: child,
   );
 
   Widget _header(bool phone, bool desktop) => Padding(
-    padding: EdgeInsets.fromLTRB(
+    padding: EdgeInsetsDirectional.fromSTEB(
       phone ? 20 : 28,
       phone ? 16 : 28,
       phone ? 14 : 28,
@@ -281,11 +375,11 @@ class _WorkspaceState extends State<_Workspace> {
         Row(
           children: [
             if (phone)
-              const Expanded(child: WorthitBrand())
+              const Expanded(child: WorthhitBrand())
             else
               Expanded(
-                child: Text(
-                  'Good deals. Less guesswork.',
+                child: AppText(
+                  'Know what it’s worth.',
                   style: desktop
                       ? Theme.of(context).textTheme.headlineMedium
                       : Theme.of(context).textTheme.titleLarge,
@@ -294,12 +388,15 @@ class _WorkspaceState extends State<_Workspace> {
             const SizedBox(width: 10),
             IconButton(
               key: const ValueKey('settings-button'),
-              tooltip: 'Connection and model settings',
+              tooltip: AppStrings.of(context).text('Settings'),
               onPressed: _settings,
               style: IconButton.styleFrom(
-                side: const BorderSide(color: WorthitColors.ink, width: 1.5),
+                side: BorderSide(
+                  color: WorthhitPalette.of(context).ink,
+                  width: 1.5,
+                ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
               icon: const Icon(Icons.tune),
@@ -307,7 +404,7 @@ class _WorkspaceState extends State<_Workspace> {
             if (phone)
               PopupMenuButton<String>(
                 key: const ValueKey('phone-more-menu'),
-                tooltip: 'More actions',
+                tooltip: AppStrings.of(context).text('More actions'),
                 onSelected: (action) {
                   if (action == 'clear') _clear();
                   if (action == 'example') widget.controller.loadExample();
@@ -316,12 +413,12 @@ class _WorkspaceState extends State<_Workspace> {
                   PopupMenuItem(
                     value: 'clear',
                     enabled: !widget.controller.busy,
-                    child: const Text('Start fresh'),
+                    child: const AppText('Start fresh'),
                   ),
                   PopupMenuItem(
                     value: 'example',
                     enabled: !widget.controller.busy,
-                    child: const Text('Try a synthetic example'),
+                    child: const AppText('Try a synthetic example'),
                   ),
                 ],
               ),
@@ -329,13 +426,12 @@ class _WorkspaceState extends State<_Workspace> {
         ),
         if (!phone) ...[
           const SizedBox(height: 8),
-          Text(
+          AppText(
             widget.controller.selectedModel == null
                 ? 'Second-hand prices, grounded in evidence. Connect a model '
                       'to check your item.'
-                : 'Second-hand prices, grounded in evidence. '
-                      '${widget.controller.selectedModel!.name} connected.',
-            style: const TextStyle(color: WorthitColors.muted),
+                : 'Second-hand prices, grounded in evidence.',
+            style: TextStyle(color: WorthhitPalette.of(context).muted),
           ),
         ],
       ],
@@ -344,30 +440,32 @@ class _WorkspaceState extends State<_Workspace> {
 
   Widget _rail(bool expanded) => Container(
     key: expanded ? const ValueKey('desktop-rail') : null,
-    width: expanded ? 220 : 80,
+    width: expanded ? 208 : 80,
     padding: EdgeInsets.symmetric(horizontal: expanded ? 20 : 12, vertical: 28),
-    decoration: const BoxDecoration(
-      color: WorthitColors.soft,
-      border: Border(right: BorderSide(color: WorthitColors.ink, width: 2)),
+    decoration: BoxDecoration(
+      color: WorthhitPalette.of(context).paper,
+      border: BorderDirectional(
+        end: BorderSide(color: WorthhitPalette.of(context).ink, width: 2),
+      ),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Center(child: WorthitBrand(compact: !expanded)),
+        Center(child: WorthhitBrand(compact: !expanded)),
         const SizedBox(height: 38),
         if (expanded)
           FilledButton.icon(
             onPressed: _edit,
             style: FilledButton.styleFrom(
-              backgroundColor: WorthitColors.ink,
-              foregroundColor: WorthitColors.paper,
+              backgroundColor: WorthhitPalette.of(context).ink,
+              foregroundColor: WorthhitPalette.of(context).paper,
             ),
             icon: const Icon(Icons.sell_outlined, size: 20),
-            label: const Text('Price check'),
+            label: const AppText('Price check'),
           )
         else
           IconButton.filled(
-            tooltip: 'Edit price check',
+            tooltip: AppStrings.of(context).text('Edit price check'),
             onPressed: _edit,
             icon: const Icon(Icons.sell_outlined),
           ),
@@ -376,11 +474,11 @@ class _WorkspaceState extends State<_Workspace> {
           TextButton.icon(
             onPressed: widget.controller.busy ? null : _clear,
             icon: const Icon(Icons.add, size: 20),
-            label: const Text('Start fresh'),
+            label: const AppText('Start fresh'),
           )
         else
           IconButton(
-            tooltip: 'Start a fresh check',
+            tooltip: AppStrings.of(context).text('Start a fresh check'),
             onPressed: widget.controller.busy ? null : _clear,
             icon: const Icon(Icons.add),
           ),
@@ -391,11 +489,11 @@ class _WorkspaceState extends State<_Workspace> {
                 ? null
                 : widget.controller.loadExample,
             icon: const Icon(Icons.play_arrow_outlined, size: 20),
-            label: const Text('Try an example'),
+            label: const AppText('Try an example'),
           )
         else
           IconButton(
-            tooltip: 'Try a synthetic example',
+            tooltip: AppStrings.of(context).text('Try a synthetic example'),
             onPressed: widget.controller.busy
                 ? null
                 : widget.controller.loadExample,
@@ -405,37 +503,41 @@ class _WorkspaceState extends State<_Workspace> {
         if (expanded) ...[
           const Icon(Icons.devices_outlined, size: 26),
           const SizedBox(height: 12),
-          const Text(
+          const AppText(
             'Your draft stays\non this device.',
             textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.w700, height: 1.5),
           ),
           const SizedBox(height: 8),
-          const Text(
+          AppText(
             'Your API key stays in memory for this session only.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: WorthitColors.muted),
+            style: TextStyle(
+              fontSize: 12,
+              color: WorthhitPalette.of(context).muted,
+            ),
           ),
           const SizedBox(height: 22),
           OutlinedButton(
             onPressed: _settings,
-            child: Text(
+            child: AppText(
               widget.controller.apiKey.isEmpty
                   ? 'Connect OpenRouter'
                   : 'Connection settings',
             ),
           ),
         ] else
-          const Tooltip(
-            message: 'Drafts are stored on this device',
-            child: Icon(Icons.devices_outlined),
+          Tooltip(
+            message: AppStrings.of(context)
+                .text('Drafts are stored on this device'),
+            child: const Icon(Icons.devices_outlined),
           ),
       ],
     ),
   );
 
   Widget _tabletTabs() => Padding(
-    padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+    padding: const EdgeInsetsDirectional.fromSTEB(28, 0, 28, 8),
     child: Row(
       children: [
         Expanded(
@@ -473,22 +575,29 @@ class _WorkspaceState extends State<_Workspace> {
       key: ValueKey(key),
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
-        backgroundColor: selected ? WorthitColors.lime : Colors.transparent,
+        backgroundColor: selected
+            ? WorthhitPalette.of(context).lime
+            : Colors.transparent,
+        foregroundColor: selected
+            ? WorthhitPalette.of(context).onLime
+            : WorthhitPalette.of(context).ink,
       ),
       icon: Icon(icon, size: 20),
-      label: Text(label),
+      label: AppText(label),
     ),
   );
 
   Widget _phoneNavigation() => Container(
-    decoration: const BoxDecoration(
-      color: WorthitColors.paper,
-      border: Border(top: BorderSide(color: WorthitColors.ink, width: 2)),
+    decoration: BoxDecoration(
+      color: WorthhitPalette.of(context).paper,
+      border: Border(
+        top: BorderSide(color: WorthhitPalette.of(context).ink, width: 2),
+      ),
     ),
     child: SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -505,7 +614,7 @@ class _WorkspaceState extends State<_Workspace> {
                   widget.controller.busy ? Icons.close : Icons.arrow_forward,
                   size: 20,
                 ),
-                label: Text(
+                label: AppText(
                   widget.controller.busy
                       ? 'Cancel price check'
                       : _step == 0
@@ -539,15 +648,17 @@ class _WorkspaceState extends State<_Workspace> {
         onPressed: () => setState(() => _step = index),
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 4),
-          backgroundColor: index == _step ? WorthitColors.soft : null,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          backgroundColor: index == _step
+              ? WorthhitPalette.of(context).soft
+              : null,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 20),
             const SizedBox(height: 4),
-            Text(
+            AppText(
               title,
               textAlign: TextAlign.center,
               style: TextStyle(

@@ -1,4 +1,4 @@
-"""Build a static, credential-free, hash-verified Worthit PWA."""
+"""Build a static, credential-free, hash-verified Worthhit PWA."""
 from pathlib import Path
 import argparse
 import hashlib
@@ -25,7 +25,7 @@ def manifest_for(directory):
     }
 
 
-def package(directory):
+def package(directory, metadata=None):
     worker = directory / "flutter_service_worker.js"
     if worker.exists():
         worker.unlink()
@@ -40,13 +40,13 @@ def package(directory):
     (directory / "service_worker.js").write_text(
         template.replace("__BUILD_ID__", version).replace("__PRECACHE_MANIFEST__", json.dumps(assets))
     )
-    (directory / "release.json").write_text(json.dumps({"version": version, "assets": assets}, sort_keys=True))
+    (directory / "release.json").write_text(json.dumps({"version": version, "assets": assets, **(metadata or {})}, sort_keys=True))
     return version
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base-href", default="/worthit/")
+    parser.add_argument("--base-href", default="/")
     args = parser.parse_args()
     if not re.fullmatch(r"/(?:[A-Za-z0-9_-]+/)*", args.base_href):
         parser.error("base href must be an absolute directory path")
@@ -55,7 +55,18 @@ def main():
          "--no-web-resources-cdn", "--pwa-strategy=none", "--base-href", args.base_href],
         cwd=ROOT, check=True,
     )
-    version = package(ROOT / "build/web")
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from tool.release import REPOSITORY, release_version, source_sha
+    # Flutter build markers are private build metadata, never public assets.
+    for path in sorted((ROOT / "build/web").rglob("*"), reverse=True):
+        if any(part.startswith(".") for part in path.relative_to(ROOT / "build/web").parts):
+            if path.is_dir():
+                path.rmdir()
+            else:
+                path.unlink()
+    version = package(ROOT / "build/web", {"repository": REPOSITORY,
+        "app_version": release_version(), "source_sha": source_sha()})
     subprocess.run(["python3", "tool/repository_check.py", "--build"], cwd=ROOT, check=True)
     print(f"Verified static build {version}; base path {args.base_href}")
 

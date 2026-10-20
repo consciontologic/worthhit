@@ -30,8 +30,9 @@ class ReleaseGuardTests(unittest.TestCase):
         records = {
             base + "/commits/main": {"sha": "main-sha", "commit": {"tree": {"sha": "tree-a"}}},
             base + "/actions/workflows/ci.yml/runs?event=pull_request&status=success&per_page=50": {
-                "workflow_runs": [{"event": "pull_request", "conclusion": "success",
+                "workflow_runs": [{"id": 456, "event": "pull_request", "conclusion": "success",
                                    "head_repository": {"full_name": guard.REPOSITORY}, "head_sha": "tested"}]},
+            base + "/actions/runs/456/jobs?per_page=100": {"jobs": [{"name": "Verify", "conclusion": "success"}, {"name": "Security", "conclusion": "success"}]},
             base + "/commits/tested": {"commit": {"tree": {"sha": "tree-a"}}},
         }
         with patch.dict(guard.os.environ, {"GITHUB_REPOSITORY": guard.REPOSITORY,
@@ -39,6 +40,10 @@ class ReleaseGuardTests(unittest.TestCase):
             guard.source(api=records.__getitem__, sha="main-sha")
             with self.assertRaisesRegex(RuntimeError, "Main changed"):
                 guard.source(api=records.__getitem__, sha="old-sha")
+            records[base + "/actions/runs/456/jobs?per_page=100"]["jobs"][0]["conclusion"] = "skipped"
+            with self.assertRaisesRegex(RuntimeError, "No successful"):
+                guard.source(api=records.__getitem__, sha="main-sha")
+            records[base + "/actions/runs/456/jobs?per_page=100"]["jobs"][0]["conclusion"] = "success"
             records[base + "/commits/tested"]["commit"]["tree"]["sha"] = "different"
             with self.assertRaisesRegex(RuntimeError, "No successful"):
                 guard.source(api=records.__getitem__, sha="main-sha")

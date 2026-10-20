@@ -1,72 +1,138 @@
-# Delivery
+# Worthhit delivery
 
-Source: [consciontologic/worthit](https://github.com/consciontologic/worthit).
-Pages destination: [consciontologic.github.io/worthit](https://consciontologic.github.io/worthit/).
-The corrected human-approved deployment completed on 2026-10-20.
-No custom domain is configured.
-
-## Verified release
-[Run 39440088378](https://github.com/consciontologic/worthit/actions/runs/39440088378)
-successfully deployed source `d314ef56c9b6f2f6a59c885b9c30b15de4d0cae9`
-after the approval receipt identified `consciontologic` and `production`.
-Public release generation:
-`47b35b34791a9581f29f05ae24d1b7a0a7bbbb2214ff3a6b7b5c0c751ea46389`.
-All 41 manifest assets (42,471,679 bytes) returned HTTP 200 and matched their
-recorded size and SHA-256. The standalone manifest and versioned worker were
-available. The first release included `.last_build_id`, which Pages omits;
-the corrected manifest excludes hidden paths and retains strict integrity checks.
-
-The public browser rendered the app, refreshed 19 free OpenRouter models, and
-restored its saved synthetic report after reloading the corrected release.
-No browser warnings or errors were captured. Phone, tablet and desktop flows
-were separately checked in the local production build. Local verification passed
-127 Flutter tests, the compiled JavaScript pricing regression, 8 worker tests and
-10 Python build/release tests. Independent review and an archive-level check
-using the pinned Pages action's exclusions passed.
-
-Worker tests and public asset verification do not establish real-device
-installation, airplane-mode operation or the full browser update lifecycle;
-those checks remain unverified. Live OpenRouter outcomes and their limitations
-are recorded separately in [LIVE_EVAL.md](LIVE_EVAL.md).
+Source: [consciontologic/worthhit](https://github.com/consciontologic/worthhit).
+Static destination: [consciontologic/worthhit.com](https://github.com/consciontologic/worthhit.com).
+Canonical site: [worthhit.com](https://worthhit.com).
+Container: `ghcr.io/consciontologic/worthhit:0.2.0` (Linux amd64).
+These are the configured destinations; a source commit alone does not establish a successful public release.
 
 ## Release procedure
 
-1. Work on a `codex/feature/*` or `codex/bugfix/*` branch from `develop`.
-2. Run `make verify` and `make build.public`. Append a conventional completion
-   row with `xops/agent/tracking_append.sh`, inspect all changed files, stage them,
-   and run `make git.dry` then `make git`.
-3. Open a PR to `develop`. **Verify** analyzes/tests/builds; **Security** checks
-   publication boundaries and credential patterns. CI has no model or user keys.
-   Review and resolve conversations before merging.
-4. Promote the exact validated source tree to `main` through a reviewed PR.
-   Main/develop reject direct pushes, force pushes and deletion. Configured human
-   approval count is zero; independent code review still belongs in the evidence.
-5. Dispatch **Publish Worthit** on `main`. Its read-only source guard verifies
-   a successful prior PR run for the exact tree. It builds the public static
-   artifact; it does not repeat quality/security pipelines during promotion.
-6. **consciontologic** approves the `production` deployment. Only `main` is
-   eligible. Agents must never approve or bypass this gate. A read-only guard
-   checks the actual human approval receipt, not merely the absence of a wait.
-7. Verify the deployed app, static manifest, browser layout and offline shell.
+1. Follow [Gitflow](GITFLOW.md). Set the plain `MAJOR.MINOR.PATCH` in `pubspec.yaml`
+   and add its dated `CHANGELOG.md` entry. Publish validated source with `make git`.
+2. Merge a reviewed feature/release PR into `develop` after **Verify** and **Security**.
+   Verify includes Dart checks, public build, release packaging and an actual nginx
+   container smoke. No CI job receives an OpenRouter key or sends an appraisal.
+3. Promote the exact validated tree through a reviewed PR to `main`. Ordinary
+   promotions do not repeat the quality/security jobs. Hotfix PRs to `main` run them.
+4. Dispatch **Packages and release** (`pages.yml`) on `main`. A read-only source
+   guard requires current main and successful prior PR **Verify**/**Security** jobs
+   for exactly its tree; skipped jobs cannot authorize publication. The workflow
+   builds the root-path static app and Linux amd64 image once, saves release
+   archives/checksums, and uploads one source-specific artifact.
+5. **consciontologic** approves the `production` deployment. Its only allowed branch
+   is `main`, and its sole required reviewer is owner ID `339074048`. Agents may
+   never approve or bypass it. Publication independently verifies the actual human
+   receipt, workflow path, dispatch event, source SHA and environment policy.
+6. The gated job downloads and verifies those exact bytes without rebuilding,
+   rejects existing version conflicts, publishes GHCR, pushes managed website
+   artifacts to `worthhit.com/main`, then publishes a plain SemVer tag and GitHub
+   release. The website repository's Pages branch deployment serves `/`.
+7. Verify HTTPS/domain redirects, `release.json` plus all asset hashes, browser
+   rendering and the package/release links. A green unit suite does not prove DNS,
+   search-engine indexing or real-device PWA installation.
 
-The workflows pin actions and Flutter. Cache keys include OS, Flutter and the
-lockfile; model keys and release artifacts are not dependency-cache inputs.
-Pages uses the built-in scoped workflow token and OIDC. Temporary chat credentials
-are never stored as permanent GitHub secrets or copied into CI/browser assets.
+## One-time repository setup
 
-`make build.public` disables the generated Flutter worker, bundles rendering
-resources locally, creates a SHA-256 manifest and injects a distinct Worthit shell
-generation. It scans the source and build for credential patterns. The worker
-does not intercept authenticated requests, non-GET requests, external URLs or
-configuration paths. It admits only manifest-listed static bytes.
+Keep source `main` and `develop` PR-only, disallow force pushes/deletion and require
+resolved review conversations. `develop` requires Verify and Security; ordinary
+main promotions retain the source evidence already checked on develop. Production
+requires the owner reviewer and a custom **main only** branch policy. Preserve
+self-review eligibility for the sole human maintainer, never approval bypass.
 
-Updates are prepared in the background. In-session activation requires an
-explicit app action after the draft is saved; the browser can also activate a
-waiting worker after all controlled tabs close. An incomplete/corrupt shell is
-removed. Older tab generations are retained until safe cleanup. Stored reports
-are dated observations, not automatically refreshed market prices.
+Create the separate public `consciontologic/worthhit.com` artifact repository with
+`main`. Configure GitHub Pages from **main / root** and custom domain `worthhit.com`.
+The workflow owns the root `CNAME` and `.nojekyll`. An unrelated README is preserved;
+pre-existing files at generated paths must be explicitly reconciled before first
+publication. After successful DNS validation, enable Pages HTTPS enforcement.
 
-Validation evidence must distinguish deterministic tests, actual browser checks,
-bounded authenticated OpenRouter evaluations and public deployment checks. A green
-mocked test suite is not evidence of current provider availability or resale-price
-accuracy. Real-device installation/virtual keyboard behavior needs device testing.
+Create a write-enabled SSH deploy key on **only worthhit.com**. Store its private
+key as `WORTHHIT_DEPLOY_KEY` in the source repository's **production** environment.
+No personal token is retained. The publisher uses a temporary 0600 key and explicit
+known-hosts obtained from GitHub's HTTPS metadata API, strict host checking, no
+ambient SSH configuration and no global credential changes. It verifies the
+repository owner ID before cloning. See [GitHub's SSH host-key guidance](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints).
+
+GHCR and source release writes use the job-scoped `GITHUB_TOKEN` with
+`packages: write` and `contents: write`; the build job is read-only. The image's OCI
+source label links it to the source repository. On first publication, confirm the
+package's visibility/access settings allow intended consumers; new GHCR packages
+can begin private. See [GitHub Container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
+
+For DNS, `www` is a CNAME to **consciontologic.github.io**, without a repository or
+`.git` suffix. The apex uses GitHub Pages A records (`185.199.108.153`,
+`185.199.109.153`, `185.199.110.153`, `185.199.111.153`) or supported ALIAS/ANAME.
+The repository's `CNAME` file contains **worthhit.com**. Verify the domain in the
+GitHub owner account and confirm DNS/TLS propagation separately; DNS does not
+publish application files. [Official Pages domain instructions](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
+
+## Integrity, ownership and recovery
+
+`make build.public` disables Flutter's generated worker, bundles rendering
+resources locally, removes private build markers, and generates a SHA-256 static
+manifest with source SHA and app version. The custom worker hashes every admitted
+asset and never caches API calls, credentials, drafts or reports. Activation is
+explicit during a session; existing controlled tabs retain their generation.
+
+`make release.prepare` creates the deterministic web tarball, release notes,
+source identity and checksum list. `make image` uses a generated context containing
+only verified static files, three nginx configurations, Dockerfile and ignore
+rules. The pinned official nginx image runs as UID/GID 101 on port 8080; only
+GET/HEAD static requests are accepted. Asset misses are real 404s, headers apply
+also to errors, and access logs omit request URLs/queries. Native nginx error logging is
+suppressed because its unstructured messages can expose request URLs; startup
+and health checks report failures instead. There is no API proxy,
+application server, database or embedded configuration. TLS is terminated by the
+hosting platform or an operator's ingress.
+
+The website ownership manifest records every managed path and its hash. Before
+writing, the publisher checks all previous hashes, rejects symlinks, traversal,
+unowned collisions, foreign ownership and manually edited managed files. Only
+managed changes are staged; unrelated files survive. Source main is rechecked
+before push. Destination races fail with a normal rejected push, never force.
+The source repository still uses the guarded `make git` wrapper; generated website
+commits are the explicitly authorized GitOps exception.
+
+Plain SemVer tags, release assets and versioned image tags are never overwritten.
+A matching partial draft can resume by uploading only missing assets; a conflicting
+hash/source or incomplete published release fails closed. No floating `latest`
+image is published. Publication spans separate GitHub services and is not atomic:
+a later website/release failure may leave an already published image. Inspect the
+failure, then rerun the **failed publish job in the same workflow run** so it reuses
+the same approved artifact. Do not rebuild, move tags, replace assets or replay an
+old source after main advances. Artifact retention is 14 days; an expired artifact
+requires a new release version and normal approval.
+
+Local equivalents:
+
+```sh
+make verify
+make build.public
+make release.prepare
+make image
+make image.test
+python3 tool/release.py verify
+```
+
+`make image.test` checks the real image with a read-only filesystem, dropped
+capabilities and a bounded `/tmp` mount. To run a published image:
+
+```sh
+docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
+  --tmpfs=/tmp:rw,noexec,nosuid,size=32m -p 127.0.0.1:8080:8080 \
+  ghcr.io/consciontologic/worthhit:0.2.0
+```
+
+Local validation on 2026-10-20 found a workstation Docker Snap limitation:
+`no-new-privileges` prevents execution even of `/bin/sh` with `operation not
+permitted`. The separately labeled local HTTP smoke omits only that option while
+retaining non-root, read-only and dropped-capability checks. The default CI smoke
+retains it and must pass before release; the local variant is not evidence that
+this option works on the workstation. No host security policy was changed.
+
+Actions, Flutter and nginx are pinned. Dependency caches are scoped by OS, Flutter
+version and lockfile, excluding keys/artifacts. Colorful grouped `tool/ci-step.sh`
+output preserves command exit status; local `safe-run.sh` retains diagnostic logs.
+Live provider evidence and accuracy limitations remain in [LIVE_EVAL.md](LIVE_EVAL.md).
+The original Worthit Pages deployment and 41 verified assets are historical 0.1.0
+evidence, not proof of this new domain/container release.

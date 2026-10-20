@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:worthit/app/app_controller.dart';
-import 'package:worthit/domain/appraisal.dart';
-import 'package:worthit/ui/result_panel.dart';
-import 'package:worthit/ui/worthit_theme.dart';
+import 'package:worthhit/app/app_controller.dart';
+import 'package:worthhit/domain/appraisal.dart';
+import 'package:worthhit/l10n/app_strings.dart';
+import 'package:worthhit/ui/result_panel.dart';
+import 'package:worthhit/ui/worthhit_theme.dart';
 
 void main() {
-  Future<void> mount(WidgetTester tester, AppController controller) =>
-      tester.pumpWidget(
-        MaterialApp(
-          theme: worthitTheme(),
-          home: Scaffold(
-            body: ResultPanel(controller: controller, onEdit: () {}),
-          ),
+  Future<void> mount(WidgetTester tester, AppController controller) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: worthhitTheme(),
+        supportedLocales: AppStrings.supportedLocales,
+        localizationsDelegates: AppStrings.localizationsDelegates,
+        home: Scaffold(
+          body: ResultPanel(controller: controller, onEdit: () {}),
         ),
-      );
+      ),
+    );
+    await tester.pump();
+  }
 
   testWidgets('ready estimates keep observed range and source facts visible', (
     tester,
@@ -52,7 +57,7 @@ void main() {
     expect(find.text('USD · median 135'), findsOneWidget);
     expect(
       find.text(
-        'Check date: 2026-10-20 (UTC). Saved reports do not refresh automatically.',
+        'Check date: Oct 20, 2026 (UTC). Saved reports do not refresh automatically.',
       ),
       findsOneWidget,
     );
@@ -110,4 +115,53 @@ void main() {
     expect(controller.busy, isFalse);
     expect(controller.statusText, contains('cancelled'));
   });
+  testWidgets(
+    'translated report labels preserve exact source quotations and canonical condition',
+    (tester) async {
+      const quote = 'Sold for 120 USD on 2026-10-10.';
+      final controller = AppController()
+        ..draft = AppraisalInput(asOf: DateTime.utc(2026, 10, 20))
+        ..result = AppraisalResult(
+          status: AppraisalStatus.ready,
+          reason: 'Three exact model matches were admitted.',
+          currency: 'USD',
+          low: 120,
+          median: 135,
+          high: 150,
+          comparables: [
+            Comparable(
+              url: 'https://example.com/sold/1',
+              title: 'Source title',
+              kind: 'sold',
+              amount: 120,
+              currency: 'USD',
+              eventDate: DateTime.utc(2026, 10, 10),
+              condition: 'Good',
+              match: 'exact',
+              priceBasis: 'item_only',
+              supportQuote: quote,
+            ),
+          ],
+        );
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('tr'),
+          supportedLocales: AppStrings.supportedLocales,
+          localizationsDelegates: AppStrings.localizationsDelegates,
+          theme: worthhitTheme(brightness: Brightness.dark),
+          home: Scaffold(
+            body: ResultPanel(controller: controller, onEdit: () {}),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('“$quote”'), findsOneWidget);
+      expect(find.text('https://example.com/sold/1'), findsOneWidget);
+      expect(find.text('Observed comparable range'), findsNothing);
+      expect(controller.result!.comparables.single.condition, 'Good');
+      expect(controller.result!.comparables.single.supportQuote, quote);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
