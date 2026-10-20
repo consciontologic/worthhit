@@ -1,5 +1,5 @@
 # Only tool/container.py's generated allowlisted context may be built.
-FROM public.ecr.aws/docker/library/nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
+FROM docker.io/library/nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
 RUN rm -rf /usr/share/nginx/html/*
 COPY nginx/ /etc/nginx/
 COPY site/ /usr/share/nginx/html/

@@ -4,6 +4,7 @@
 
 ## [1.0.0] - 2026-10-20
 
+- Fetch the pinned official nginx base from Docker Hub to avoid the public ECR mirror quota on GitHub-hosted release runners.
 - Add About, Terms and conditions, Liability and GitHub links in the desktop footer and compact navigation drawer.
 - Publish readable information pages with matching light/dark styling and offline navigation.
 - Add the owner's Google Analytics tag to every public page, with advertising features disabled and updated data-use disclosures.
