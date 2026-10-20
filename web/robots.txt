@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://worthhit.com/sitemap.xml

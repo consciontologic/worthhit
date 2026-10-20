@@ -1,17 +1,17 @@
-name: Publish Worthit
+name: Packages and release
 on:
   workflow_dispatch:
 permissions:
   contents: read
   actions: read
 concurrency:
-  group: worthit-production
+  group: worthhit-production
   cancel-in-progress: false
 jobs:
   build:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -19,30 +19,40 @@ jobs:
       - name: Require the exact previously validated source tree
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 tool/release_guard.py source
+        run: tool/ci-step.sh 'Prior source validation' python3 tool/release_guard.py source
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: '3.47.3'
           channel: stable
           cache: true
           cache-key: flutter-${{ runner.os }}-3.47.3-${{ hashFiles('pubspec.lock') }}
-      - run: make deps && make build.public
-      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+      - run: tool/ci-step.sh 'Dependencies' make deps
+      - run: tool/ci-step.sh 'Build the approved static source once' make build.public
+      - run: tool/ci-step.sh 'Version and archive' make release.prepare
+      - run: tool/ci-step.sh 'Build and save versioned image once' make image
+      - name: Preflight immutable release identity
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: tool/ci-step.sh 'Release preflight' python3 tool/release.py preflight
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          path: build/web
-  deploy:
+          name: worthhit-release-${{ github.sha }}
+          path: build/release/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+  publish:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
-      contents: read
+      contents: write
       actions: read
-      pages: write
-      id-token: write
+      packages: write
     environment:
       name: production
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://worthhit.com
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -50,7 +60,35 @@ jobs:
       - name: Verify human approval receipt and current source
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 tool/release_guard.py approval
-      - name: Publish approved static artifact
-        id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        run: tool/ci-step.sh 'Human release receipt' python3 tool/release_guard.py approval
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: worthhit-release-${{ github.sha }}
+          path: build/release/
+      - run: tool/ci-step.sh 'Verify exact approved bytes' python3 tool/release.py verify --extract build/web
+      - name: Authenticate scoped package publisher
+        env:
+          PACKAGE_TOKEN: ${{ github.token }}
+        run: printf '%s' "$PACKAGE_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Preflight release and package conflicts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          tool/ci-step.sh 'Immutable release check' python3 tool/release.py preflight
+          tool/ci-step.sh 'Immutable package check' python3 tool/container.py preflight
+      - name: Publish approved immutable package
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: tool/ci-step.sh 'Publish GHCR version' python3 tool/container.py publish
+      - name: Publish managed website artifacts by GitOps
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          WORTHHIT_DEPLOY_KEY: ${{ secrets.WORTHHIT_DEPLOY_KEY }}
+        run: tool/ci-step.sh 'Publish worthhit.com' python3 tool/publish_website.py build/web
+      - name: Publish plain SemVer tag and immutable release assets
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: tool/ci-step.sh 'Publish GitHub release' python3 tool/release.py publish
+      - name: Log out of package registry
+        if: always()
+        run: docker logout ghcr.io

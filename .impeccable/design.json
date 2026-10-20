@@ -1,83 +1,146 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-20T13:40:00Z",
-  "title": "Design System: Worthit",
+  "generatedAt": "2026-10-20T16:20:00Z",
+  "title": "Design System: Worthhit",
   "extensions": {
     "colorMeta": {
-      "paper": { "role": "neutral", "displayName": "Warm paper" },
-      "ink": { "role": "neutral", "displayName": "Decisive ink" },
-      "lime": { "role": "primary", "displayName": "Deal lime" },
-      "coral": { "role": "secondary", "displayName": "Warm coral" },
-      "soft": { "role": "neutral", "displayName": "Quiet paper" },
-      "muted": { "role": "neutral", "displayName": "Secondary ink" },
-      "line": { "role": "neutral", "displayName": "Paper divider" }
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm paper"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Decisive ink"
+      },
+      "lime": {
+        "role": "primary",
+        "displayName": "Deal lime"
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "Quiet paper"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Secondary ink"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Paper divider"
+      }
     },
     "typographyMeta": {
-      "headline": { "displayName": "Decisive heading", "purpose": "Short workspace and result headings." },
-      "body": { "displayName": "Evidence text", "purpose": "Readable descriptions, excerpts, and caveats." }
+      "headline": {
+        "displayName": "Decisive heading",
+        "purpose": "Short workspace and result headings."
+      },
+      "body": {
+        "displayName": "Evidence text",
+        "purpose": "Readable descriptions, excerpts, and caveats."
+      }
     },
     "shadows": [
-      { "name": "price-block", "value": "4px 4px 0 #20211D", "purpose": "The observed-price block only." },
-      { "name": "empty-mark", "value": "5px 5px 0 #20211D", "purpose": "The empty-state balance mark only." }
+      {
+        "name": "price-block",
+        "value": "4px 4px 0 #B6BCAE (light); 4px 4px 0 #4D574B (dark)",
+        "purpose": "The admitted price range only."
+      }
     ],
     "motion": [],
     "breakpoints": [
-      { "name": "tablet", "value": "700px" },
-      { "name": "desktop", "value": "1100px" },
-      { "name": "large-text-compact", "value": "textScale >= 1.8" }
-    ]
+      {
+        "name": "tablet",
+        "value": "700px"
+      },
+      {
+        "name": "desktop",
+        "value": "1100px"
+      },
+      {
+        "name": "large-text-compact",
+        "value": "textScale >= 1.8"
+      }
+    ],
+    "palettes": {
+      "light": {
+        "paper": "#ECEDE5",
+        "ink": "#252A25",
+        "muted": "#555D53",
+        "line": "#B6BCAE",
+        "soft": "#E2E5D9",
+        "surface": "#F6F7EF",
+        "warning": "#F3DFCD"
+      },
+      "dark": {
+        "paper": "#161A18",
+        "ink": "#E9EDE1",
+        "muted": "#ADB7A7",
+        "line": "#4D574B",
+        "soft": "#252D26",
+        "surface": "#1D241F",
+        "warning": "#493327"
+      },
+      "shared": {
+        "lime": "#CAEF63",
+        "onLime": "#20241D"
+      }
+    }
   },
   "components": [
     {
       "name": "Primary action",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Flutter FilledButton; this CSS preview represents its shared design tokens.",
+      "description": "Flutter FilledButton; this CSS preview represents its shared design tokens. CSS is a light-mode token preview; Flutter owns state overlays and interaction.",
       "html": "<button class=\"ds-primary\">Find a fair price</button>",
-      "css": ".ds-primary{font:700 15px/1.4 sans-serif;color:#20211D;background:#D4F267;border:2px solid #20211D;border-radius:6px;min-height:50px;padding:14px 20px}.ds-primary:hover{background:#C7E658}.ds-primary:focus-visible{outline:3px solid #20211D;outline-offset:3px}.ds-primary:active{background:#BDD94E}.ds-primary:disabled{opacity:.45}"
+      "css": ".ds-primary{font:700 15px/1.4 sans-serif;color:#20241D;background:#CAEF63;border:1.5px solid #20241D;border-radius:2px;min-height:50px;padding:14px 18px}.ds-primary:hover{background:#CAEF63}.ds-primary:focus-visible{outline:3px solid #252A25;outline-offset:3px}.ds-primary:active{background:#CAEF63}.ds-primary:disabled{opacity:.45}"
     },
     {
       "name": "Secondary action",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Explicit secondary and recovery actions.",
+      "description": "Explicit secondary and recovery actions. CSS is a light-mode token preview; Flutter owns state overlays and interaction.",
       "html": "<button class=\"ds-secondary\">Refine the details</button>",
-      "css": ".ds-secondary{font:700 14px/1.4 sans-serif;color:#20211D;background:#FFF9ED;border:1.5px solid #20211D;border-radius:6px;min-height:48px;padding:13px 16px}.ds-secondary:hover{background:#F1EBDD}.ds-secondary:focus-visible{outline:3px solid #20211D;outline-offset:3px}.ds-secondary:active{background:#E4DECF}.ds-secondary:disabled{opacity:.45}"
+      "css": ".ds-secondary{font:700 14px/1.4 sans-serif;color:#252A25;background:#ECEDE5;border:1.5px solid #252A25;border-radius:2px;min-height:48px;padding:13px 16px}.ds-secondary:hover{background:#E2E5D9}.ds-secondary:focus-visible{outline:3px solid #252A25;outline-offset:3px}.ds-secondary:active{background:#B6BCAE}.ds-secondary:disabled{opacity:.45}"
     },
     {
       "name": "Item input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Persistent label, white input, visible keyboard focus.",
+      "description": "Persistent label, neutral input, visible keyboard focus. CSS is a light-mode token preview; Flutter owns state overlays and interaction.",
       "html": "<label class=\"ds-label\">Product<input class=\"ds-input\" placeholder=\"e.g. Sony WH-1000XM4 headphones\"></label>",
-      "css": ".ds-label{display:grid;gap:8px;font:700 16px/1.35 sans-serif;color:#20211D}.ds-input{font:400 14px/1.5 sans-serif;color:#20211D;background:white;border:1.5px solid #20211D;border-radius:6px;padding:16px 14px;min-width:0}.ds-input::placeholder{color:#5C5D52}.ds-input:hover{border-color:#20211D}.ds-input:focus-visible{outline:3px solid #20211D;outline-offset:-2px}.ds-input::selection{background:#D4F267}"
+      "css": ".ds-label{display:grid;gap:8px;font:700 16px/1.35 sans-serif;color:#252A25}.ds-input{font:400 14px/1.5 sans-serif;color:#252A25;background:#F6F7EF;border:1.5px solid #555D53;border-radius:2px;padding:16px 14px;min-width:0}.ds-input::placeholder{color:#555D53}.ds-input:hover{border-color:#252A25}.ds-input:focus-visible{outline:3px solid #252A25;outline-offset:-2px}.ds-input::selection{background:#CAEF63}"
     },
     {
       "name": "Selected destination",
       "kind": "nav",
-      "description": "A selected tablet destination; phone uses the same semantic selected state.",
+      "description": "A selected tablet destination; phone uses the same semantic selected state. CSS is a light-mode token preview; Flutter owns state overlays and interaction.",
       "html": "<nav class=\"ds-nav\"><button aria-current=\"page\">Edit item</button><button>Price picture</button></nav>",
-      "css": ".ds-nav{display:flex;gap:10px}.ds-nav button{flex:1;font:700 14px/1.4 sans-serif;min-height:48px;padding:13px 16px;border:1.5px solid #20211D;border-radius:6px;color:#20211D;background:#FFF9ED}.ds-nav [aria-current]{background:#D4F267}.ds-nav button:hover{background:#F1EBDD}.ds-nav button:focus-visible{outline:3px solid #20211D;outline-offset:3px}"
+      "css": ".ds-nav{display:flex;gap:10px}.ds-nav button{flex:1;font:700 14px/1.4 sans-serif;min-height:48px;padding:13px 16px;border:1.5px solid #252A25;border-radius:2px;color:#252A25;background:#ECEDE5}.ds-nav [aria-current]{background:#CAEF63}.ds-nav button:hover{background:#E2E5D9}.ds-nav button:focus-visible{outline:3px solid #252A25;outline-offset:3px}"
     },
     {
       "name": "Observed range",
       "kind": "card",
       "refersTo": "estimate",
-      "description": "Evidence-admitted comparable range; example values here are explicitly illustrative.",
-      "html": "<article class=\"ds-range\"><strong>Observed comparable range</strong><h2>120 – 150</h2><p>USD · median 135</p><small>Illustrative preview values. Not a guaranteed transaction price.</small></article>",
-      "css": ".ds-range{font:400 14px/1.5 sans-serif;color:#20211D;background:#D4F267;border:2px solid #20211D;border-radius:8px;box-shadow:4px 4px 0 #20211D;padding:20px;max-width:380px}.ds-range h2{font-size:29px;line-height:1.12;margin:10px 0 8px}.ds-range p{font-size:16px;font-weight:700;margin:0 0 12px}.ds-range small{font-size:14px}.ds-range ::selection{background:#FFF9ED}"
+      "description": "Evidence-admitted comparable range; example values here are explicitly illustrative. CSS is a light-mode token preview; Flutter owns state overlays and interaction.",
+      "html": "<article class=\"ds-range\"><strong>Observed comparable range</strong><h2>120 \u2013 150</h2><p>USD \u00b7 median 135</p><small>Illustrative preview values. Not a guaranteed transaction price.</small></article>",
+      "css": ".ds-range{font:400 14px/1.5 sans-serif;color:#20241D;background:#CAEF63;border:2px solid #252A25;border-radius:0;box-shadow:4px 4px 0 #B6BCAE;padding:20px;max-width:380px}.ds-range h2{font-size:30px;line-height:1.12;margin:10px 0 8px}.ds-range p{font-size:16px;font-weight:700;margin:0 0 12px}.ds-range small{font-size:14px}.ds-range ::selection{background:#ECEDE5}"
     }
   ],
   "narrative": {
     "northStar": "The fair-deal workbench",
-    "overview": "Warm paper, decisive ink, and a lime action color make a practical price-checking tool feel approachable. The user’s neo-brutalist direction appears in solid outlines, plain geometry, bold lettering, and a small number of hard shadows. Information stays calmer than the accent.",
+    "overview": "Editorial neo-brutalism: graphite, warm neutral surfaces, precise rules and restrained lime. Serious evidence reading with a clear primary action. Light/dark share layout; Arabic mirrors it.",
     "keyCharacteristics": [
       "Visible evidence before confidence.",
       "Bold controls and quiet reading surfaces.",
       "Device-specific workflows with one continuous draft."
     ],
     "rules": [
-      { "name": "The Evidence Rule", "body": "Color never implies that a source, seller, or price is verified. Uncertainty must be written in words.", "section": "colors" }
+      {
+        "name": "The Evidence Rule",
+        "body": "Color never implies that a source, seller, or price is verified. Uncertainty must be written in words.",
+        "section": "colors"
+      }
     ],
     "dos": [
       "Do keep evidence, caveats, and next questions selectable.",

@@ -1,6 +1,6 @@
-# Worthit architecture
+# Worthhit architecture
 
-Worthit runs entirely in the browser. Flutter/Dart owns forms, evidence admission,
+Worthhit runs entirely in the browser. Flutter/Dart owns forms, evidence admission,
 arithmetic, API requests and recovery. GitHub Pages serves static assets. There is
 no Go service, application proxy or hosted database; this follows the user's
 explicit runtime decision on 2026-10-20.
@@ -40,5 +40,11 @@ Downloaded reports are plain JSON data. Listing text and model output are never
 executed as HTML, scripts or commands.
 
 The source project uses work-branch PRs, secret-free CI and explicit deployment
-dispatch. The production environment requires the owner's approval. No custom
-domain is asserted; the initial base path is `/worthit/`.
+dispatch. The production environment requires the owner's approval. Static GitOps publishes the verified root-path shell to `worthhit.com`; the same sealed bytes ship in a non-root nginx container. No application proxy is added. See `DEPLOYMENT.md` for versioning and approval boundaries.
+
+Preferences use `worthhit.preferences.v1`; prior `worthit.*.v1` storage and report
+protocol identifiers are intentionally preserved for compatibility. Browser locale
+negotiation selects one of eight supported languages, with explicit persistent
+overrides and Arabic RTL. Model explanatory language comes from a trusted fixed
+allowlist; protocol keys, enums, ISO fields and source quotations remain canonical.
+Locally bundled fonts cover Latin, Arabic and Simplified Chinese without a font CDN.

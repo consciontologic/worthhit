@@ -4,7 +4,7 @@ import os
 import sys
 import urllib.request
 
-REPOSITORY = "consciontologic/worthit"
+REPOSITORY = "consciontologic/worthhit"
 OWNER_ID = 339074048
 
 
@@ -41,6 +41,10 @@ def source(api=get, sha=None):
             continue
         tested = api(base + "/commits/" + run["head_sha"])
         if tested["commit"]["tree"]["sha"] == tree:
+            jobs = api(base + "/actions/runs/" + str(run["id"]) + "/jobs?per_page=100").get("jobs", [])
+            checks = {job.get("name"): job.get("conclusion") for job in jobs}
+            if checks.get("Verify") != "success" or checks.get("Security") != "success":
+                continue
             print("Exact source tree has successful prior PR validation.")
             return
     raise RuntimeError("No successful PR validation for this exact source tree.")
