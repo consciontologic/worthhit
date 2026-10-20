@@ -9,6 +9,7 @@ abstract class LocalStore {
   void download(String filename, String text);
   Future<bool> hasWaitingUpdate();
   Future<void> applyUpdate();
+  void dispose();
 }
 
 LocalStore createLocalStore() => implementation.createStore();
@@ -29,4 +30,6 @@ class MemoryStore implements LocalStore {
   Future<bool> hasWaitingUpdate() async => false;
   @override
   Future<void> applyUpdate() async {}
+  @override
+  void dispose() {}
 }

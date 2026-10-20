@@ -24,6 +24,10 @@ class AppController extends ChangeNotifier {
   String statusText =
       'Your key stays in this tab. Your draft stays on this device.';
   bool isExample = false, updateAvailable = false;
+  bool updating = false;
+  bool _updateDismissed = false;
+  String? updateError;
+  bool get updateNoticeVisible => updateAvailable && !_updateDismissed;
   bool _disposed = false;
   bool _checkingUpdate = false;
   Timer? _updateTimer;
@@ -70,13 +74,13 @@ class AppController extends ChangeNotifier {
       persistenceError = 'Saved data could not be read. It has not been erased. You can start a new check or export your work.';
     }
     _changed();
-    await refreshModels();
     if (_disposed) return;
     _updateTimer ??= Timer.periodic(
       const Duration(seconds: 30),
       (_) => unawaited(_checkForUpdate()),
     );
-    await _checkForUpdate();
+    // A stalled model catalogue must not hide an already installed app update.
+    await Future.wait([_checkForUpdate(), refreshModels()]);
   }
 
   Future<void> _checkForUpdate() async {
@@ -232,7 +236,7 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> appraise({String responseLanguage = 'en'}) async {
-    if (busy) return;
+    if (busy || updating) return;
     error = null;
     if (isExample || _hasSyntheticEvidence(draft)) {
       error = 'Replace the synthetic example evidence with real listing excerpts before requesting an appraisal.';
@@ -446,8 +450,9 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> applyUpdate() async {
+    if (_disposed || updating) return;
     if (busy) {
-      error = 'Finish or cancel the check before updating.';
+      updateError = 'Finish your check before updating.';
       _changed();
       return;
     }
@@ -455,12 +460,26 @@ class AppController extends ChangeNotifier {
       _changed();
       return;
     }
+    updating = true;
+    updateError = null;
+    _changed();
     try {
       await store.applyUpdate();
     } catch (_) {
-      error = 'The update could not be activated. Your saved draft is safe.';
+      if (!_disposed) {
+        updateError =
+            'The update could not be activated. Your saved draft is safe.';
+      }
+    } finally {
+      updating = false;
       _changed();
     }
+  }
+
+  void dismissUpdateNotice() {
+    if (_disposed || updating) return;
+    _updateDismissed = true;
+    _changed();
   }
 
   @override
@@ -468,6 +487,7 @@ class AppController extends ChangeNotifier {
     _disposed = true;
     _attempt++;
     _updateTimer?.cancel();
+    store.dispose();
     api.dispose();
     apiKey = '';
     super.dispose();
