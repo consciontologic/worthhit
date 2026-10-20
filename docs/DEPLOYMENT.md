@@ -4,7 +4,31 @@ Source: [consciontologic/worthhit](https://github.com/consciontologic/worthhit).
 Static destination: [consciontologic/worthhit.com](https://github.com/consciontologic/worthhit.com).
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:0.2.0` (Linux amd64).
-These are the configured destinations; a source commit alone does not establish a successful public release.
+
+## Verified publication — 2026-10-20
+
+[Release 0.2.0](https://github.com/consciontologic/worthhit/releases/tag/0.2.0)
+was published from `74db1e5277461329d89ff592d677817292898131` after the
+owner approved [production run 39459449385](https://github.com/consciontologic/worthhit/actions/runs/39459449385).
+Source PRs [#7](https://github.com/consciontologic/worthhit/pull/7) and
+[#8](https://github.com/consciontologic/worthhit/pull/8) are merged; the
+[required CI](https://github.com/consciontologic/worthhit/actions/runs/39458814513)
+passed, including the strict nginx container smoke with `no-new-privileges`.
+
+GitOps published website commit `07c0daacb54bf2fc92dcb3de4448e5d2f32f4fc3`.
+HTTPS is enforced for worthhit.com; HTTP and www redirect to the canonical HTTPS
+root. All 65 release files (63 manifest assets plus the manifest and service worker)
+passed public byte-count and SHA-256 verification.
+The public generation is
+`ef541b79ea83edbcc4157061da168a6eae4079990a1da932eb2ae75dd0a53f03`.
+The live browser rendered both themes without console warnings or errors.
+The versioned GHCR image and its published archive match; it is anonymously pullable at registry digest
+`sha256:2a4f5e2bfdf27223665df3d2d5016022c8e5d845898c77ee2e60f92d85694159`.
+
+The apex currently has three GitHub Pages A records; adding the fourth,
+`185.199.111.153`, completes the documented DNS set. This did not prevent the
+verified HTTPS deployment. Search-engine indexing and installation on physical
+devices are not established by these checks.
 
 ## Release procedure
 
