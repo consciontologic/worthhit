@@ -12,8 +12,8 @@ local gate, public build, browser rendering and protected release preparation.
 
 - [x] Remove the visible promotional startup page and cover startup behavior.
 - [x] Set 1.1.1 and complete local tests, review and browser validation.
-- [ ] Publish protected source/promotion and prepare owner production approval.
-- [ ] After approval, verify the published 1.1.1 website and container.
+- [x] Publish protected source/promotion and prepare owner production approval.
+- [x] After approval, verify the published 1.1.1 website and container.
 
 ## Worthhit 1.1.0 compact and usable interface — 2026-10-20
 
@@ -136,15 +136,15 @@ Test schema drift/zero prices/refresh/error/cancel boundaries; prohibited and in
 Live providers may reject a schema or be unavailable; preserve drafts and allow explicit retry/model choice. Search snippets may lack real sold comparables; abstain and request evidence. Browser storage is origin-local and may be cleared; surface save failures and export reports. Pages publication requires protection-compliant source promotion and human production approval.
 
 ## Publication status
-[Worthhit 1.1.0 is live](https://worthhit.com), with HTTPS and canonical
-www/HTTP redirects. Feature [#17](https://github.com/consciontologic/worthhit/pull/17)
-and promotion [#18](https://github.com/consciontologic/worthhit/pull/18) are merged;
+[Worthhit 1.1.1 is live](https://worthhit.com), with HTTPS and canonical
+www/HTTP redirects. Source [#20](https://github.com/consciontologic/worthhit/pull/20)
+and promotion [#21](https://github.com/consciontologic/worthhit/pull/21) are merged;
 the owner-approved
-[release run](https://github.com/consciontologic/worthhit/actions/runs/39481827330)
+[release run](https://github.com/consciontologic/worthhit/actions/runs/39487110192)
 published the matching GitHub release, public GHCR image and GitOps website.
-All 68 public release files passed byte-count/hash checks, and the browser updated
-from cached 1.0.0 to 1.1.0.
-See [publication evidence and limits](../DEPLOYMENT.md#verified-110-publication--2026-10-20).
+All 68 public files passed byte-count/hash checks. The browser updated from cached
+1.1.0 to 1.1.1, then reloaded without the promotional startup page.
+See [publication evidence and limits](../DEPLOYMENT.md#verified-111-publication--2026-10-20).
 
 ### Historical 0.1.0 deployment
 
