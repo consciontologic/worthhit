@@ -28,6 +28,38 @@ class Document(HTMLParser):
         self.elements.append((tag, dict(attrs)))
 
 
+class StartupContent(HTMLParser):
+    """Text exposed by the static document before Flutter attaches its view."""
+    def __init__(self, source):
+        super().__init__()
+        self.stack = []
+        self.in_body = False
+        self.visible_text = []
+        self.feed(source)
+
+    def handle_starttag(self, tag, attributes):
+        if tag == "body":
+            self.in_body = True
+        hidden = bool(self.stack and self.stack[-1][1]) or tag in {
+            "script", "style", "noscript"
+        } or "hidden" in dict(attributes)
+        if tag not in {"area", "base", "br", "col", "embed", "hr", "img", "input",
+                       "link", "meta", "param", "source", "track", "wbr"}:
+            self.stack.append((tag, hidden))
+
+    def handle_endtag(self, tag):
+        if tag == "body":
+            self.in_body = False
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, value):
+        if self.in_body and value.strip() and not any(hidden for _, hidden in self.stack):
+            self.visible_text.append(value.strip())
+
+
 class WebMetadataTests(unittest.TestCase):
     def test_all_indexable_pages_have_unique_canonical_and_description(self):
         descriptions = set()
@@ -41,6 +73,24 @@ class WebMetadataTests(unittest.TestCase):
             descriptions.add(description[0])
             self.assertTrue(any(t == "h1" for t, _ in elements))
         self.assertEqual(len(descriptions), len(PAGES))
+
+    def test_normal_startup_has_no_interstitial_text_and_keeps_noscript_recovery(self):
+        source = (WEB / "index.html").read_text()
+        self.assertEqual(StartupContent(source).visible_text, [])
+        elements = Document(WEB / "index.html").elements
+        self.assertFalse(any(attrs.get("id") == "loading" for _, attrs in elements))
+        recovery = [attrs for tag, attrs in elements
+                    if tag == "main" and attrs.get("id") == "startup-error"]
+        self.assertEqual(len(recovery), 1)
+        self.assertIn("hidden", recovery[0])
+        self.assertEqual(recovery[0]["role"], "alert")
+        noscript = re.search(r"<noscript>(.*?)</noscript>", source, re.S)[1]
+        self.assertIn("JavaScript is required", noscript)
+        self.assertIn('href="about/"', noscript)
+        self.assertLess(source.index('src="preferences_bootstrap.js"'), source.index("<body>"))
+        stylesheet = (WEB / "site.css").read_text()
+        self.assertIn("background:var(--canvas)", stylesheet)
+        self.assertIn(":root[data-theme=dark]", stylesheet)
 
     def test_sitemap_and_manifest_use_real_origin(self):
         urls = ElementTree.parse(WEB / "sitemap.xml").getroot()
@@ -60,6 +110,17 @@ class WebMetadataTests(unittest.TestCase):
             self.assertEqual(f"{width}x{height}", icon["sizes"])
         social = (WEB / "social-card.png").read_bytes()
         self.assertEqual(struct.unpack(">II", social[16:24]), (1200, 630))
+
+    def test_visible_startup_recovery_sits_above_a_partially_attached_flutter_view(self):
+        stylesheet = (WEB / "site.css").read_text()
+        overlay = re.search(r"#startup-error:not\(\[hidden\]\)\{([^}]+)\}", stylesheet)
+        self.assertIsNotNone(overlay)
+        rules = dict(rule.split(":", 1) for rule in overlay[1].split(";") if rule)
+        self.assertEqual(rules["position"], "fixed")
+        self.assertEqual(rules["inset"], "0")
+        self.assertGreater(int(rules["z-index"]), 0)
+        self.assertEqual(rules["background"], "var(--canvas)")
+        self.assertEqual(rules["max-width"], "none")
 
     def test_single_nonblocking_google_tag_is_first_in_every_head(self):
         for name, route in PAGES.items():

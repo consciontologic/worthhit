@@ -5,12 +5,32 @@ Static destination: [consciontologic/worthhit.com](https://github.com/conscionto
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
-## 1.1.0 release preparation — 2026-10-20
+## 1.1.1 release preparation — 2026-10-20
+
+Normal startup now stays on the theme background until Flutter displays the
+workspace, without the promotional page. The version is synchronized to 1.1.1.
+The full local gate passed 201 Flutter tests, 25 Node tests and 40 Python tests;
+the final recovery-overlay change passed all eight metadata tests (41 Python tests
+total across the final covered suites). Analysis, formatting, compiled-JavaScript
+pricing, hygiene, version checks, public build and sealed web archive passed.
+Independent review passed after fixing recovery stacking above a partial app view.
+
+The browser showed only the theme background while the app script was deliberately
+delayed eight seconds, then rendered the 1.1.1 workspace without console warnings
+or errors. A separate synthetic partial-view/runApp-failure fixture showed a
+clickable Reload recovery link that returned to the app. No production user data
+or provider requests were used. Bootstrap-file download failure remains outside
+that script's recovery boundary. CI/container verification and owner production
+approval are required before publication; production remains 1.1.0 meanwhile.
+
+## Verified 1.1.0 publication — 2026-10-20
 
 The local gate passed 201 Flutter, 19 Node and 39 Python tests, compiled-JavaScript
 pricing checks, analysis, formatting, repository hygiene and version consistency.
 The public build and sealed web/container archives passed. The separately labeled
-Docker Snap smoke passed with the existing limitation below; strict CI must pass.
+Docker Snap smoke passed with the existing limitation below.
+[Required CI](https://github.com/consciontologic/worthhit/actions/runs/39481261811)
+also passed, including the strict nginx smoke with `no-new-privileges`.
 Independent review findings were fixed and covered by regression tests.
 
 Browser previews checked 390px phone, 850px tablet and 1440px desktop flows,
@@ -26,10 +46,41 @@ coverage. The browser-store timeout/listener cleanup was source-reviewed; this
 browser run establishes successful activation, not induced timeout/disposal or a
 real-device install claim.
 
-Production remains 1.0.0 until the owner approves the new release workflow. The
-release name and tag for this change are plain `1.1.0`.
+[Release 1.1.0](https://github.com/consciontologic/worthhit/releases/tag/1.1.0)
+was published from `4b69cb1f61944a2abb688e5c9d62d47ea743714f` after
+consciontologic approved
+[production run 39481827330](https://github.com/consciontologic/worthhit/actions/runs/39481827330).
+Feature [#17](https://github.com/consciontologic/worthhit/pull/17) and exact-tree
+promotion [#18](https://github.com/consciontologic/worthhit/pull/18) are merged.
+The release name and tag are both exactly `1.1.0`.
 
-## Verified publication — 2026-10-20
+GitOps published website commit `581be62b061128b48a28efa7d13f047a87158265`;
+[Pages deployment](https://github.com/consciontologic/worthhit.com/actions/runs/39482488663)
+completed successfully. All 68 public release files (66 manifest assets, the
+manifest and service worker) match the published release archive and identity by
+byte count and SHA-256. The generation is
+`7ee50263f4f63764b1f328335e8db9a708701c35d3ceb2ecc23363c97d17a382`.
+HTTP apex and HTTP/HTTPS www each redirect directly to `https://worthhit.com/`.
+Root, About, Terms and Liability retain their canonical URLs and exactly one
+Google tag loader/configuration for `G-G4SYW37S81`. Version metadata and all
+information-page footers show 1.1.0.
+
+The live browser offered an update from cached 1.0.0, activated it only after the
+explicit action, and rendered the 1.1.0 footer and custom icons. The 390px phone
+view showed the compact Continue/navigation dock without app console warnings or
+errors. The saved-draft transition evidence above was established in an isolated
+preview; the production check did not overwrite a user's draft.
+
+All five GitHub release assets passed size/checksum verification. The anonymously
+accessible Linux amd64 GHCR image matches the released container archive and
+retains UID/GID 101:101 with exact source/version labels. Its registry digest is
+`sha256:84c74ea881699c3ea58be34f6624562e954feeb5776391e11c105d0eb98be3db`;
+its configuration digest is
+`sha256:b8793da7f840bb7710b3605a1b9133a12aedcedad4d3b9caaa94eccc8b73b346`.
+Google Analytics property receipt/configuration, search-engine indexing and
+installation on physical devices are not established by these checks.
+
+## Historical 1.0.0 publication — 2026-10-20
 
 [Release 1.0.0](https://github.com/consciontologic/worthhit/releases/tag/1.0.0)
 was published from `46bc4377b2f2ffca17f72e4a810588e725e3bcef` after
@@ -217,7 +268,7 @@ capabilities and a bounded `/tmp` mount. To run a published image:
 ```sh
 docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
   --tmpfs=/tmp:rw,noexec,nosuid,size=32m -p 127.0.0.1:8080:8080 \
-  ghcr.io/consciontologic/worthhit:1.0.0
+  ghcr.io/consciontologic/worthhit:1.1.0
 ```
 
 Local validation on 2026-10-20 found a workstation Docker Snap limitation:
