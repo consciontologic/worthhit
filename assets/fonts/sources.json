@@ -3,25 +3,149 @@
     "file": "SpaceGrotesk.ttf",
     "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
     "sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
-    "bytes": 136676
+    "bytes": 136676,
+    "woff2": {
+      "file": "SpaceGrotesk.woff2",
+      "sha256": "3d234e9bed1fd63d7a1a6bf7bde10b2af7559654805d66747cb8713b82b058be",
+      "bytes": 53096,
+      "converter": {
+        "fonttools": "4.67.0",
+        "brotli": "1.2.0",
+        "transformed_tables": []
+      },
+      "audit": {
+        "codepoints": 735,
+        "glyphs": 1001,
+        "axes": [
+          {
+            "tag": "wght",
+            "min": 300.0,
+            "default": 300.0,
+            "max": 700.0
+          }
+        ],
+        "all_rendering_tables_preserved": true,
+        "omitted_empty_dsig": true,
+        "head_exceptions": [
+          "checkSumAdjustment",
+          "flags.bit11"
+        ]
+      }
+    }
   },
   {
     "file": "NotoSans.ttf",
     "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf",
     "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
-    "bytes": 2049096
+    "bytes": 2049096,
+    "woff2": {
+      "file": "NotoSans.woff2",
+      "sha256": "7ed77c38412a34312e975abcd5eb2b2848a596f1921393f925a53a27938eb116",
+      "bytes": 918168,
+      "converter": {
+        "fonttools": "4.67.0",
+        "brotli": "1.2.0",
+        "transformed_tables": []
+      },
+      "audit": {
+        "codepoints": 3094,
+        "glyphs": 4515,
+        "axes": [
+          {
+            "tag": "wght",
+            "min": 100.0,
+            "default": 400.0,
+            "max": 900.0
+          },
+          {
+            "tag": "wdth",
+            "min": 62.5,
+            "default": 100.0,
+            "max": 100.0
+          }
+        ],
+        "all_rendering_tables_preserved": true,
+        "omitted_empty_dsig": false,
+        "head_exceptions": [
+          "checkSumAdjustment",
+          "flags.bit11"
+        ]
+      }
+    }
   },
   {
     "file": "NotoSansArabic.ttf",
     "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansarabic/NotoSansArabic%5Bwdth%2Cwght%5D.ttf",
     "sha256": "63111b5b2e074dd48cc67692e0a2726d86ee94c1c37fe8598257b7b4e87e869e",
-    "bytes": 844676
+    "bytes": 844676,
+    "woff2": {
+      "file": "NotoSansArabic.woff2",
+      "sha256": "dd1a9bc84d7750f784740a4ed227c4dacbce06c20e043c52ada4b06ac6b4a725",
+      "bytes": 368728,
+      "converter": {
+        "fonttools": "4.67.0",
+        "brotli": "1.2.0",
+        "transformed_tables": []
+      },
+      "audit": {
+        "codepoints": 1561,
+        "glyphs": 1711,
+        "axes": [
+          {
+            "tag": "wght",
+            "min": 100.0,
+            "default": 400.0,
+            "max": 900.0
+          },
+          {
+            "tag": "wdth",
+            "min": 62.5,
+            "default": 100.0,
+            "max": 100.0
+          }
+        ],
+        "all_rendering_tables_preserved": true,
+        "omitted_empty_dsig": false,
+        "head_exceptions": [
+          "checkSumAdjustment",
+          "flags.bit11"
+        ]
+      }
+    }
   },
   {
     "file": "NotoSansSC.ttf",
     "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
     "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
-    "bytes": 17772300
+    "bytes": 17772300,
+    "woff2": {
+      "file": "NotoSansSC.woff2",
+      "sha256": "97a715fad95d3cacf4838b1ffedb123d2f1bf0f6bbd726c73e147dcaf317869f",
+      "bytes": 8490924,
+      "converter": {
+        "fonttools": "4.67.0",
+        "brotli": "1.2.0",
+        "transformed_tables": []
+      },
+      "audit": {
+        "codepoints": 30890,
+        "glyphs": 31036,
+        "axes": [
+          {
+            "tag": "wght",
+            "min": 100.0,
+            "default": 100.0,
+            "max": 900.0
+          }
+        ],
+        "all_rendering_tables_preserved": true,
+        "omitted_empty_dsig": false,
+        "head_exceptions": [
+          "checkSumAdjustment",
+          "flags.bit11"
+        ]
+      }
+    }
   },
   {
     "file": "SpaceGrotesk-OFL.txt",

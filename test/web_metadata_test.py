@@ -91,6 +91,13 @@ class WebMetadataTests(unittest.TestCase):
         stylesheet = (WEB / "site.css").read_text()
         self.assertIn("background:var(--canvas)", stylesheet)
         self.assertIn(":root[data-theme=dark]", stylesheet)
+        scripts = [attrs for tag, attrs in elements if tag == "script"]
+        pwa = next(attrs for attrs in scripts if attrs.get("src") == "pwa_bootstrap.js")
+        flutter = next(attrs for attrs in scripts if attrs.get("src") == "flutter_bootstrap.js")
+        self.assertIn("defer", pwa)
+        self.assertIn("defer", flutter)
+        self.assertNotIn("async", flutter)
+        self.assertLess(scripts.index(pwa), scripts.index(flutter))
 
     def test_sitemap_and_manifest_use_real_origin(self):
         urls = ElementTree.parse(WEB / "sitemap.xml").getroot()

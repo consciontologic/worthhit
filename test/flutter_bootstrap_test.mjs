@@ -11,6 +11,7 @@ const settle = async () => {
 function boot({loaderError, rejectedLoader = false} = {}) {
   const listeners = new Map();
   const recovery = {hidden: true, remove() {this.removed = true;}};
+  const configs = {};
   let entrypoint;
   const window = {
     addEventListener(type, listener, capture) {
@@ -31,6 +32,7 @@ function boot({loaderError, rejectedLoader = false} = {}) {
   };
   const loader = {
     load(options) {
+      configs.loader = options.config;
       entrypoint = options.onEntrypointLoaded;
       if (loaderError) throw loaderError;
       return rejectedLoader ? Promise.reject(Error('Loader failed')) : Promise.resolve();
@@ -38,9 +40,10 @@ function boot({loaderError, rejectedLoader = false} = {}) {
   };
   vm.runInNewContext(source, {window, document, URL, _flutter: {loader}});
   return {
-    recovery, listeners,
+    recovery, listeners, configs,
     async initialize({engineError, appError, pendingApp} = {}) {
-      return entrypoint({initializeEngine: async () => {
+      return entrypoint({initializeEngine: async config => {
+        configs.engine = config;
         if (engineError) throw engineError;
         return {runApp: async () => {
           if (appError) throw appError;
@@ -53,6 +56,15 @@ function boot({loaderError, rejectedLoader = false} = {}) {
     },
   };
 }
+
+test('the loader and custom engine callback receive the same supported renderer configuration', async () => {
+  const app = boot();
+  await app.initialize();
+  assert.deepEqual(JSON.parse(JSON.stringify(app.configs.loader)), {
+    renderer: 'canvaskit', canvasKitVariant: 'auto', preferWebParagraph: false,
+  });
+  assert.equal(app.configs.engine, app.configs.loader);
+});
 
 test('successful and slow startup stay invisible until Flutter takes over', async () => {
   const app = boot();

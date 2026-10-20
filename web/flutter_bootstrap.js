@@ -1,6 +1,8 @@
 {{flutter_js}}
 {{flutter_build_config}}
 (() => {
+  // Parsed by the public builder before pruning unselected renderer variants.
+  const worthhitRendererConfig = {"renderer":"canvaskit","canvasKitVariant":"auto","preferWebParagraph":false};
   const entrypoint = new URL('main.dart.js', document.baseURI);
   const showFailure = () => {
     const recovery = document.getElementById('startup-error');
@@ -18,9 +20,10 @@
   window.addEventListener('error', entrypointFailed, true);
   try {
     Promise.resolve(_flutter.loader.load({
+      config: worthhitRendererConfig,
       onEntrypointLoaded: async function(engineInitializer) {
         try {
-          const runner = await engineInitializer.initializeEngine();
+          const runner = await engineInitializer.initializeEngine(worthhitRendererConfig);
           await runner.runApp();
           document.getElementById('startup-error')?.remove();
           window.removeEventListener('error', entrypointFailed, true);

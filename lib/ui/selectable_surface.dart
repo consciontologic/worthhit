@@ -19,7 +19,12 @@ Future<T?> showSelectableDialog<T>({
 /// Keep the item's activation recognizer inside its selection scope so a
 /// normal tap still chooses the item while dragging can copy its label.
 class SelectablePopupMenuItem<T> extends PopupMenuItem<T> {
-  const SelectablePopupMenuItem({super.key, super.value, required super.child});
+  const SelectablePopupMenuItem({
+    super.key,
+    super.value,
+    super.onTap,
+    required super.child,
+  });
 
   @override
   PopupMenuItemState<T, SelectablePopupMenuItem<T>> createState() =>

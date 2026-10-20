@@ -26,23 +26,26 @@ void updateDocumentPreferences({
 Uri resolvePage(String destination) =>
     Uri.parse(web.URL(destination, web.document.baseURI).href);
 
+/// Dispatch a final URL without depending on access to a newly opened window.
+/// A successful dispatch cannot prove that browser popup policy allowed a tab.
 bool openPage(Uri uri) {
   if (uri.scheme != 'https' && uri.scheme != 'http') return false;
-  // noopener on window.open returns null even on success. Open an empty page,
-  // clear its opener before navigation and set its referrer policy instead, so
-  // a null return reliably identifies a blocked popup.
-  final page = web.window.open('about:blank', '_blank');
-  if (page == null) return false;
+  final body = web.document.body;
+  if (body == null) return false;
+  final anchor = web.HTMLAnchorElement()
+    ..href = '$uri'
+    ..target = '_blank'
+    ..rel = 'noopener noreferrer'
+    ..referrerPolicy = 'no-referrer';
   try {
-    page.opener = null;
-    final policy = web.HTMLMetaElement()
-      ..name = 'referrer'
-      ..content = 'no-referrer';
-    page.document.head?.appendChild(policy);
-    page.location.replace('$uri');
+    body.appendChild(anchor);
+    // Give Android browsers the destination in the original gesture. Opening
+    // about:blank first requires a child WindowProxy that some hosts withhold.
+    anchor.click();
     return true;
   } catch (_) {
-    page.close();
     return false;
+  } finally {
+    anchor.remove();
   }
 }
