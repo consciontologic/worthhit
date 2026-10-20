@@ -22,13 +22,12 @@ consistency, offline directory documents, unchanged API behavior and nginx deliv
 - [x] Integrate the single Google tag on every page and keep startup/offline caching independent.
 - [x] Set and verify the single 1.0.0 release identity and dated changelog.
 - [x] Complete tests, independent review, public build and browser/container checks.
-- [ ] Publish protected source PR/promotion, obtain owner production approval and verify live 1.0.0.
+- [x] Publish protected source PR/promotion, obtain owner production approval and verify live 1.0.0.
 
-Registry recovery: replace only the public ECR mirror with the verified official
-Docker Hub source at the same nginx version/digest. Protect that source and immutable
-pin with a regression check; rerun the full gate, image build and strict CI smoke,
-then promote the tested tree and dispatch a new 1.0.0 release for human approval.
-The earlier failed run has no published 1.0.0 artifacts.
+Registry recovery completed: the official Docker Hub source replaces only the
+public ECR mirror at the same nginx version/digest, protected by a regression check.
+The full gate, image build and strict CI smoke passed; the tested tree was promoted
+and published through a fresh, owner-approved 1.0.0 dispatch.
 
 Risks: external analytics can be blocked or configured independently in Google;
 app functionality must remain available. Registry availability can block CI. Preserve
@@ -92,12 +91,14 @@ Test schema drift/zero prices/refresh/error/cancel boundaries; prohibited and in
 Live providers may reject a schema or be unavailable; preserve drafts and allow explicit retry/model choice. Search snippets may lack real sold comparables; abstain and request evidence. Browser storage is origin-local and may be cleared; surface save failures and export reports. Pages publication requires protection-compliant source promotion and human production approval.
 
 ## Publication status
-[Worthhit 0.2.0 is live](https://worthhit.com), with enforced HTTPS and canonical
-www/HTTP redirects. Source PRs [#7](https://github.com/consciontologic/worthhit/pull/7)
-and [#8](https://github.com/consciontologic/worthhit/pull/8) are merged; the owner-approved
-[release run](https://github.com/consciontologic/worthhit/actions/runs/39459449385)
+[Worthhit 1.0.0 is live](https://worthhit.com), with HTTPS and canonical
+www/HTTP redirects. Feature and promotion PRs [#10](https://github.com/consciontologic/worthhit/pull/10)
+and [#11](https://github.com/consciontologic/worthhit/pull/11), plus registry fix and
+promotion [#12](https://github.com/consciontologic/worthhit/pull/12) and
+[#13](https://github.com/consciontologic/worthhit/pull/13), are merged; the owner-approved
+[release run](https://github.com/consciontologic/worthhit/actions/runs/39471637467)
 published the matching GitHub release, public GHCR image and GitOps website.
-All 65 public release files passed byte-count/hash checks. See
+All 67 public release files passed byte-count/hash checks. See
 [publication evidence and limits](../DEPLOYMENT.md#verified-publication--2026-10-20).
 
 ### Historical 0.1.0 deployment

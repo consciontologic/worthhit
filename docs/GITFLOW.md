@@ -28,7 +28,9 @@ jobs, preventing a skipped promotion run from being used as quality evidence.
 Ordinary pushes do not publish or trigger quality pipelines.
 
 Release versions are plain SemVer in `pubspec.yaml`, with dated entries in
-`CHANGELOG.md`. The explicit **Packages and release** dispatch on main builds one
+`CHANGELOG.md`. Both the Git tag and GitHub release name must exactly match
+`MAJOR.MINOR.PATCH` (for example, `1.0.0`), without a product-name or `v` prefix.
+The explicit **Packages and release** dispatch on main builds one
 artifact, then waits for the human owner's production approval before tags,
 releases, GHCR or website publication. See [deployment](DEPLOYMENT.md) for the
 required source evidence, environment, key scope and recovery rules.

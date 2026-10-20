@@ -7,6 +7,42 @@ Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
 ## Verified publication — 2026-10-20
 
+[Release 1.0.0](https://github.com/consciontologic/worthhit/releases/tag/1.0.0)
+was published from `46bc4377b2f2ffca17f72e4a810588e725e3bcef` after
+consciontologic approved
+[production run 39471637467](https://github.com/consciontologic/worthhit/actions/runs/39471637467).
+Feature and promotion PRs [#10](https://github.com/consciontologic/worthhit/pull/10) and
+[#11](https://github.com/consciontologic/worthhit/pull/11), followed by the registry
+fix and promotion [#12](https://github.com/consciontologic/worthhit/pull/12) and
+[#13](https://github.com/consciontologic/worthhit/pull/13), are merged.
+[Required CI](https://github.com/consciontologic/worthhit/actions/runs/39471127722)
+passed, including the strict nginx smoke with `no-new-privileges`. Local verification
+passed 167 Flutter, 13 Node and 38 Python tests, analysis and repository checks.
+
+GitOps published website commit `4f02df0252a6147477f765c2f8ad1d01feed3f4a`.
+All 67 public release files (65 manifest assets, the manifest and service worker)
+passed byte-count and SHA-256 checks against the published release archive and
+identity. The generation is
+`4dd8b25748d2b85bbf75dbc774bc182466413e0d64347ab0d74c45d6e2113650`.
+HTTP apex and HTTP/HTTPS www each redirect directly to `https://worthhit.com/`.
+The root, About, Terms and Liability pages each contain exactly one Google tag
+loader and configuration for `G-G4SYW37S81`, with correct canonical URLs.
+Public version metadata and information-page footers show 1.0.0.
+The live browser offered an explicit update from the cached 0.2.0 app and then
+rendered the 1.0.0 footer without app console warnings/errors. Its Terms link opened
+the published document in a separate tab while retaining the price-check workspace.
+At 390px width, the navigation drawer showed version 1.0.0, GitHub and all three
+information links in its compact Info menu.
+
+All five GitHub release assets passed size/checksum verification. The anonymously
+accessible Linux amd64 GHCR image has registry digest
+`sha256:90e166cc453386a071c4fbdaf1fc6352c9a9176ab7ea4152b50393e3c3cbf147`;
+its configuration matches the released container archive and retains UID/GID 101.
+Google Analytics property receipt/configuration, search-engine indexing and
+installation on physical devices are not established by these checks.
+
+### Historical 0.2.0 publication
+
 [Release 0.2.0](https://github.com/consciontologic/worthhit/releases/tag/0.2.0)
 was published from `74db1e5277461329d89ff592d677817292898131` after the
 owner approved [production run 39459449385](https://github.com/consciontologic/worthhit/actions/runs/39459449385).
@@ -25,10 +61,9 @@ The live browser rendered both themes without console warnings or errors.
 The versioned GHCR image and its published archive match; it is anonymously pullable at registry digest
 `sha256:2a4f5e2bfdf27223665df3d2d5016022c8e5d845898c77ee2e60f92d85694159`.
 
-The apex currently has three GitHub Pages A records; adding the fourth,
-`185.199.111.153`, completes the documented DNS set. This did not prevent the
-verified HTTPS deployment. Search-engine indexing and installation on physical
-devices are not established by these checks.
+The 0.2.0 DNS check found three GitHub Pages A records; the documented fourth is
+`185.199.111.153`. This did not prevent that verified HTTPS deployment; the A-record
+count was not rechecked for 1.0.0.
 
 ## Release procedure
 
@@ -52,8 +87,10 @@ devices are not established by these checks.
    receipt, workflow path, dispatch event, source SHA and environment policy.
 6. The gated job downloads and verifies those exact bytes without rebuilding,
    rejects existing version conflicts, publishes GHCR, pushes managed website
-   artifacts to `worthhit.com/main`, then publishes a plain SemVer tag and GitHub
-   release. The website repository's Pages branch deployment serves `/`.
+   artifacts to `worthhit.com/main`, then publishes a Git tag and GitHub release
+   both named exactly `MAJOR.MINOR.PATCH`, without a product-name or `v` prefix.
+   Resumed drafts receive the same plain version name when finalized.
+   The website repository's Pages branch deployment serves `/`.
 7. Verify HTTPS/domain redirects, `release.json` plus all asset hashes, browser
    rendering and the package/release links. A green unit suite does not prove DNS,
    search-engine indexing or real-device PWA installation.
