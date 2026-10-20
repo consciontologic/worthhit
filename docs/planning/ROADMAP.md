@@ -1,5 +1,20 @@
 # Worthhit delivery plan
 
+## Worthhit 1.1.1 direct startup — 2026-10-20
+
+Goal: open the app without briefly displaying “Know the range. Make a fair deal.”
+Keep the theme-matched shell, JavaScript fallback, metadata and public information
+pages. Preserve normal PWA/update behavior and the human production approval gate.
+
+Scope: root HTML/bootstrap and their regression tests; version/changelog and
+existing release documentation. Verify normal startup, failure fallback, full
+local gate, public build, browser rendering and protected release preparation.
+
+- [x] Remove the visible promotional startup page and cover startup behavior.
+- [x] Set 1.1.1 and complete local tests, review and browser validation.
+- [ ] Publish protected source/promotion and prepare owner production approval.
+- [ ] After approval, verify the published 1.1.1 website and container.
+
 ## Worthhit 1.1.0 compact and usable interface — 2026-10-20
 
 Goal: give phone/tablet users more working space, concise icon-led controls,

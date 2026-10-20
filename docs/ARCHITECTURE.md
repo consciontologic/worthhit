@@ -74,6 +74,11 @@ active appraisals block it, the draft must save first, and activation times out
 with a recoverable message after 15 seconds. Disposal removes the listener and
 prevents a delayed reload. The in-memory key must be entered again after reload.
 
+Normal startup has no visible landing page: the theme-matched document remains
+empty until Flutter displays the workspace. Root metadata and public information
+pages remain available. JavaScript-disabled visitors receive a concise fallback;
+caught Flutter startup failures expose recovery only when needed.
+
 The owner's Google Analytics tag runs independently of Flutter on public pages.
 The app defines no analytics events containing inputs, keys, evidence or reports.
 Initial page configuration uses canonical page URLs, blank referrers and disabled

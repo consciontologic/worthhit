@@ -5,6 +5,24 @@ Static destination: [consciontologic/worthhit.com](https://github.com/conscionto
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
+## 1.1.1 release preparation — 2026-10-20
+
+Normal startup now stays on the theme background until Flutter displays the
+workspace, without the promotional page. The version is synchronized to 1.1.1.
+The full local gate passed 201 Flutter tests, 25 Node tests and 40 Python tests;
+the final recovery-overlay change passed all eight metadata tests (41 Python tests
+total across the final covered suites). Analysis, formatting, compiled-JavaScript
+pricing, hygiene, version checks, public build and sealed web archive passed.
+Independent review passed after fixing recovery stacking above a partial app view.
+
+The browser showed only the theme background while the app script was deliberately
+delayed eight seconds, then rendered the 1.1.1 workspace without console warnings
+or errors. A separate synthetic partial-view/runApp-failure fixture showed a
+clickable Reload recovery link that returned to the app. No production user data
+or provider requests were used. Bootstrap-file download failure remains outside
+that script's recovery boundary. CI/container verification and owner production
+approval are required before publication; production remains 1.1.0 meanwhile.
+
 ## Verified 1.1.0 publication — 2026-10-20
 
 The local gate passed 201 Flutter, 19 Node and 39 Python tests, compiled-JavaScript
