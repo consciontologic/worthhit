@@ -47,12 +47,22 @@ protocol identifiers are intentionally preserved for compatibility. Browser loca
 negotiation selects one of eight supported languages, with explicit persistent
 overrides and Arabic RTL. Model explanatory language comes from a trusted fixed
 allowlist; protocol keys, enums, ISO fields and source quotations remain canonical.
-Locally bundled fonts cover Latin, Arabic and Simplified Chinese without a font CDN.
+Locally bundled WOFF2 fonts cover Latin, Arabic and Simplified Chinese without a
+font CDN or glyph subsetting. Source TTFs and OFL licenses remain in the repository;
+`tool/font_assets.py` audits the decompressed rendering tables, characters and
+variable axes, and CI fingerprints the committed exports. The public build keeps
+full and Chromium CanvasKit variants, rejects unknown renderer configurations and
+omits known unselected renderer binaries/symbols before sealing the offline manifest.
+It clears only its owned `build/web` output before compilation, so incremental
+builds cannot retain obsolete assets; sources and compiler caches are preserved.
 
 Public About, Terms and Liability documents are static HTML, available through the
 desktop footer and compact drawer without discarding the active appraisal session.
-Their visible version and the Flutter footer derive from `pubspec.yaml`; source
-checks and public builds reject stale generated identities.
+The link dispatches its final URL synchronously from the tap gesture through a
+temporary `noopener noreferrer` anchor; it never opens a blank placeholder or
+mutates a child window. A failed dispatch offers a copyable link, although browser
+policy may silently block a new tab. Their visible version and the Flutter footer
+derive from `pubspec.yaml`; source checks and public builds reject stale identities.
 
 The custom Worthhit icon font and matching transparent SVGs share reproducible
 vector geometry in `tool/generate_icons.py`. Icons inherit theme colors and keep
@@ -66,8 +76,10 @@ the workspace, drawer, settings sheets, help dialogs, menus and hints. This enab
 toolbars and prevents Select all in a dialog from including background drafts.
 Editable fields retain their own selection and paste handling.
 
-The bootstrap checks for a remote worker at startup, every five visible/online
-minutes and on focus/reconnection, with a shared 30-second cooldown and one request
+The bootstrap waits for Flutter’s first rendered frame before registering or
+checking for a remote worker. Ordered deferred scripts install the listener before
+Flutter can emit that event. It then checks every five visible/online minutes and
+on focus/reconnection, with a shared 30-second cooldown and one request
 in flight. Discovery never activates it. Waiting-worker checks run independently
 of the model catalogue. A dismissible notice and Settings offer explicit update;
 active appraisals block it, the draft must save first, and activation times out

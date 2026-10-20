@@ -169,6 +169,90 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('compact links dispatch within the menu activation callback', (
+    tester,
+  ) async {
+    size(tester, 390, 900);
+    final controller = AppController()..setApiKey('test-memory-only');
+    addTearDown(controller.dispose);
+    final opened = <Uri>[];
+    await tester.pumpWidget(
+      WorthhitApp(
+        controller: controller,
+        opener: (uri) {
+          opened.add(uri);
+          return true;
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('product-field')),
+      'Preserved mobile draft',
+    );
+    await tester.tap(find.byKey(const ValueKey('navigation-menu')));
+    await tester.pumpAndSettle();
+    for (final destination in {
+      'About': 'about/',
+      'Terms and conditions': 'terms/',
+      'Liability': 'liability/',
+    }.entries) {
+      await tester.tap(find.byKey(const ValueKey('footer-info-menu')));
+      await tester.pumpAndSettle();
+      final item = find.ancestor(
+        of: find.text(destination.key),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is PopupMenuItem<String>,
+        ),
+      );
+      final activation = tester
+          .widget<InkWell>(
+            find.descendant(of: item, matching: find.byType(InkWell)),
+          )
+          .onTap!;
+      final before = opened.length;
+      // Invoke the same callback as the gesture without flushing microtasks.
+      // PopupMenuButton.onSelected runs later; navigation must already happen.
+      activation();
+      expect(opened.length, before + 1);
+      expect(
+        opened.last.toString(),
+        'https://worthhit.com/${destination.value}',
+      );
+      await tester.pumpAndSettle();
+      expect(controller.draft.product, 'Preserved mobile draft');
+      expect(controller.apiKey, 'test-memory-only');
+      expect(find.byType(AlertDialog), findsNothing);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'compact navigation denial opens recovery after closing its menu',
+    (tester) async {
+      size(tester, 390, 900);
+      final controller = AppController()..setApiKey('test-memory-only');
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        WorthhitApp(controller: controller, opener: (_) => false),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('navigation-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('footer-info-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Terms and conditions'));
+      await tester.pumpAndSettle();
+      expect(find.text('Could not open this link'), findsOneWidget);
+      expect(
+        find.widgetWithText(SelectableText, 'https://worthhit.com/terms/'),
+        findsOneWidget,
+      );
+      expect(controller.apiKey, 'test-memory-only');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('settings About uses the same safe opener', (tester) async {
     size(tester, 390, 900);
     final controller = AppController();

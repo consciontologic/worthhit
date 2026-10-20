@@ -5,23 +5,74 @@ Static destination: [consciontologic/worthhit.com](https://github.com/conscionto
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
-## 1.1.1 release preparation — 2026-10-20
+## 1.1.2 mobile fix — prepared 2026-10-20
+
+About, Terms and Liability now dispatch their final URLs directly during the
+compact-menu tap, without a blank-window handoff. The compiled production bridge
+and widget regressions cover restricted window access, direct user activation,
+copy fallback and preserved draft/session key. Desktop Chromium at phone width
+opened all three pages; the reported physical Android Chrome failure was not
+reproduced on a physical device here.
+
+The clean build contains 52 manifest assets totaling 27,925,099 bytes, down from
+63,860,833 bytes in 1.1.1 (56.27%). Full-glyph text fonts fall from 20,802,748 to
+9,830,916 bytes; removing unselected renderer binaries/symbols saves 24,964,791
+bytes. These are encoded file sizes, not measured Android startup timings. Both
+full and Chromium CanvasKit remain available. Builds reject unsupported renderer
+configuration and clear only owned web output before compilation, preventing stale
+TTFs from entering an incremental release.
+
+Local verification passed 203 Flutter, 28 Node and 49 Python tests, both compiled
+Dart-to-JavaScript regressions, analysis, formatting, source hygiene and versions.
+Independent review passed, including the follow-up output-cleanup tests. Public
+build and web archive preparation passed. Browser checks confirmed English,
+Arabic shaping/RTL and Chinese glyphs without font warnings/errors. A fresh-origin
+final build reloaded its saved synthetic draft while the server returned HTTP 503;
+all three information pages also rendered from cache. PWA registration waits for
+the first Flutter frame; deterministic lifecycle/integrity tests retain explicit
+update activation and bounded recovery. Browser checks also observed the update
+notice and explicit reload between candidate builds. CI and owner production
+approval remain required before publication.
+
+## Verified 1.1.1 publication — 2026-10-20
 
 Normal startup now stays on the theme background until Flutter displays the
-workspace, without the promotional page. The version is synchronized to 1.1.1.
-The full local gate passed 201 Flutter tests, 25 Node tests and 40 Python tests;
-the final recovery-overlay change passed all eight metadata tests (41 Python tests
-total across the final covered suites). Analysis, formatting, compiled-JavaScript
-pricing, hygiene, version checks, public build and sealed web archive passed.
-Independent review passed after fixing recovery stacking above a partial app view.
+workspace, without the promotional page. Required
+[CI](https://github.com/consciontologic/worthhit/actions/runs/39486696844) passed
+201 Flutter, 25 Node and 41 Python tests, analysis, compiled-JavaScript pricing,
+formatting, hygiene, version checks, public packaging and the strict nginx smoke.
+Local verification and independent review passed; a delayed-download browser
+preview showed no startup text, and a partial-view failure fixture verified Reload.
+Bootstrap-file download failure remains outside that script's recovery boundary.
 
-The browser showed only the theme background while the app script was deliberately
-delayed eight seconds, then rendered the 1.1.1 workspace without console warnings
-or errors. A separate synthetic partial-view/runApp-failure fixture showed a
-clickable Reload recovery link that returned to the app. No production user data
-or provider requests were used. Bootstrap-file download failure remains outside
-that script's recovery boundary. CI/container verification and owner production
-approval are required before publication; production remains 1.1.0 meanwhile.
+[Release 1.1.1](https://github.com/consciontologic/worthhit/releases/tag/1.1.1)
+was published from `518533293f205e13640677bfd5d4fa857eb52136` after
+consciontologic approved
+[production run 39487110192](https://github.com/consciontologic/worthhit/actions/runs/39487110192).
+Source [#20](https://github.com/consciontologic/worthhit/pull/20) and exact-tree
+promotion [#21](https://github.com/consciontologic/worthhit/pull/21) are merged.
+The release name and tag are both exactly `1.1.1`.
+
+GitOps published website commit `bf2b8b13180fa292816d6cede1ce4b345894186c`;
+[Pages deployment](https://github.com/consciontologic/worthhit.com/actions/runs/39487709554)
+succeeded. All 68 public files (66 manifest assets plus manifest and worker)
+match the release archive by byte count and SHA-256. The generation is
+`e5858a92df91ee5d2ebeca1f28be976e3927a4a30880236e6a3df3bcbe6d2d52`.
+Canonical HTTPS redirects, all four page canonicals and single Google tag
+loader/configuration per page passed. Public version metadata and information
+footers show 1.1.1.
+
+The live browser prepared an explicit update from cached 1.1.0, activated it on
+Update and displayed Version 1.1.1. A subsequent reload showed no promotional
+startup page; no app console warnings/errors were observed. This check did not
+change item details or request an appraisal.
+
+All five release assets passed size/checksum verification. The anonymously
+accessible Linux amd64 GHCR image matches its released archive/configuration,
+source/version labels and UID/GID 101:101. Its registry digest is
+`sha256:ee8d14fbaa91fad359ebe00ec95c205d79bef996825276733236bb44ef9fd2dc`.
+Physical-device installation, search indexing and Google property receipt are
+not established by these checks.
 
 ## Verified 1.1.0 publication — 2026-10-20
 
@@ -268,7 +319,7 @@ capabilities and a bounded `/tmp` mount. To run a published image:
 ```sh
 docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
   --tmpfs=/tmp:rw,noexec,nosuid,size=32m -p 127.0.0.1:8080:8080 \
-  ghcr.io/consciontologic/worthhit:1.1.0
+  ghcr.io/consciontologic/worthhit:1.1.1
 ```
 
 Local validation on 2026-10-20 found a workstation Docker Snap limitation:

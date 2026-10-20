@@ -165,12 +165,17 @@ class AppFooter extends StatelessWidget {
               PopupMenuButton<String>(
                 key: const ValueKey('footer-info-menu'),
                 tooltip: strings.text('Information links'),
-                onSelected: (destination) =>
-                    openInformationLink(context, destination, opener: opener),
                 itemBuilder: (context) => [
                   for (final entry in information.entries)
                     SelectablePopupMenuItem(
                       value: entry.value,
+                      // The item callback stays in the input gesture; the menu's
+                      // onSelected callback runs after its route future resolves.
+                      onTap: () => openInformationLink(
+                        context,
+                        entry.value,
+                        opener: opener,
+                      ),
                       child: Semantics(
                         link: true,
                         hint: strings.text('Opens in a new tab'),

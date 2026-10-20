@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-20
+
+- Open information pages directly from mobile navigation while preserving the active price check.
+- Compress bundled language fonts without removing glyphs, omit unused renderer files and start offline preparation after the first app frame.
+
 ## [1.1.1] - 2026-10-20
 
 - Open directly into the price-check workspace without flashing the promotional startup page.

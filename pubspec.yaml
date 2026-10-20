@@ -1,7 +1,7 @@
 name: worthhit
 description: Evidence-led second-hand price estimates, made for real-world deals.
 publish_to: none
-version: 1.1.1
+version: 1.1.2
 environment:
   sdk: ^3.13.0
   flutter: '>=3.47.3'
@@ -28,13 +28,13 @@ flutter:
         - asset: assets/icons/WorthhitIcons.ttf
     - family: WorthhitDisplay
       fonts:
-        - asset: assets/fonts/SpaceGrotesk.ttf
+        - asset: assets/fonts/SpaceGrotesk.woff2
     - family: WorthhitSans
       fonts:
-        - asset: assets/fonts/NotoSans.ttf
+        - asset: assets/fonts/NotoSans.woff2
     - family: WorthhitArabic
       fonts:
-        - asset: assets/fonts/NotoSansArabic.ttf
+        - asset: assets/fonts/NotoSansArabic.woff2
     - family: WorthhitChinese
       fonts:
-        - asset: assets/fonts/NotoSansSC.ttf
+        - asset: assets/fonts/NotoSansSC.woff2
