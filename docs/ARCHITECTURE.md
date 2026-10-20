@@ -48,3 +48,15 @@ negotiation selects one of eight supported languages, with explicit persistent
 overrides and Arabic RTL. Model explanatory language comes from a trusted fixed
 allowlist; protocol keys, enums, ISO fields and source quotations remain canonical.
 Locally bundled fonts cover Latin, Arabic and Simplified Chinese without a font CDN.
+
+Public About, Terms and Liability documents are static HTML, available through the
+desktop footer and compact drawer without discarding the active appraisal session.
+Their visible version and the Flutter footer derive from `pubspec.yaml`; source
+checks and public builds reject stale generated identities.
+
+The owner's Google Analytics tag runs independently of Flutter on public pages.
+The app defines no analytics events containing inputs, keys, evidence or reports.
+Initial page configuration uses canonical page URLs, blank referrers and disabled
+advertising signals. Google property settings control additional automatic
+measurement; code settings alone do not establish a privacy/compliance guarantee.
+Google requests bypass the static PWA cache, and a blocked tag must not stop the app.

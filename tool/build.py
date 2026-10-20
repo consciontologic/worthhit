@@ -50,6 +50,7 @@ def main():
     args = parser.parse_args()
     if not re.fullmatch(r"/(?:[A-Za-z0-9_-]+/)*", args.base_href):
         parser.error("base href must be an absolute directory path")
+    subprocess.run(["python3", "tool/version_sync.py"], cwd=ROOT, check=True)
     subprocess.run(
         [os.environ.get("FLUTTER", "flutter"), "build", "web", "--release", "--no-pub",
          "--no-web-resources-cdn", "--pwa-strategy=none", "--base-href", args.base_href],

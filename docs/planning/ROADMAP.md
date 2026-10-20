@@ -1,5 +1,33 @@
 # Worthhit delivery plan
 
+## Worthhit 1.0.0 information and analytics — 2026-10-20
+
+Goal: publish version 1.0.0 with Google tag G-G4SYW37S81, useful public information
+pages and wfform-style adaptive footer/drawer navigation.
+
+Boundaries: static client-only hosting, existing valuation/provider contracts and
+human production approval stay intact; no custom analytics events for user content,
+credentials or reports, and no invented legal jurisdiction or compliance guarantees.
+
+Files: Flutter footer/workspace/platform link helpers and translations; static About,
+Terms and Liability pages, analytics/CSP/sitemap/PWA worker; version identity and
+release tooling, tests, changelog, README and delivery documentation.
+
+Tests: visible footer/drawer and link failures at compact/large text layouts, retained
+drafts, one configured tag per page, CSP hashes/hosts, metadata/cross-links/version
+consistency, offline directory documents, unchanged API behavior and nginx delivery.
+
+- [x] Add shared adaptive footer/drawer information, source and version links.
+- [x] Complete About, Terms and Liability pages with accurate data/analytics disclosures.
+- [x] Integrate the single Google tag on every page and keep startup/offline caching independent.
+- [x] Set and verify the single 1.0.0 release identity and dated changelog.
+- [x] Complete tests, independent review, public build and browser/container checks.
+- [ ] Publish protected source PR/promotion, obtain owner production approval and verify live 1.0.0.
+
+Risks: external analytics can be blocked or configured independently in Google;
+app functionality must remain available. Registry availability can block CI. Preserve
+prior closeout evidence/blocked tracking while carrying it into this release work.
+
 ## Worthhit identity, internationalization and releases — 2026-10-20
 
 Goal: launch Worthhit at worthhit.com with a mature neo-brutalist light/dark UI,

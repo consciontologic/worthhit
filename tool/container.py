@@ -106,6 +106,8 @@ def smoke():
             raise ValueError('Container did not become healthy.')
         for path, method, status in [('/', 'GET', 200), ('/', 'HEAD', 200),
             ('/about/', 'GET', 200), ('/about/index.html', 'GET', 200),
+            ('/terms/', 'GET', 200), ('/terms/index.html', 'GET', 200),
+            ('/liability/', 'GET', 200), ('/liability/index.html', 'GET', 200),
             ('/missing-file.js', 'GET', 404), ('/config/local.json', 'GET', 404),
             ('/.env', 'GET', 404), ('/assets/?probe=worthhit-log-sentinel', 'GET', 404), ('/', 'POST', 405), ('/', 'OPTIONS', 405)]:
             actual, headers, body = request(path, method)
@@ -113,14 +115,15 @@ def smoke():
                 raise ValueError(f'Container HTTP contract failed for {method} {path}.')
             if path == '/' and method == 'GET' and body != (ROOT / 'build/web/index.html').read_bytes():
                 raise ValueError('Container does not contain the verified public build.')
-            if path.startswith('/about/') and body != (ROOT / 'build/web/about/index.html').read_bytes():
-                raise ValueError('Container About route does not serve the verified static page.')
+            for page in ['about', 'terms', 'liability']:
+                if path.startswith('/' + page + '/') and body != (ROOT / f'build/web/{page}/index.html').read_bytes():
+                    raise ValueError(f'Container {page} route does not serve the verified static page.')
             if "frame-ancestors 'none'" not in headers.get('Content-Security-Policy', ''):
                 raise ValueError('Missing container security headers.')
         logs = subprocess.run(['docker', 'logs', container], check=True, text=True, capture_output=True)
         if 'worthhit-log-sentinel' in logs.stdout + logs.stderr:
             raise ValueError('Container logs exposed a request query.')
-        print('Container smoke passed: non-root/read-only, GET/HEAD, true asset 404, write rejection, headers, About routes and exact HTML bytes.')
+        print('Container smoke passed: non-root/read-only, GET/HEAD, true asset 404, write rejection, headers, information routes and exact HTML bytes.')
     except Exception:
         run('docker', 'logs', container)
         raise

@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-G4SYW37S81" referrerpolicy="no-referrer"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-G4SYW37S81', {
+    page_location: 'https://worthhit.com/',
+    page_referrer: '',
+    page_title: 'Worthhit — Second-hand price checks for a fair deal',
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false
+  });
+</script>
   <base href="$FLUTTER_BASE_HREF">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -21,7 +35,7 @@
   <meta name="twitter:title" content="Worthhit — Second-hand price checks">
   <meta name="twitter:description" content="Dated comparables, transparent ranges and fair negotiation guidance.">
   <meta name="twitter:image" content="https://worthhit.com/social-card.png">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-1XwqQE0J/Xe6bmuqULedqiQhng75eu/oUfg9CAHVQho='; style-src 'self' 'unsafe-inline'; connect-src 'self' https://openrouter.ai; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-V31HLipKkqEvvfqIQiuCZFoGa/adSqjXgBMBYDDedtY=' 'sha256-1XwqQE0J/Xe6bmuqULedqiQhng75eu/oUfg9CAHVQho=' https://www.googletagmanager.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com; img-src 'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com; font-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Worthhit">
@@ -41,6 +55,7 @@
     <p>Compare a second-hand asking price against dated market evidence. See a transparent range, the limitations of the evidence and practical negotiation guidance.</p>
     <p role="status">Opening your price-check workspace…</p>
     <a href="about/">How Worthhit works, privacy and common questions →</a>
+    <nav aria-label="Information pages"><a href="terms/">Terms and conditions</a> · <a href="liability/">Liability</a> · <a href="https://github.com/consciontologic/worthhit" rel="noopener noreferrer">GitHub</a></nav>
   </main>
   <noscript><p>Worthhit needs JavaScript to run locally in your browser. <a href="about/">Read how price checks work.</a></p></noscript>
   <script src="pwa_bootstrap.js" defer></script>

@@ -3,7 +3,7 @@
 Source: [consciontologic/worthhit](https://github.com/consciontologic/worthhit).
 Static destination: [consciontologic/worthhit.com](https://github.com/consciontologic/worthhit.com).
 Canonical site: [worthhit.com](https://worthhit.com).
-Container: `ghcr.io/consciontologic/worthhit:0.2.0` (Linux amd64).
+Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
 ## Verified publication — 2026-10-20
 
@@ -33,7 +33,9 @@ devices are not established by these checks.
 ## Release procedure
 
 1. Follow [Gitflow](GITFLOW.md). Set the plain `MAJOR.MINOR.PATCH` in `pubspec.yaml`
-   and add its dated `CHANGELOG.md` entry. Publish validated source with `make git`.
+   and add its dated `CHANGELOG.md` entry. Run `make version.sync` to update the
+   Flutter identity and public document versions; `make verify` and public builds
+   reject version drift. Publish validated source with `make git`.
 2. Merge a reviewed feature/release PR into `develop` after **Verify** and **Security**.
    Verify includes Dart checks, public build, release packaging and an actual nginx
    container smoke. No CI job receives an OpenRouter key or sends an appraisal.
@@ -144,7 +146,7 @@ capabilities and a bounded `/tmp` mount. To run a published image:
 ```sh
 docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges \
   --tmpfs=/tmp:rw,noexec,nosuid,size=32m -p 127.0.0.1:8080:8080 \
-  ghcr.io/consciontologic/worthhit:0.2.0
+  ghcr.io/consciontologic/worthhit:1.0.0
 ```
 
 Local validation on 2026-10-20 found a workstation Docker Snap limitation:

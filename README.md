@@ -47,21 +47,32 @@ site-data clearing can remove them; download reports to keep a copy.
 - [Delivery and human deployment approval](docs/DEPLOYMENT.md)
 - [Delivery checklist](docs/planning/ROADMAP.md)
 
-No analytics, account system, marketplace transactions, payment collection, or
-shared embedded API credential. Product facts and evidence leave your device
-only when you explicitly request an appraisal; then OpenRouter, its selected
-provider and optional search provider process them under their own policies.
+Google Analytics measures website use through the owner's tag `G-G4SYW37S81`.
+The site does not add custom events containing API keys, item descriptions,
+evidence or reports; advertising signals are disabled. Google's cookies,
+identifiers and automatic measurements also depend on property/browser settings.
+Blocking analytics does not prevent use of the app. See [About](https://worthhit.com/about/)
+and [Terms](https://worthhit.com/terms/) for data-use details.
+
+There is no account system, marketplace transaction/payment service or shared
+embedded API credential. Appraisal requests send product facts and evidence
+directly to OpenRouter, its selected provider and optional search provider.
 Do not include secrets, personal records or confidential documents in listings.
 
 MIT-licensed tooling and verified-shell patterns adapted from
 [wfform](https://github.com/consciontologic/wfform); bundled Space Grotesk and Noto fonts retain their OFL licenses in `assets/fonts/`.
 
-## Worthhit 0.2.0
+## Worthhit 1.0.0
 
 The app supports system/light/dark appearance and English, Turkish, German, French,
 Spanish, Portuguese, Arabic and Simplified Chinese. Browser language negotiation
 and manual overrides work without an IP lookup. Original evidence remains verbatim.
-This pre-1.0 release may evolve its interface; saved report protocols remain compatible.
+Saved report protocols remain compatible. About, Terms and conditions, Liability,
+the source repository and the release version are available from the desktop
+footer and the smaller-screen drawer.
+
+`pubspec.yaml` owns the release version. After updating it and the dated changelog,
+run `make version.sync`; `make verify` and public builds reject visible version drift.
 
 Production is [worthhit.com](https://worthhit.com/). Reviewed source changes flow
 through `develop` and exact-tree promotion to `main`; the owner approves each

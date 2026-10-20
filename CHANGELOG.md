@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.0.0] - 2026-10-20
+
+- Add About, Terms and conditions, Liability and GitHub links in the desktop footer and compact navigation drawer.
+- Publish readable information pages with matching light/dark styling and offline navigation.
+- Add the owner's Google Analytics tag to every public page, with advertising features disabled and updated data-use disclosures.
+- Display the release version consistently in the app and public information pages.
+
 ## [0.2.0] - 2026-10-20
 
 - Rename the app to Worthhit and prepare the canonical worthhit.com website.

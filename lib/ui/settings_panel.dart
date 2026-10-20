@@ -4,6 +4,7 @@ import '../app/app_controller.dart';
 import '../app/preferences_controller.dart';
 import '../l10n/app_strings.dart';
 import '../platform/document_preferences.dart';
+import 'app_footer.dart';
 import 'worthhit_theme.dart';
 
 class SettingsPanel extends StatefulWidget {
@@ -11,9 +12,11 @@ class SettingsPanel extends StatefulWidget {
     super.key,
     required this.controller,
     required this.preferences,
+    this.opener = openPage,
   });
   final AppController controller;
   final PreferencesController preferences;
+  final PageOpener opener;
 
   @override
   State<SettingsPanel> createState() => _SettingsPanelState();
@@ -253,7 +256,11 @@ class _SettingsPanelState extends State<SettingsPanel> {
               ),
               const SizedBox(height: 16),
               TextButton.icon(
-                onPressed: openAboutPage,
+                onPressed: () => openInformationLink(
+                  context,
+                  'about/',
+                  opener: widget.opener,
+                ),
                 icon: const Icon(Icons.info_outline),
                 label: const AppText('About Worthhit'),
               ),

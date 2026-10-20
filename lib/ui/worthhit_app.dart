@@ -6,15 +6,22 @@ import '../app/preferences_controller.dart';
 import '../domain/appraisal.dart';
 import '../l10n/app_strings.dart';
 import '../platform/document_preferences.dart';
+import 'app_footer.dart';
 import 'draft_editor.dart';
 import 'result_panel.dart';
 import 'settings_panel.dart';
 import 'worthhit_theme.dart';
 
 class WorthhitApp extends StatefulWidget {
-  const WorthhitApp({super.key, required this.controller, this.preferences});
+  const WorthhitApp({
+    super.key,
+    required this.controller,
+    this.preferences,
+    this.opener = openPage,
+  });
   final AppController controller;
   final PreferencesController? preferences;
+  final PageOpener opener;
   @override
   State<WorthhitApp> createState() => _WorthhitAppState();
 }
@@ -69,6 +76,7 @@ class _WorthhitAppState extends State<WorthhitApp> {
       home: _Workspace(
         controller: widget.controller,
         preferences: _preferences,
+        opener: widget.opener,
       ),
     ),
   );
@@ -101,9 +109,14 @@ class _DocumentPreferencesState extends State<_DocumentPreferences> {
 }
 
 class _Workspace extends StatefulWidget {
-  const _Workspace({required this.controller, required this.preferences});
+  const _Workspace({
+    required this.controller,
+    required this.preferences,
+    required this.opener,
+  });
   final AppController controller;
   final PreferencesController preferences;
+  final PageOpener opener;
 
   @override
   State<_Workspace> createState() => _WorkspaceState();
@@ -111,6 +124,7 @@ class _Workspace extends StatefulWidget {
 
 class _WorkspaceState extends State<_Workspace> {
   final _editor = GlobalKey<DraftEditorState>();
+  final _scaffold = GlobalKey<ScaffoldState>();
   int _step = 0;
   int _tabletTab = 0;
   AppraisalResult? _lastResult;
@@ -178,6 +192,7 @@ class _WorkspaceState extends State<_Workspace> {
     builder: (_) => SettingsPanel(
       controller: widget.controller,
       preferences: widget.preferences,
+      opener: widget.opener,
     ),
   );
 
@@ -221,6 +236,7 @@ class _WorkspaceState extends State<_Workspace> {
           final largeType = MediaQuery.textScalerOf(context).scale(1) >= 1.8;
           final phone = constraints.maxWidth < 700 || largeType;
           final desktop = constraints.maxWidth >= 1100 && !largeType;
+          final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
           final editor = DraftEditor(
             key: _editor,
             controller: widget.controller,
@@ -232,7 +248,7 @@ class _WorkspaceState extends State<_Workspace> {
             controller: widget.controller,
             onEdit: _edit,
           );
-          return Scaffold(
+          return KeyedSubtree(
             key: ValueKey(
               phone
                   ? 'phone-layout'
@@ -240,110 +256,128 @@ class _WorkspaceState extends State<_Workspace> {
                   ? 'desktop-layout'
                   : 'tablet-layout',
             ),
-            bottomNavigationBar: phone ? _phoneNavigation() : null,
-            body: SafeArea(
-              child: Row(
-                children: [
-                  if (!phone) _rail(desktop),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _header(phone, desktop),
-                        if (widget.controller.error != null)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                              20,
-                              0,
-                              20,
-                              12,
-                            ),
-                            child: Semantics(
-                              key: const ValueKey('error-banner'),
-                              liveRegion: true,
-                              child: StatusNotice(
-                                message: widget.controller.error!,
-                                warning: true,
+            child: Scaffold(
+              key: _scaffold,
+              drawer: desktop ? null : _drawer(),
+              bottomNavigationBar: phone
+                  ? _phoneNavigation()
+                  : desktop && !keyboardVisible
+                  ? SafeArea(
+                      top: false,
+                      child: AppFooter(
+                        key: const ValueKey('app-footer'),
+                        opener: widget.opener,
+                      ),
+                    )
+                  : null,
+              body: SafeArea(
+                child: Row(
+                  children: [
+                    if (!phone) _rail(desktop),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _header(phone, desktop),
+                          if (widget.controller.error != null)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                20,
+                                0,
+                                20,
+                                12,
+                              ),
+                              child: Semantics(
+                                key: const ValueKey('error-banner'),
+                                liveRegion: true,
+                                child: StatusNotice(
+                                  message: widget.controller.error!,
+                                  warning: true,
+                                ),
                               ),
                             ),
-                          ),
-                        if (widget.controller.persistenceError != null ||
-                            widget.preferences.persistenceError != null)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                              20,
-                              0,
-                              20,
-                              12,
+                          if (widget.controller.persistenceError != null ||
+                              widget.preferences.persistenceError != null)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                20,
+                                0,
+                                20,
+                                12,
+                              ),
+                              child: Semantics(
+                                liveRegion: true,
+                                child: StatusNotice(
+                                  message:
+                                      widget.controller.persistenceError ??
+                                      widget.preferences.persistenceError!,
+                                  warning: true,
+                                ),
+                              ),
                             ),
-                            child: Semantics(
-                              liveRegion: true,
+                          if (widget.controller.updateAvailable)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                20,
+                                0,
+                                20,
+                                12,
+                              ),
                               child: StatusNotice(
                                 message:
-                                    widget.controller.persistenceError ??
-                                    widget.preferences.persistenceError!,
-                                warning: true,
-                              ),
-                            ),
-                          ),
-                        if (widget.controller.updateAvailable)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                              20,
-                              0,
-                              20,
-                              12,
-                            ),
-                            child: StatusNotice(
-                              message:
-                                  'A new version is ready. Your draft '
-                                  'will stay; you’ll need to re-enter your key.',
-                              action: TextButton(
-                                onPressed: widget.controller.busy
-                                    ? null
-                                    : widget.controller.applyUpdate,
-                                child: const AppText('Update app'),
-                              ),
-                            ),
-                          ),
-                        if (!phone && !desktop) _tabletTabs(),
-                        Expanded(
-                          child: desktop
-                              ? Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                    28,
-                                    0,
-                                    28,
-                                    24,
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Expanded(flex: 11, child: _panel(editor)),
-                                      const SizedBox(width: 24),
-                                      Expanded(
-                                        flex: 10,
-                                        child: _panel(
-                                          result,
-                                          color: WorthhitPalette.of(context)
-                                              .soft,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : IndexedStack(
-                                  index: phone
-                                      ? (_step == 2 ? 1 : 0)
-                                      : _tabletTab,
-                                  children: [editor, result],
+                                    'A new version is ready. Your draft '
+                                    'will stay; you’ll need to re-enter your key.',
+                                action: TextButton(
+                                  onPressed: widget.controller.busy
+                                      ? null
+                                      : widget.controller.applyUpdate,
+                                  child: const AppText('Update app'),
                                 ),
-                        ),
-                      ],
+                              ),
+                            ),
+                          if (!phone && !desktop) _tabletTabs(),
+                          Expanded(
+                            child: desktop
+                                ? Padding(
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                          28,
+                                          0,
+                                          28,
+                                          24,
+                                        ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Expanded(
+                                          flex: 11,
+                                          child: _panel(editor),
+                                        ),
+                                        const SizedBox(width: 24),
+                                        Expanded(
+                                          flex: 10,
+                                          child: _panel(
+                                            result,
+                                            color: WorthhitPalette.of(context)
+                                                .soft,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : IndexedStack(
+                                    index: phone
+                                        ? (_step == 2 ? 1 : 0)
+                                        : _tabletTab,
+                                    children: [editor, result],
+                                  ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -374,6 +408,15 @@ class _WorkspaceState extends State<_Workspace> {
       children: [
         Row(
           children: [
+            if (!desktop) ...[
+              IconButton(
+                key: const ValueKey('navigation-menu'),
+                tooltip: AppStrings.of(context).text('Open navigation'),
+                onPressed: () => _scaffold.currentState?.openDrawer(),
+                icon: const Icon(Icons.menu),
+              ),
+              const SizedBox(width: 6),
+            ],
             if (phone)
               const Expanded(child: WorthhitBrand())
             else
@@ -401,27 +444,6 @@ class _WorkspaceState extends State<_Workspace> {
               ),
               icon: const Icon(Icons.tune),
             ),
-            if (phone)
-              PopupMenuButton<String>(
-                key: const ValueKey('phone-more-menu'),
-                tooltip: AppStrings.of(context).text('More actions'),
-                onSelected: (action) {
-                  if (action == 'clear') _clear();
-                  if (action == 'example') widget.controller.loadExample();
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'clear',
-                    enabled: !widget.controller.busy,
-                    child: const AppText('Start fresh'),
-                  ),
-                  PopupMenuItem(
-                    value: 'example',
-                    enabled: !widget.controller.busy,
-                    child: const AppText('Try a synthetic example'),
-                  ),
-                ],
-              ),
           ],
         ),
         if (!phone) ...[
@@ -435,6 +457,88 @@ class _WorkspaceState extends State<_Workspace> {
           ),
         ],
       ],
+    ),
+  );
+
+  Widget _drawer() => Drawer(
+    width: (MediaQuery.sizeOf(context).width - 24).clamp(240.0, 360.0),
+    backgroundColor: WorthhitPalette.of(context).paper,
+    shape: const RoundedRectangleBorder(),
+    child: SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          key: const ValueKey('navigation-scroll'),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          const Expanded(child: WorthhitBrand()),
+                          IconButton(
+                            tooltip: AppStrings.of(context)
+                                .text('Close navigation'),
+                            onPressed: () =>
+                                _scaffold.currentState?.closeDrawer(),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(),
+                    for (final action in [
+                      ('Price check', Icons.sell_outlined, _edit, true),
+                      (
+                        'Start fresh',
+                        Icons.add,
+                        _clear,
+                        !widget.controller.busy,
+                      ),
+                      (
+                        'Try an example',
+                        Icons.play_arrow_outlined,
+                        widget.controller.loadExample,
+                        !widget.controller.busy,
+                      ),
+                      ('Settings', Icons.tune, _settings, true),
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: TextButton.icon(
+                          onPressed: !action.$4
+                              ? null
+                              : () {
+                                  _scaffold.currentState?.closeDrawer();
+                                  action.$3();
+                                },
+                          style: TextButton.styleFrom(
+                            alignment: AlignmentDirectional.centerStart,
+                            minimumSize: const Size(48, 56),
+                          ),
+                          icon: Icon(action.$2),
+                          label: AppText(action.$1),
+                        ),
+                      ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+                AppFooter(
+                  key: const ValueKey('sidebar-app-footer'),
+                  inDrawer: true,
+                  opener: widget.opener,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     ),
   );
 
