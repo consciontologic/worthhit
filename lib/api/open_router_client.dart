@@ -390,7 +390,7 @@ class OpenRouterClient {
         'response_format': {
           'type': 'json_schema',
           'json_schema': {
-            'name': 'worthit_appraisal',
+            'name': 'worthhit_appraisal',
             'strict': true,
             'schema': schema,
           },

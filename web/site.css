@@ -1,0 +1,16 @@
+:root{color-scheme:light dark;--canvas:#ecede5;--ink:#252a25;--line:#666f61;--accent:#caef63}
+@media(prefers-color-scheme:dark){:root{--canvas:#161a18;--ink:#e9ede1;--line:#929d8c}}
+:root[data-theme=light]{color-scheme:light;--canvas:#ecede5;--ink:#252a25;--line:#666f61}
+:root[data-theme=dark]{color-scheme:dark;--canvas:#161a18;--ink:#e9ede1;--line:#929d8c}
+*{box-sizing:border-box}html,body{margin:0;background:var(--canvas);color:var(--ink)}
+body{font:18px/1.7 system-ui,sans-serif}a{color:inherit;text-underline-offset:.22em}
+a:hover{background:var(--accent);color:#20241d}a:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+::selection{background:var(--accent);color:#20241d}
+main{max-width:960px;padding:7vh max(24px,4vw) 10vh;margin:auto}
+h1{font-size:clamp(2.6rem,7vw,5rem);line-height:1.02;letter-spacing:-.055em;max-width:13ch;font-weight:750}
+h2{font-size:1.8rem;line-height:1.2;letter-spacing:-.03em;margin:2rem 0 1rem}
+p,li{max-width:70ch}.brand{font:700 27px/1.1 system-ui,sans-serif;letter-spacing:-.03em;text-decoration:none}
+section{border-top:2px solid var(--line);margin-top:2rem;padding-top:1rem}
+.action{display:inline-block;padding:.65rem 1rem;background:var(--accent);color:#20241d;border:2px solid #252a25;font-weight:700;text-decoration:none}
+footer{margin-top:3rem;font-size:.875rem;border-top:2px solid var(--line);padding-top:1rem}
+flutter-view{outline:none}

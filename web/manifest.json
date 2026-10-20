@@ -1,16 +1,19 @@
 {
-  "name": "Worthit — second-hand price checks",
-  "short_name": "Worthit",
-  "id": "./",
-  "start_url": "./",
-  "scope": "./",
+  "name": "Worthhit — second-hand price checks",
+  "short_name": "Worthhit",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#FFF9ED",
-  "theme_color": "#D4F267",
-  "description": "Evidence-led second-hand estimates, with no app server.",
+  "background_color": "#161A18",
+  "theme_color": "#161A18",
+  "description": "Know the range. Make a fair deal. Evidence-led second-hand price checks.",
+  "lang": "en",
+  "categories": ["shopping", "utilities"],
   "icons": [
     {"src": "icons/Icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "icons/Icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/Icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
     {"src": "icons/Icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }

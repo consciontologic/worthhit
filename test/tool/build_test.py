@@ -92,7 +92,7 @@ class BuildTests(unittest.TestCase):
         index = (ROOT / "web/index.html").read_text()
         self.assertNotIn("googletagmanager", index)
         self.assertNotIn("wfform.com", index)
-        self.assertIn("Worthit", index)
+        self.assertIn("Worthhit", index)
 
 
 if __name__ == "__main__":

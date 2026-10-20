@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:worthit/api/open_router_client.dart';
+import 'package:worthhit/api/open_router_client.dart';
 
 Map<String, dynamic> modelJson({
   String id = 'vendor/test:free',

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:worthit/domain/appraisal.dart';
+import 'package:worthhit/domain/appraisal.dart';
 
 void main() {
   final asOf = DateTime.utc(2026, 10, 20);

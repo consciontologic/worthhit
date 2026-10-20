@@ -328,16 +328,16 @@ String? blockedItemReason(AppraisalInput input) {
     (
       r'\b(guns?|handguns?|rifles?|shotguns?|pistols?|firearms?|ammunition|'
           r'explosives?|grenades?|weapons?|silah|tabanca|tufek)\b',
-      'Weapons, ammunition and explosives are outside Worthit’s scope.',
+      'Weapons, ammunition and explosives are outside Worthhit’s scope.',
     ),
     (
       r'\b(cocaine|heroin|cannabis|marijuana|methamphetamine|fentanyl|'
           r'drugs?|medicines?|prescription pills|esrar|eroin|uyusturucu)\b',
-      'Drugs and medicines are outside Worthit’s scope.',
+      'Drugs and medicines are outside Worthhit’s scope.',
     ),
     (
       r'\b(porn|pornography|pornographic)\b',
-      'Pornographic material is outside Worthit’s scope.',
+      'Pornographic material is outside Worthhit’s scope.',
     ),
     (
       r'\b(stolen|counterfeit|recalled|calinmis)\b',

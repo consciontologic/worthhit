@@ -231,7 +231,7 @@ class AppController extends ChangeNotifier {
     _changed();
   }
 
-  Future<void> appraise() async {
+  Future<void> appraise({String responseLanguage = 'en'}) async {
     if (busy) return;
     error = null;
     if (isExample || _hasSyntheticEvidence(draft)) {
@@ -285,7 +285,11 @@ class AppController extends ChangeNotifier {
         apiKey: key,
         model: selectedModel!,
         messages: [
-          {'role': 'system', 'content': system},
+          {
+            'role': 'system',
+            'content':
+                '$system\n\n${_responseLanguageInstruction(responseLanguage)}',
+          },
           {'role': 'user', 'content': buildUserPrompt(input)},
         ],
         schema: appraisalSchema(),
@@ -425,7 +429,7 @@ class AppController extends ChangeNotifier {
   Future<void> exportReport() async {
     try {
       store.download(
-        'worthit-report.json',
+        'worthhit-report.json',
         const JsonEncoder.withIndent('  ').convert({
           'format': 'worthit.report.v1',
           'example': isExample,
@@ -468,4 +472,28 @@ class AppController extends ChangeNotifier {
     apiKey = '';
     super.dispose();
   }
+}
+
+// Only this fixed allowlist can contribute to the trusted system directive.
+// Never interpolate raw locale text, user content or translated UI copy here.
+String _responseLanguageInstruction(String code) {
+  const languages = {
+    'en': 'English',
+    'tr': 'Turkish',
+    'de': 'German',
+    'fr': 'French',
+    'es': 'Spanish',
+    'pt': 'Portuguese',
+    'ar': 'Arabic',
+    'zh': 'Simplified Chinese',
+  };
+  final language = languages[code] ?? languages['en']!;
+  return 'RESPONSE LANGUAGE\n'
+      'Write explanatory prose in $language. '
+      'Translate only reason, item_summary, factors, cautions and questions. '
+      'Keep JSON keys, version identifiers, schema enums, ISO currency codes '
+      'and ISO dates unchanged. Keep source titles, URLs, evidence and '
+      'support_quote verbatim in their original language. Never translate or '
+      'rewrite quotations to fit evidence admission. All safety, evidence '
+      'and output requirements above still apply.';
 }
