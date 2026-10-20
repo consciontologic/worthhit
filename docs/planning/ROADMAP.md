@@ -17,8 +17,8 @@ language support. Run the full gate, public build, independent review and CI.
 - [x] Diagnose and fix mobile information-page navigation with regression coverage.
 - [x] Measure and reduce the principal mobile loading costs without losing functionality.
 - [x] Set 1.1.2 and finish local, browser and independent verification.
-- [ ] Publish protected PR/promotion and prepare owner production approval.
-- [ ] After approval, verify the website, information links and container.
+- [x] Publish protected PR/promotion and prepare owner production approval.
+- [x] After approval, verify the website, information links and container.
 
 Risks: popup policies differ by browser; retain direct user activation and prevent
 opener access. Bundle/cache changes must preserve locale glyphs and complete,
@@ -160,15 +160,16 @@ Test schema drift/zero prices/refresh/error/cancel boundaries; prohibited and in
 Live providers may reject a schema or be unavailable; preserve drafts and allow explicit retry/model choice. Search snippets may lack real sold comparables; abstain and request evidence. Browser storage is origin-local and may be cleared; surface save failures and export reports. Pages publication requires protection-compliant source promotion and human production approval.
 
 ## Publication status
-[Worthhit 1.1.1 is live](https://worthhit.com), with HTTPS and canonical
-www/HTTP redirects. Source [#20](https://github.com/consciontologic/worthhit/pull/20)
-and promotion [#21](https://github.com/consciontologic/worthhit/pull/21) are merged;
+[Worthhit 1.1.2 is live](https://worthhit.com), with HTTPS and canonical
+www/HTTP redirects. Source [#23](https://github.com/consciontologic/worthhit/pull/23)
+and promotion [#24](https://github.com/consciontologic/worthhit/pull/24) are merged;
 the owner-approved
-[release run](https://github.com/consciontologic/worthhit/actions/runs/39487110192)
+[release run](https://github.com/consciontologic/worthhit/actions/runs/39492160387)
 published the matching GitHub release, public GHCR image and GitOps website.
-All 68 public files passed byte-count/hash checks. The browser updated from cached
-1.1.0 to 1.1.1, then reloaded without the promotional startup page.
-See [publication evidence and limits](../DEPLOYMENT.md#verified-111-publication--2026-10-20).
+All 54 public files passed byte-count/hash checks. The browser updated from cached
+1.1.1 to 1.1.2; all three information pages opened from the phone-sized menu.
+The complete manifest payload is 56.27% smaller than 1.1.1.
+See [publication evidence and limits](../DEPLOYMENT.md#verified-112-publication--2026-10-20).
 
 ### Historical 0.1.0 deployment
 
