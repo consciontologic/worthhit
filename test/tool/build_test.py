@@ -53,6 +53,35 @@ class BuildTests(unittest.TestCase):
                     template.write_text(template.read_text() + "\n// worker fix")
             self.assertNotEqual(*versions)
 
+    def test_public_manifest_excludes_files_omitted_by_pages_archive(self):
+        build = load("build")
+        with tempfile.TemporaryDirectory(dir=ROOT / ".local") as tmp:
+            root = Path(tmp)
+            (root / "pwa_bootstrap.js").write_text("const version='__BUILD_ID__';")
+            (root / "index.html").write_text("<title>Worthit</title>")
+            (root / ".last_build_id").write_text("flutter build metadata")
+            (root / ".private").mkdir()
+            (root / ".private/metadata").write_text("not published")
+            (root / "assets").mkdir()
+            (root / "assets/.metadata").write_text("not published")
+            (root / "assets/.cache").mkdir()
+            (root / "assets/.cache/file").write_text("not published")
+            (root / "assets/font.woff2").write_bytes(b"font")
+            version = build.package(root)
+            release = json.loads((root / "release.json").read_text())
+            self.assertEqual(
+                set(release["assets"]),
+                {"index.html", "pwa_bootstrap.js", "assets/font.woff2"},
+            )
+            worker = (root / "service_worker.js").read_text()
+            self.assertNotIn(".last_build_id", worker)
+            self.assertNotIn(".private", worker)
+            self.assertNotIn(".metadata", worker)
+            self.assertNotIn(".cache", worker)
+            (root / ".last_build_id").write_text("new local build metadata")
+            (root / "pwa_bootstrap.js").write_text("const version='__BUILD_ID__';")
+            self.assertEqual(version, build.package(root))
+
     def test_secret_detector_fails_closed_without_printing_values(self):
         check = load("repository_check")
         self.assertTrue(check.contains_secret(b"sk-or-v1-" + b"a" * 64))

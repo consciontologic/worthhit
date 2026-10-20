@@ -2,8 +2,10 @@
 
 Source: [consciontologic/worthit](https://github.com/consciontologic/worthit).
 Pages destination: [consciontologic.github.io/worthit](https://consciontologic.github.io/worthit/).
-This URL is configured through the GitHub Pages API; configuration does not mean
-an application has already been deployed. No custom domain is configured.
+The first human-approved deployment completed on 2026-10-20. Public checks found
+a hidden build metadata file missing from the Pages archive; the follow-up build
+excludes hidden paths from the offline manifest. Verify all listed assets after
+the corrected deployment. No custom domain is configured.
 
 1. Work on a `codex/feature/*` or `codex/bugfix/*` branch from `develop`.
 2. Run `make verify` and `make build.public`. Append a conventional completion
@@ -34,9 +36,10 @@ generation. It scans the source and build for credential patterns. The worker
 does not intercept authenticated requests, non-GET requests, external URLs or
 configuration paths. It admits only manifest-listed static bytes.
 
-Updates are prepared in the background and require an explicit app action after
-the draft is saved. An incomplete/corrupt shell is removed. Older tab generations
-are retained until safe cleanup. Stored reports are dated observations, not
+Updates are prepared in the background. In-session activation requires an
+explicit app action after the draft is saved; the browser can also activate a
+waiting worker after all controlled tabs close. An incomplete/corrupt shell is
+removed. Older tab generations are retained until safe cleanup. Stored reports are dated observations, not
 automatically refreshed market prices.
 
 Validation evidence must distinguish deterministic tests, actual browser checks,

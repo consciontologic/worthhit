@@ -18,6 +18,9 @@ def manifest_for(directory):
         }
         for path in sorted(directory.rglob("*"))
         if path.is_file()
+        # upload-pages-artifact excludes hidden path components. They cannot be
+        # required by the all-or-nothing offline shell (e.g. .last_build_id).
+        and not any(part.startswith(".") for part in path.relative_to(directory).parts)
         and path.name not in {"service_worker.js", "flutter_service_worker.js", "release.json"}
     }
 
