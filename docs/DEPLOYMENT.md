@@ -103,8 +103,14 @@ explicit during a session; existing controlled tabs retain their generation.
 `make release.prepare` creates the deterministic web tarball, release notes,
 source identity and checksum list. `make image` uses a generated context containing
 only verified static files, three nginx configurations, Dockerfile and ignore
-rules. The pinned official nginx image runs as UID/GID 101 on port 8080; only
-GET/HEAD static requests are accepted. Asset misses are real 404s, headers apply
+rules. The official nginx image is pinned by version and SHA-256 digest at
+`docker.io/library/nginx`. This replaces the public ECR mirror, which returned
+HTTP 429 “Data limit exceeded” during release builds. The version and digest are
+unchanged, so only the download registry changes. [GitHub documents](https://docs.github.com/en/actions/reference/limits#docker-hubs-rate-limit-for-github-actions)
+that hosted runners pulling public Docker Hub images are exempt from its pull-rate
+limit; local/self-hosted runners and general registry outages remain separate limits.
+The image runs as UID/GID 101 on port 8080; only GET/HEAD static requests are accepted.
+Asset misses are real 404s, headers apply
 also to errors, and access logs omit request URLs/queries. Native nginx error logging is
 suppressed because its unstructured messages can expose request URLs; startup
 and health checks report failures instead. There is no API proxy,
@@ -127,7 +133,11 @@ a later website/release failure may leave an already published image. Inspect th
 failure, then rerun the **failed publish job in the same workflow run** so it reuses
 the same approved artifact. Do not rebuild, move tags, replace assets or replay an
 old source after main advances. Artifact retention is 14 days; an expired artifact
-requires a new release version and normal approval.
+requires a new release version and normal approval. If a build fails before publication
+and a source fix is required, validate and promote that fix normally, then start a
+new release dispatch on current main. Do not rerun the old source after main has
+advanced; the source guard rejects it. An unpublished version may be retained only
+when the tag, release and package preflights find no conflict.
 
 Local equivalents:
 

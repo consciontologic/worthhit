@@ -24,6 +24,12 @@ consistency, offline directory documents, unchanged API behavior and nginx deliv
 - [x] Complete tests, independent review, public build and browser/container checks.
 - [ ] Publish protected source PR/promotion, obtain owner production approval and verify live 1.0.0.
 
+Registry recovery: replace only the public ECR mirror with the verified official
+Docker Hub source at the same nginx version/digest. Protect that source and immutable
+pin with a regression check; rerun the full gate, image build and strict CI smoke,
+then promote the tested tree and dispatch a new 1.0.0 release for human approval.
+The earlier failed run has no published 1.0.0 artifacts.
+
 Risks: external analytics can be blocked or configured independently in Google;
 app functionality must remain available. Registry availability can block CI. Preserve
 prior closeout evidence/blocked tracking while carrying it into this release work.
