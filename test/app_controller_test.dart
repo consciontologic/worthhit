@@ -1,0 +1,509 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:worthit/api/open_router_client.dart';
+import 'package:worthit/app/app_controller.dart';
+import 'package:worthit/domain/appraisal.dart';
+import 'package:worthit/platform/local_store.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('draft is saved locally, but API key is memory only', () {
+    final store = MemoryStore();
+    final controller = AppController(store: store);
+    controller.setApiKey('synthetic-test-key');
+    controller.updateDraft(
+      AppraisalInput(
+        product: 'Desk lamp',
+        condition: 'Good',
+        location: 'London, UK',
+        currency: 'GBP',
+        details: 'Working, with original cable.',
+      ),
+    );
+    expect(store.values.values.join(), contains('Desk lamp'));
+    expect(store.values.values.join(), isNot(contains('synthetic-test-key')));
+    controller.dispose();
+  });
+
+  test('missing facts fail locally before sending any content', () async {
+    final controller = AppController(store: MemoryStore());
+    await controller.appraise();
+    expect(controller.error, isNotNull);
+    expect(controller.busy, isFalse);
+    controller.dispose();
+  });
+
+  test('synthetic example is labeled and can be cleared', () async {
+    final controller = AppController(store: MemoryStore());
+    await controller.loadExample();
+    expect(controller.isExample, isTrue);
+    expect(controller.draft.product, isNotEmpty);
+    expect(controller.result?.status, AppraisalStatus.ready);
+    expect(controller.result?.median, 120);
+    controller.clearDraft();
+    expect(controller.isExample, isFalse);
+    expect(controller.result, isNull);
+    expect(controller.draft.product, isEmpty);
+    controller.dispose();
+  });
+
+  test('failed provider retry retains the previous report and draft', () async {
+    final api = FakeApi()
+      ..failure = const ApiFailure(
+        ApiFailureKind.network,
+        'The provider could not be reached.',
+      );
+    final controller = connected(api: api);
+    final previous = savedResult();
+    controller.result = previous;
+    final originalInput = controller.draft.toJson();
+
+    await controller.appraise();
+
+    expect(api.completionCalls, 1);
+    expect(controller.error, contains('could not be reached'));
+    expect(controller.result, same(previous));
+    expect(controller.draft.toJson(), originalInput);
+    expect(controller.busy, isFalse);
+    controller.dispose();
+  });
+
+  test('rejected local retry retains the previous report', () async {
+    final api = FakeApi();
+    final controller = connected(api: api);
+    final previous = savedResult();
+    controller.result = previous;
+    controller.setApiKey('');
+
+    await controller.appraise();
+
+    expect(api.completionCalls, 0);
+    expect(controller.error, isNotNull);
+    expect(controller.result, same(previous));
+    controller.dispose();
+  });
+
+  test(
+    'initialize restores a validated report matching the saved draft',
+    () async {
+      final store = MemoryStore();
+      seedReport(store);
+      final api = FakeApi();
+      final controller = AppController(store: store, api: api);
+
+      await controller.initialize();
+
+      expect(controller.result?.status, AppraisalStatus.ready);
+      expect(controller.result?.median, 120);
+      expect(controller.draft.toJson(), savedInput().toJson());
+      expect(controller.apiKey, isEmpty);
+      expect(api.refreshCalls, 1);
+      expect(api.completionCalls, 0);
+      controller.dispose();
+    },
+  );
+
+  test(
+    'initialize does not attach an older report to a different draft',
+    () async {
+      final store = MemoryStore();
+      seedReport(store);
+      final changed = savedInput().copyWith(product: 'A different product');
+      store.write(
+        'worthit.draft.v1',
+        jsonEncode({'input': changed.toJson(), 'example': false}),
+      );
+      final controller = AppController(store: store, api: FakeApi());
+
+      await controller.initialize();
+
+      expect(controller.draft.product, 'A different product');
+      expect(controller.result, isNull);
+      controller.dispose();
+    },
+  );
+
+  test(
+    'corrupt saved report preserves the draft and reports recovery issue',
+    () async {
+      final store = MemoryStore();
+      seedReport(store);
+      final data = jsonDecode(
+        store.read('worthit.last-report.v1')!,
+      ) as Map<String, dynamic>;
+      (data['result'] as Map<String, dynamic>)['median'] = 999;
+      store.write('worthit.last-report.v1', jsonEncode(data));
+      final controller = AppController(store: store, api: FakeApi());
+
+      await controller.initialize();
+
+      expect(controller.draft.toJson(), savedInput().toJson());
+      expect(controller.result, isNull);
+      expect(controller.persistenceError, isNotNull);
+      controller.dispose();
+    },
+  );
+
+  test('example provenance survives a field edit and reload', () async {
+    final store = MemoryStore();
+    final controller = AppController(store: store, api: FakeApi());
+    await controller.loadExample();
+    final demoEvidence = controller.draft.evidence;
+
+    controller.updateDraft(controller.draft.copyWith(askingPrice: 130));
+
+    expect(controller.isExample, isTrue);
+    expect(controller.draft.evidence, demoEvidence);
+    await controller.exportReport();
+    expect(
+      (jsonDecode(store.lastDownload!) as Map<String, dynamic>)['example'],
+      isTrue,
+    );
+    controller.dispose();
+    final reloaded = AppController(store: store, api: FakeApi());
+    await reloaded.initialize();
+    expect(reloaded.isExample, isTrue);
+    expect(reloaded.draft.evidence, demoEvidence);
+    reloaded.dispose();
+  });
+
+  test('demo evidence is never sent until the user replaces it', () async {
+    final api = FakeApi();
+    final controller = connected(api: api);
+    await controller.loadExample();
+    controller.updateDraft(
+      controller.draft.copyWith(details: 'A small cosmetic change'),
+    );
+
+    await controller.appraise();
+
+    expect(api.completionCalls, 0);
+    expect(controller.error, isNotNull);
+    expect(controller.isExample, isTrue);
+
+    controller.updateDraft(
+      controller.draft.copyWith(evidence: 'New user-supplied evidence.'),
+    );
+    expect(controller.isExample, isFalse);
+    await controller.appraise();
+    expect(api.completionCalls, 1);
+    expect(controller.result?.status, AppraisalStatus.insufficientEvidence);
+    controller.dispose();
+  });
+
+  test(
+    'clear removes the saved report so reload cannot resurrect it',
+    () async {
+      final store = MemoryStore();
+      seedReport(store);
+      final controller = AppController(store: store, api: FakeApi());
+      await controller.initialize();
+
+      controller.clearDraft();
+
+      expect(store.read('worthit.last-report.v1'), isNull);
+      expect(controller.result, isNull);
+      expect(controller.draft.product, isEmpty);
+      controller.dispose();
+      final reloaded = AppController(store: store, api: FakeApi());
+      await reloaded.initialize();
+      expect(reloaded.result, isNull);
+      expect(reloaded.draft.product, isEmpty);
+      expect(reloaded.isExample, isFalse);
+      reloaded.dispose();
+    },
+  );
+
+  testWidgets('a later waiting PWA update is announced and polling stops', (
+    tester,
+  ) async {
+    final store = UpdateStore();
+    final controller = AppController(store: store, api: FakeApi());
+    await controller.initialize();
+    expect(store.updateChecks, 1);
+    expect(controller.updateAvailable, isFalse);
+    var announcements = 0;
+    controller.addListener(() => announcements++);
+    store.waiting = true;
+
+    await tester.pump(const Duration(seconds: 29));
+    expect(store.updateChecks, 1);
+    expect(controller.updateAvailable, isFalse);
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(store.updateChecks, 2);
+    expect(controller.updateAvailable, isTrue);
+    expect(announcements, 1);
+    await tester.pump(const Duration(seconds: 60));
+    expect(store.updateChecks, 2);
+    controller.dispose();
+    await tester.pump(const Duration(seconds: 60));
+    expect(store.updateChecks, 2);
+  });
+
+  testWidgets('dispose prevents later checks and late update state writes', (
+    tester,
+  ) async {
+    final store = UpdateStore();
+    final controller = AppController(store: store, api: FakeApi());
+    await controller.initialize();
+    store.pending = Completer<bool>();
+    await tester.pump(const Duration(seconds: 30));
+    expect(store.updateChecks, 2);
+    await tester.pump(const Duration(seconds: 60));
+    expect(store.updateChecks, 2, reason: 'Do not overlap platform checks.');
+
+    controller.dispose();
+    store.pending!.complete(true);
+    await tester.pump();
+    expect(controller.updateAvailable, isFalse);
+    await tester.pump(const Duration(seconds: 60));
+    expect(store.updateChecks, 2);
+  });
+
+  test(
+    'concurrent catalogue refresh callers await the same operation',
+    () async {
+      final api = DelayedApi();
+      final controller = connected(api: api);
+      addTearDown(controller.dispose);
+      final first = controller.refreshModels();
+      var secondFinished = false;
+      final second = controller.refreshModels().then(
+        (_) => secondFinished = true,
+      );
+      await pumpEventQueue();
+      expect(api.refreshCalls, 1);
+      expect(secondFinished, isFalse);
+      expect(controller.catalogLoading, isTrue);
+
+      api.finishRefresh();
+      await Future.wait([first, second]);
+      expect(secondFinished, isTrue);
+      expect(controller.catalogLoading, isFalse);
+      expect(controller.models, [api.model]);
+    },
+  );
+
+  test('appraisal awaits an already running stale-catalogue refresh', () async {
+    final api = DelayedApi();
+    final controller = connected(api: api);
+    addTearDown(controller.dispose);
+    final refresh = controller.refreshModels();
+    var appraisalFinished = false;
+    final appraisal = controller.appraise().then(
+      (_) => appraisalFinished = true,
+    );
+    await pumpEventQueue();
+
+    expect(api.refreshCalls, 1);
+    expect(api.completionCalls, 0);
+    expect(appraisalFinished, isFalse);
+
+    api.finishRefresh();
+    await Future.wait([refresh, appraisal]);
+    expect(api.completionCalls, 1);
+    expect(api.completedBeforeFresh, isFalse);
+    expect(controller.result?.status, AppraisalStatus.insufficientEvidence);
+  });
+
+  for (final failure in [
+    const ApiFailure(ApiFailureKind.network, 'Old endpoint request failed.'),
+    StateError('Old endpoint request failed.'),
+  ]) {
+    test('stale endpoint failure is ignored after selection changes: '
+        '${failure.runtimeType}', () async {
+      final api = DelayedApi();
+      final controller = connected(api: api);
+      addTearDown(controller.dispose);
+      final inspection = controller.inspectSelected();
+      controller.selectModel(
+        ModelInfo(
+          id: 'fixture/other:free',
+          name: 'Another fixture',
+          supportedParameters: {'structured_outputs'},
+        ),
+      );
+      controller.statusText = 'The new selection is ready.';
+
+      api.endpointResult.completeError(failure);
+      await inspection;
+
+      expect(controller.error, isNull);
+      expect(controller.statusText, 'The new selection is ready.');
+    });
+  }
+}
+
+AppraisalInput savedInput() => AppraisalInput(
+  product: 'Desk lamp',
+  condition: 'Good',
+  location: 'London, UK',
+  currency: 'GBP',
+  details: 'Working, original cable included.',
+  evidence: 'Test fixture: previously supplied comparable excerpts.',
+  asOf: DateTime.utc(2026, 10, 20),
+);
+
+// These fixtures are test-only and are never sent to a real provider.
+AppraisalResult savedResult() => AppraisalResult(
+  status: AppraisalStatus.ready,
+  reason: 'A saved test fixture report.',
+  itemSummary: 'Desk lamp',
+  currency: 'GBP',
+  low: 100,
+  median: 120,
+  high: 140,
+  comparables: [
+    for (var i = 0; i < 3; i++)
+      Comparable(
+        url: 'https://example.org/controller-fixture/$i',
+        title: 'Synthetic fixture $i',
+        kind: 'sold',
+        amount: [100.0, 120.0, 140.0][i],
+        currency: 'GBP',
+        eventDate: DateTime.utc(2026, 10, 1),
+        condition: 'Good',
+        match: 'exact',
+        priceBasis: 'item_only',
+        supportQuote: 'Test fixture only.',
+      ),
+  ],
+);
+
+void seedReport(MemoryStore store) {
+  store.write(
+    'worthit.draft.v1',
+    jsonEncode({'input': savedInput().toJson(), 'example': false}),
+  );
+  store.write(
+    'worthit.last-report.v1',
+    jsonEncode({
+      'input': savedInput().toJson(),
+      'result': savedResult().toJson(),
+      'model': 'fixture/model:free',
+      'example': false,
+    }),
+  );
+}
+
+AppController connected({required FakeApi api}) {
+  final controller = AppController(store: MemoryStore(), api: api);
+  controller.updateDraft(savedInput());
+  controller.setApiKey('synthetic-test-key');
+  controller.selectModel(api.model);
+  return controller;
+}
+
+class FakeApi extends OpenRouterClient {
+  final model = ModelInfo(
+    id: 'fixture/model:free',
+    name: 'Test fixture',
+    supportedParameters: {'structured_outputs'},
+  );
+  int refreshCalls = 0;
+  int completionCalls = 0;
+  ApiFailure? failure;
+
+  @override
+  CatalogSnapshot get snapshot =>
+      CatalogSnapshot(models: [model], fetchedAt: DateTime.now().toUtc());
+
+  @override
+  Future<CatalogSnapshot> refreshCatalog() async {
+    refreshCalls++;
+    return snapshot;
+  }
+
+  @override
+  String? exportCatalog() => null;
+
+  @override
+  Future<CompletionEnvelope> complete({
+    required String apiKey,
+    required ModelInfo model,
+    required List<Map<String, dynamic>> messages,
+    required Map<String, dynamic> schema,
+    bool webSearch = false,
+  }) async {
+    completionCalls++;
+    if (failure != null) throw failure!;
+    return CompletionEnvelope(
+      content: jsonEncode({
+        'version': 'worthit.v1',
+        'status': 'insufficient_evidence',
+        'reason': 'Test fixture has no independently supported sales.',
+        'currency': 'GBP',
+        'item_summary': 'Desk lamp',
+        'comparables': <Object>[],
+        'factors': <String>[],
+        'cautions': <String>[],
+        'questions': ['Add dated completed sales.'],
+      }),
+      actualModel: model.id,
+    );
+  }
+}
+
+class UpdateStore extends MemoryStore {
+  bool waiting = false;
+  int updateChecks = 0;
+  Completer<bool>? pending;
+
+  @override
+  Future<bool> hasWaitingUpdate() {
+    updateChecks++;
+    return pending?.future ?? Future.value(waiting);
+  }
+}
+
+class DelayedApi extends FakeApi {
+  final refreshResult = Completer<CatalogSnapshot>();
+  final endpointResult = Completer<EndpointReport>();
+  bool stale = true;
+  bool completedBeforeFresh = false;
+
+  @override
+  CatalogSnapshot get snapshot => CatalogSnapshot(
+    models: [model],
+    fetchedAt: stale ? DateTime.utc(2000) : DateTime.now().toUtc(),
+    isStale: stale,
+  );
+
+  @override
+  Future<CatalogSnapshot> refreshCatalog() async {
+    refreshCalls++;
+    final fresh = await refreshResult.future;
+    stale = false;
+    return fresh;
+  }
+
+  void finishRefresh() => refreshResult.complete(
+    CatalogSnapshot(models: [model], fetchedAt: DateTime.now().toUtc()),
+  );
+
+  @override
+  Future<EndpointReport> inspectEndpoints(ModelInfo model) =>
+      endpointResult.future;
+
+  @override
+  Future<CompletionEnvelope> complete({
+    required String apiKey,
+    required ModelInfo model,
+    required List<Map<String, dynamic>> messages,
+    required Map<String, dynamic> schema,
+    bool webSearch = false,
+  }) {
+    completedBeforeFresh = stale;
+    return super.complete(
+      apiKey: apiKey,
+      model: model,
+      messages: messages,
+      schema: schema,
+      webSearch: webSearch,
+    );
+  }
+}
