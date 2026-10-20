@@ -6,6 +6,9 @@ import '../l10n/app_strings.dart';
 import '../platform/document_preferences.dart';
 import 'app_footer.dart';
 import 'worthhit_theme.dart';
+import 'selectable_surface.dart';
+import 'worthhit_icons.dart';
+import 'update_notice.dart';
 
 class SettingsPanel extends StatefulWidget {
   const SettingsPanel({
@@ -40,10 +43,10 @@ class _SettingsPanelState extends State<SettingsPanel> {
       return SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsetsDirectional.fromSTEB(
-            24,
             20,
-            24,
-            24 + MediaQuery.viewInsetsOf(context).bottom,
+            16,
+            20,
+            20 + MediaQuery.viewInsetsOf(context).bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -58,20 +61,26 @@ class _SettingsPanelState extends State<SettingsPanel> {
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
-                  IconButton(
+                  SelectableIconButton(
                     tooltip: AppStrings.of(context).text('Close settings'),
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(WorthhitIcons.close),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              UpdateNotice(controller: controller, dismissible: false),
+              const SizedBox(height: 16),
               DropdownButtonFormField<ThemeMode>(
                 key: const ValueKey('theme-selector'),
                 initialValue: widget.preferences.themeMode,
                 isExpanded: true,
+                icon: const Icon(WorthhitIcons.expand_more, size: 18),
                 decoration: InputDecoration(
                   labelText: AppStrings.of(context).text('Appearance'),
+                  prefixIcon: const Icon(
+                    WorthhitIcons.dark_mode_outlined,
+                    size: 18,
+                  ),
                 ),
                 items: [
                   for (final value in ThemeMode.values)
@@ -88,14 +97,22 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   if (value != null) widget.preferences.setThemeMode(value);
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 key: const ValueKey('language-selector'),
                 initialValue:
                     widget.preferences.locale?.languageCode ?? 'system',
                 isExpanded: true,
+                icon: const Icon(WorthhitIcons.expand_more, size: 18),
                 decoration: InputDecoration(
                   labelText: AppStrings.of(context).text('Language'),
+                  prefixIcon: const Icon(WorthhitIcons.language, size: 18),
+                  suffixIcon: const ContextHelp(
+                    title: 'Language',
+                    child: AppText(
+                      'Language follows your browser unless you choose one. No location lookup is needed.',
+                    ),
+                  ),
                 ),
                 items: [
                   const DropdownMenuItem(
@@ -115,24 +132,30 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   value == null || value == 'system' ? null : Locale(value),
                 ),
               ),
-              const SizedBox(height: 12),
-              AppText(
-                'Language follows your browser unless you choose one. No location lookup is needed.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 16),
               const Divider(),
-              const SizedBox(height: 20),
-              AppText(
-                'Your connection',
-                style: Theme.of(context).textTheme.titleLarge,
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(WorthhitIcons.hub_outlined, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppText(
+                      'Your connection',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  const ContextHelp(
+                    title: 'Connection help',
+                    child: AppText(
+                      'Worthhit talks directly to OpenRouter from your browser. '
+                      'Add your own key and choose a free model.',
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
-              const AppText(
-                'Worthhit talks directly to OpenRouter from your browser. '
-                'Add your own key and choose a free model.',
-              ),
-              const SizedBox(height: 24),
               AppText(
                 'OpenRouter API key',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -148,14 +171,14 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 onChanged: controller.setApiKey,
                 decoration: InputDecoration(
                   hintText: AppStrings.of(context).text('Paste your key'),
-                  suffixIcon: IconButton(
+                  suffixIcon: SelectableIconButton(
                     tooltip: AppStrings.of(context)
                         .text(_visible ? 'Hide API key' : 'Show API key'),
                     onPressed: () => setState(() => _visible = !_visible),
                     icon: Icon(
                       _visible
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
+                          ? WorthhitIcons.visibility_off_outlined
+                          : WorthhitIcons.visibility_outlined,
                     ),
                   ),
                 ),
@@ -177,10 +200,10 @@ class _SettingsPanelState extends State<SettingsPanel> {
                         _key.clear();
                         controller.setApiKey('');
                       },
-                icon: const Icon(Icons.delete_outline, size: 18),
+                icon: const Icon(WorthhitIcons.delete_outline, size: 18),
                 label: const AppText('Clear key'),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               AppText(
                 'Choose a model',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -190,6 +213,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 key: ValueKey('model-${controller.selectedModel?.id}'),
                 initialValue: controller.selectedModel?.id,
                 isExpanded: true,
+                icon: const Icon(WorthhitIcons.expand_more, size: 18),
                 hint: const AppText('Select a free model'),
                 items: [
                   for (final model in controller.models)
@@ -227,7 +251,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                     onPressed: controller.catalogLoading || controller.busy
                         ? null
                         : controller.refreshModels,
-                    icon: const Icon(Icons.refresh, size: 20),
+                    icon: const Icon(WorthhitIcons.refresh, size: 20),
                     label: AppText(
                       controller.catalogLoading
                           ? 'Refreshing…'
@@ -241,7 +265,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                             controller.busy
                         ? null
                         : controller.inspectSelected,
-                    icon: const Icon(Icons.hub_outlined, size: 20),
+                    icon: const Icon(WorthhitIcons.hub_outlined, size: 20),
                     label: const AppText('Check endpoints'),
                   ),
                 ],
@@ -261,15 +285,16 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   'about/',
                   opener: widget.opener,
                 ),
-                icon: const Icon(Icons.info_outline),
+                icon: const Icon(WorthhitIcons.info_outline),
                 label: const AppText('About Worthhit'),
               ),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: FilledButton.icon(
                   onPressed: () => Navigator.pop(context),
-                  child: const AppText('Back to the price check'),
+                  icon: const Icon(WorthhitIcons.check, size: 18),
+                  label: const AppText('Done'),
                 ),
               ),
             ],

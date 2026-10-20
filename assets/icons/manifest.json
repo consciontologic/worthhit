@@ -1,0 +1,183 @@
+{
+  "family": "WorthhitIcons",
+  "design_size": 24,
+  "stroke_width": 2,
+  "license": "MIT",
+  "glyphs": [
+    {
+      "name": "expand_less",
+      "codepoint": 59648,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "shopping_bag_outlined",
+      "codepoint": 59649,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "sell_outlined",
+      "codepoint": 59650,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "arrow_forward",
+      "codepoint": 59651,
+      "mirrors_in_rtl": true
+    },
+    {
+      "name": "receipt_long_outlined",
+      "codepoint": 59652,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "compare_arrows",
+      "codepoint": 59653,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "visibility_outlined",
+      "codepoint": 59654,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "handshake_outlined",
+      "codepoint": 59655,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "play_arrow_outlined",
+      "codepoint": 59656,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "close",
+      "codepoint": 59657,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "edit_outlined",
+      "codepoint": 59658,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "download_outlined",
+      "codepoint": 59659,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "remove",
+      "codepoint": 59660,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "menu",
+      "codepoint": 59661,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "tune",
+      "codepoint": 59662,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "add",
+      "codepoint": 59663,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "devices_outlined",
+      "codepoint": 59664,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "search",
+      "codepoint": 59665,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "visibility_off_outlined",
+      "codepoint": 59666,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "delete_outline",
+      "codepoint": 59667,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "refresh",
+      "codepoint": 59668,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "hub_outlined",
+      "codepoint": 59669,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "info_outline",
+      "codepoint": 59670,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "expand_more",
+      "codepoint": 59671,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "check",
+      "codepoint": 59672,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "content_copy",
+      "codepoint": 59673,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "open_in_new",
+      "codepoint": 59674,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "language",
+      "codepoint": 59675,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "dark_mode_outlined",
+      "codepoint": 59676,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "light_mode_outlined",
+      "codepoint": 59677,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "update",
+      "codepoint": 59678,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "help_outline",
+      "codepoint": 59679,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "code",
+      "codepoint": 59680,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "shield_outlined",
+      "codepoint": 59681,
+      "mirrors_in_rtl": false
+    },
+    {
+      "name": "notifications_outlined",
+      "codepoint": 59682,
+      "mirrors_in_rtl": false
+    }
+  ]
+}

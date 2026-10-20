@@ -62,7 +62,7 @@ Do not include secrets, personal records or confidential documents in listings.
 MIT-licensed tooling and verified-shell patterns adapted from
 [wfform](https://github.com/consciontologic/wfform); bundled Space Grotesk and Noto fonts retain their OFL licenses in `assets/fonts/`.
 
-## Worthhit 1.0.0
+## Worthhit 1.1.0
 
 The app supports system/light/dark appearance and English, Turkish, German, French,
 Spanish, Portuguese, Arabic and Simplified Chinese. Browser language negotiation
@@ -70,6 +70,11 @@ and manual overrides work without an IP lookup. Original evidence remains verbat
 Saved report protocols remain compatible. About, Terms and conditions, Liability,
 the source repository and the release version are available from the desktop
 footer and the smaller-screen drawer.
+Phone and tablet controls use a compact layout and the project’s own icons, with
+contextual help for longer explanations. Visible content supports selection/copy;
+input fields retain normal copy/paste. Available app updates appear in a dismissible
+notice and can also be opened from Settings. Updates require an explicit action,
+save the draft first and clear the memory-only key when the page reloads.
 
 `pubspec.yaml` owns the release version. After updating it and the dated changelog,
 run `make version.sync`; `make verify` and public builds reject visible version drift.

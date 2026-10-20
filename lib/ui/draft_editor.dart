@@ -5,6 +5,8 @@ import '../app/app_controller.dart';
 import '../domain/appraisal.dart';
 import '../l10n/app_strings.dart';
 import 'worthhit_theme.dart';
+import 'selectable_surface.dart';
+import 'worthhit_icons.dart';
 
 /// Kept under one GlobalKey while the shell changes its navigation pattern.
 /// Controllers and focus nodes belong to this state, not to device layouts.
@@ -211,10 +213,9 @@ class DraftEditorState extends State<DraftEditor> {
         onChanged: (value) => _update(name, value),
         decoration: InputDecoration(
           hintText: AppStrings.of(context).text(hint),
-          helperText: helper == null
+          suffixIcon: helper == null
               ? null
-              : AppStrings.of(context).text(helper),
-          helperMaxLines: 3,
+              : ContextHelp(title: label, child: AppText(helper)),
           errorText: name == 'askingPrice' && _priceError != null
               ? AppStrings.of(context).text(_priceError!)
               : null,
@@ -247,7 +248,7 @@ class DraftEditorState extends State<DraftEditor> {
     final draft = widget.controller.draft;
     final form = SingleChildScrollView(
       controller: _scroll,
-      padding: EdgeInsets.all(widget.compact ? 20 : 26),
+      padding: EdgeInsets.all(widget.compact ? 16 : 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -256,43 +257,43 @@ class DraftEditorState extends State<DraftEditor> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.compact) ...[
-                  AppText(
-                    'Know what it’s worth.',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 24),
-                ],
-                AppText(
-                  'What’s the item?',
-                  style: Theme.of(context).textTheme.titleLarge,
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        'What’s the item?',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                    const ContextHelp(
+                      title: 'Item guidance',
+                      child: AppText(
+                        'The specific model and its condition make the difference.',
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                const AppText(
-                  'The specific model and its condition make the difference.',
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
                 _field(
                   'product',
                   'Product',
                   'e.g. Sony WH-1000XM4 headphones',
                   maxLength: 300,
                 ),
-                const SizedBox(height: 20),
-                AppText(
-                  'I’m looking to',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
                 Wrap(
                   spacing: 10,
                   runSpacing: 8,
                   children: [
-                    _goal('buy', 'Buy well', Icons.shopping_bag_outlined),
-                    _goal('sell', 'Sell fairly', Icons.sell_outlined),
+                    _goal(
+                      'buy',
+                      'Buy well',
+                      WorthhitIcons.shopping_bag_outlined,
+                    ),
+                    _goal('sell', 'Sell fairly', WorthhitIcons.sell_outlined),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _pair(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,6 +315,7 @@ class DraftEditorState extends State<DraftEditor> {
                             ? draft.condition
                             : 'Good',
                         isExpanded: true,
+                        icon: const Icon(WorthhitIcons.expand_more, size: 18),
                         items: const [
                           DropdownMenuItem(
                             value: 'Like new',
@@ -355,7 +357,7 @@ class DraftEditorState extends State<DraftEditor> {
                     helper: 'Use a decimal separator, without digit grouping.',
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _pair(
                   _field(
                     'location',
@@ -370,12 +372,12 @@ class DraftEditorState extends State<DraftEditor> {
                     maxLength: 3,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _field(
                   'details',
                   'Item details',
                   'Age, wear, repairs, missing parts, accessories, warranty…',
-                  lines: 3,
+                  lines: 2,
                   maxLength: 4000,
                 ),
               ],
@@ -389,18 +391,37 @@ class DraftEditorState extends State<DraftEditor> {
                 if (!widget.compact) ...[
                   const SizedBox(height: 28),
                   const Divider(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                 ],
-                AppText(
-                  'Bring the evidence.',
-                  style: Theme.of(context).textTheme.titleLarge,
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        'The evidence',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                    const ContextHelp(
+                      title: 'Evidence guidance',
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            'Recent, similar items in the same market tell a better story '
+                            'than the original price.',
+                          ),
+                          SizedBox(height: 12),
+                          AppText(
+                            'A useful estimate needs enough comparable evidence. '
+                            'If it’s missing, Worthhit will ask instead of making up a price.',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                const AppText(
-                  'Recent, similar items in the same market tell a better story '
-                  'than the original price.',
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 _field(
                   'evidence',
                   'Comparable listings or sold prices',
@@ -419,7 +440,7 @@ class DraftEditorState extends State<DraftEditor> {
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 Material(
                   color: WorthhitPalette.of(context).soft,
                   borderRadius: BorderRadius.circular(2),
@@ -442,11 +463,6 @@ class DraftEditorState extends State<DraftEditor> {
                     activeTrackColor: WorthhitPalette.of(context).lime,
                   ),
                 ),
-                const SizedBox(height: 20),
-                const AppText(
-                  'A useful estimate needs enough comparable evidence. '
-                  'If it’s missing, Worthhit will ask instead of making up a price.',
-                ),
               ],
             ),
           ),
@@ -459,8 +475,9 @@ class DraftEditorState extends State<DraftEditor> {
       children: [
         Expanded(child: form),
         Container(
+          key: const ValueKey('editor-actions'),
           width: double.infinity,
-          padding: const EdgeInsetsDirectional.fromSTEB(26, 14, 26, 14),
+          padding: const EdgeInsetsDirectional.fromSTEB(20, 8, 20, 8),
           decoration: BoxDecoration(
             color: WorthhitPalette.of(context).surface,
             border: Border(
@@ -472,20 +489,28 @@ class DraftEditorState extends State<DraftEditor> {
             children: [
               SizedBox(
                 width: double.infinity,
-                child: FilledButton.icon(
-                  key: const ValueKey('appraisal-submit'),
-                  onPressed: widget.controller.busy || _priceError != null
-                      ? null
-                      : widget.onSubmit,
-                  icon: const Icon(Icons.arrow_forward, size: 20),
-                  label: const AppText('Find a fair price'),
+                child: SelectableTooltip(
+                  message: AppStrings.of(context)
+                      .text('Ctrl / Command + Enter to check'),
+                  child: FilledButton.icon(
+                    key: const ValueKey('appraisal-submit'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(44, 44),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      textStyle: Theme.of(context).textTheme.labelLarge
+                          ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                    onPressed: widget.controller.busy || _priceError != null
+                        ? null
+                        : widget.onSubmit,
+                    icon: const Icon(WorthhitIcons.arrow_forward, size: 20),
+                    label: const AppText('Find a fair price'),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              AppText(
-                'Ctrl / Command + Enter to check',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           ),

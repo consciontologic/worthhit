@@ -23,7 +23,9 @@ flutter-view{outline:none}
 @media(prefers-color-scheme:dark){.mark-light{display:none}.mark-dark{display:block}}
 :root[data-theme=light] .mark-light{display:block}:root[data-theme=light] .mark-dark{display:none}
 :root[data-theme=dark] .mark-light{display:none}:root[data-theme=dark] .mark-dark{display:block}
-.open-app{display:inline-flex;align-items:center;justify-content:center;min-height:2.75rem;padding:.45rem 1.1rem;border:2px solid #252a25;border-radius:2px;background:var(--accent);color:#20241d;font-weight:700;text-decoration:none}
+.open-app{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.75rem;padding:.45rem 1.1rem;border:2px solid #252a25;border-radius:2px;background:var(--accent);color:#20241d;font-weight:700;text-decoration:none}
+.ui-symbol{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.15em;flex:none;margin-inline-end:.35em}
+.prose h2 .ui-symbol{width:1em;height:1em;margin-inline-end:.45em}
 .open-app:hover{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
 .skip-link{position:absolute;left:1rem;top:-10rem;padding:.5rem 1rem;background:var(--ink);color:var(--canvas);z-index:10}
 .skip-link:focus{top:1rem}
@@ -53,5 +55,5 @@ flutter-view{outline:none}
 .footer-nav [aria-current=page]{font-weight:700;text-decoration-thickness:2px}
 .source-link{display:inline-flex;align-items:center;min-height:2.75rem;padding-block:.5rem}
 .footer-note{color:var(--line);font-size:.875rem;margin:1.25rem 0 0;max-width:75ch}
-@media(max-width:48rem){.page-shell{width:auto;margin-inline:1.25rem}.page-heading{padding-block:2.5rem 1.75rem}.reading-layout{display:block}.contents{position:static;margin-bottom:2rem;padding-top:.75rem}.contents ul{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem}.contents a{padding-block:.5rem}.prose{max-width:100%}.footer-row{align-items:flex-start}.site-header{padding-block:1.15rem}}
+@media(max-width:48rem){.page-shell{width:auto;margin-inline:1rem}.page-heading{padding-block:1.5rem 1.25rem}.page-heading h1{font-size:2.25rem;margin-bottom:.8rem}.page-heading .lead{font-size:1.05rem;line-height:1.5}.reading-layout{display:block}.contents{position:static;margin-bottom:1.25rem;padding-top:.75rem}.contents ul{display:flex;flex-wrap:wrap;gap:.25rem 1rem}.contents a{padding-block:.5rem;font-size:.875rem}.prose{max-width:100%;font-size:1rem}.footer-row{align-items:flex-start}.site-header{padding-block:.8rem}.prose section{margin-top:1.5rem;padding-top:1rem}.prose h2{font-size:1.35rem}}
 @media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}

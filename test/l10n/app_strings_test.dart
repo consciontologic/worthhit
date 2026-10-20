@@ -4,6 +4,33 @@ import 'package:worthhit/l10n/app_strings.dart';
 import 'package:worthhit/l10n/translations.dart';
 
 void main() {
+  test('compact controls and update guidance translate in every language', () {
+    for (final locale in AppStrings.supportedLocales.skip(1)) {
+      final strings = AppStrings(locale);
+      for (final key in [
+        'Continue',
+        'Cancel',
+        'Done',
+        'Item guidance',
+        'Evidence guidance',
+        'Connection help',
+        'Model help',
+        'How it works',
+        'Update ready',
+        'Draft saved on update. Re-enter your key.',
+        'Update',
+        'Later',
+        'Updating…',
+        'Finish your check before updating.',
+      ]) {
+        expect(
+          strings.text(key),
+          isNot(key),
+          reason: '${locale.languageCode}:$key',
+        );
+      }
+    }
+  });
   test('every shipped translation preserves its parameter contract', () {
     final parameter = RegExp(r'\{[a-z]+\}');
     for (final entry in translations.entries) {

@@ -5,6 +5,30 @@ Static destination: [consciontologic/worthhit.com](https://github.com/conscionto
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
+## 1.1.0 release preparation — 2026-10-20
+
+The local gate passed 201 Flutter, 19 Node and 39 Python tests, compiled-JavaScript
+pricing checks, analysis, formatting, repository hygiene and version consistency.
+The public build and sealed web/container archives passed. The separately labeled
+Docker Snap smoke passed with the existing limitation below; strict CI must pass.
+Independent review findings were fixed and covered by regression tests.
+
+Browser previews checked 390px phone, 850px tablet and 1440px desktop flows,
+light/dark themes, Arabic glyphs/RTL and public information pages. A real worker
+transition between two isolated candidate generations showed Update ready without
+reloading the form, retained the action in Settings after Later, and loaded the
+new generation only after Update while restoring a synthetic saved draft. No app
+console warnings/errors were observed. Browser text highlighting was confirmed;
+clipboard contents were verified through actual selection/copy/paste widget tests,
+because the browser automation's virtual clipboard did not capture Flutter writes.
+Controller failure/disposal and bootstrap lifecycle safeguards have deterministic
+coverage. The browser-store timeout/listener cleanup was source-reviewed; this
+browser run establishes successful activation, not induced timeout/disposal or a
+real-device install claim.
+
+Production remains 1.0.0 until the owner approves the new release workflow. The
+release name and tag for this change are plain `1.1.0`.
+
 ## Verified publication — 2026-10-20
 
 [Release 1.0.0](https://github.com/consciontologic/worthhit/releases/tag/1.0.0)
