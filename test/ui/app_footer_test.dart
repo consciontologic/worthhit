@@ -16,7 +16,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  testWidgets('all footer destinations preserve draft and memory-only key', (
+  testWidgets('information stays in the app and preserves draft and key', (
     tester,
   ) async {
     size(tester, 1440, 900);
@@ -36,23 +36,24 @@ void main() {
     final product = find.byKey(const ValueKey('product-field'));
     await tester.enterText(product, 'Preserved price check');
     final fieldController = tester.widget<TextField>(product).controller;
-    for (final key in ['about', 'terms', 'liability', 'github']) {
+    for (final key in ['about', 'terms', 'liability']) {
       await tester.tap(find.byKey(ValueKey('footer-$key')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('desktop-layout')), findsOneWidget);
+      expect(find.byKey(ValueKey('information-$key')), findsOneWidget);
+      expect(opened, isEmpty);
       expect(controller.draft.product, 'Preserved price check');
       expect(controller.apiKey, 'test-memory-only');
+      await tester.tap(find.byKey(const ValueKey('information-back')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('desktop-layout')), findsOneWidget);
       expect(
         tester.widget<TextField>(product).controller,
         same(fieldController),
       );
     }
-    expect(opened.map((uri) => '$uri'), [
-      'https://worthhit.com/about/',
-      'https://worthhit.com/terms/',
-      'https://worthhit.com/liability/',
-      sourceRepositoryUrl,
-    ]);
+    await tester.tap(find.byKey(const ValueKey('footer-github')));
+    await tester.pumpAndSettle();
+    expect(opened.map((uri) => '$uri'), [sourceRepositoryUrl]);
     expect(find.byType(AlertDialog), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -76,13 +77,16 @@ void main() {
         find.byKey(ValueKey('footer-$key')),
       );
       expect(semantics.properties.link, isTrue);
-      expect(semantics.properties.hint, 'Opens in a new tab');
+      expect(
+        semantics.properties.hint,
+        key == 'github' ? 'Opens in a new tab' : isNull,
+      );
     }
   });
 
   for (final throws in [false, true]) {
     testWidgets(
-      'blocked link has selectable and copy fallback (throws=$throws)',
+      'blocked external link has selectable and copy fallback (throws=$throws)',
       (tester) async {
         size(tester, 1440, 900);
         final controller = AppController();
@@ -113,16 +117,16 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('footer-terms')));
+        await tester.tap(find.byKey(const ValueKey('footer-github')));
         await tester.pumpAndSettle();
         expect(find.text('Could not open this link'), findsOneWidget);
         expect(
-          find.widgetWithText(SelectableText, 'https://worthhit.com/terms/'),
+          find.widgetWithText(SelectableText, sourceRepositoryUrl),
           findsOneWidget,
         );
         await tester.tap(find.text('Copy link'));
         await tester.pumpAndSettle();
-        expect(copied, 'https://worthhit.com/terms/');
+        expect(copied, sourceRepositoryUrl);
         expect(find.byType(AlertDialog), findsNothing);
         expect(tester.takeException(), isNull);
       },
@@ -169,7 +173,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('compact links dispatch within the menu activation callback', (
+  testWidgets('compact information navigation closes drawer and retains step', (
     tester,
   ) async {
     size(tester, 390, 900);
@@ -190,45 +194,36 @@ void main() {
       find.byKey(const ValueKey('product-field')),
       'Preserved mobile draft',
     );
-    await tester.tap(find.byKey(const ValueKey('navigation-menu')));
+    await tester.tap(find.byKey(const ValueKey('phone-evidence-tab')));
     await tester.pumpAndSettle();
     for (final destination in {
-      'About': 'about/',
-      'Terms and conditions': 'terms/',
-      'Liability': 'liability/',
+      'About': 'about',
+      'Terms and conditions': 'terms',
+      'Liability': 'liability',
     }.entries) {
+      await tester.tap(find.byKey(const ValueKey('navigation-menu')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('footer-info-menu')));
       await tester.pumpAndSettle();
-      final item = find.ancestor(
-        of: find.text(destination.key),
-        matching: find.byWidgetPredicate(
-          (widget) => widget is PopupMenuItem<String>,
-        ),
-      );
-      final activation = tester
-          .widget<InkWell>(
-            find.descendant(of: item, matching: find.byType(InkWell)),
-          )
-          .onTap!;
-      final before = opened.length;
-      // Invoke the same callback as the gesture without flushing microtasks.
-      // PopupMenuButton.onSelected runs later; navigation must already happen.
-      activation();
-      expect(opened.length, before + 1);
-      expect(
-        opened.last.toString(),
-        'https://worthhit.com/${destination.value}',
-      );
+      await tester.tap(find.text(destination.key));
       await tester.pumpAndSettle();
+      expect(
+        find.byKey(ValueKey('information-${destination.value}')),
+        findsOneWidget,
+      );
+      expect(opened, isEmpty);
       expect(controller.draft.product, 'Preserved mobile draft');
       expect(controller.apiKey, 'test-memory-only');
-      expect(find.byType(AlertDialog), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('information-back')));
+      await tester.pumpAndSettle();
+      expect(find.byType(Drawer), findsNothing);
+      expect(find.byKey(const ValueKey('web-search-toggle')), findsOneWidget);
     }
     expect(tester.takeException(), isNull);
   });
 
   testWidgets(
-    'compact navigation denial opens recovery after closing its menu',
+    'internal navigation works even when external opening is denied',
     (tester) async {
       size(tester, 390, 900);
       final controller = AppController()..setApiKey('test-memory-only');
@@ -243,17 +238,16 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Terms and conditions'));
       await tester.pumpAndSettle();
-      expect(find.text('Could not open this link'), findsOneWidget);
-      expect(
-        find.widgetWithText(SelectableText, 'https://worthhit.com/terms/'),
-        findsOneWidget,
-      );
+      expect(find.byKey(const ValueKey('information-terms')), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
       expect(controller.apiKey, 'test-memory-only');
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets('settings About uses the same safe opener', (tester) async {
+  testWidgets('settings About returns to the same settings panel', (
+    tester,
+  ) async {
     size(tester, 390, 900);
     final controller = AppController();
     addTearDown(controller.dispose);
@@ -273,7 +267,10 @@ void main() {
     await tester.ensureVisible(find.text('About Worthhit'));
     await tester.tap(find.text('About Worthhit'));
     await tester.pumpAndSettle();
-    expect(opened.single.toString(), 'https://worthhit.com/about/');
+    expect(opened, isEmpty);
+    expect(find.byKey(const ValueKey('information-about')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('information-back')));
+    await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsOneWidget);
   });
 
@@ -335,7 +332,8 @@ void main() {
       await tester.ensureVisible(terms);
       await tester.tap(terms);
       await tester.pumpAndSettle();
-      expect(opened.single.toString(), 'https://worthhit.com/terms/');
+      expect(opened, isEmpty);
+      expect(find.byKey(const ValueKey('information-terms')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
@@ -344,6 +342,7 @@ void main() {
     for (final locale in AppStrings.supportedLocales.skip(1)) {
       final strings = AppStrings(locale);
       for (final key in [
+        'Back',
         'About',
         'Terms and conditions',
         'Liability',

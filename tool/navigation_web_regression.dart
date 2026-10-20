@@ -3,6 +3,7 @@
 import 'dart:js_interop';
 
 import 'package:worthhit/platform/document_preferences_web.dart';
+import 'package:worthhit/platform/browser_history_web.dart';
 
 @JS('navigationMode')
 external set _mode(JSString value);
@@ -31,6 +32,12 @@ void main() {
   for (final destination in ['javascript:alert(1)', 'data:text/html,test']) {
     _check(!openPage(Uri.parse(destination)), 'Unsafe URL scheme admitted');
   }
+  _check(goBackInBrowser(), 'History traversal must stay in the same tab');
+  _mode = 'history-denied'.toJS;
+  _check(
+    !goBackInBrowser(),
+    'History errors must allow the local back fallback',
+  );
   _mode = 'denied'.toJS;
   _check(
     !openPage(Uri.parse('https://worthhit.com/about/')),

@@ -6,7 +6,10 @@ import '../app/preferences_controller.dart';
 import '../domain/appraisal.dart';
 import '../l10n/app_strings.dart';
 import '../platform/document_preferences.dart';
+import '../platform/browser_history.dart';
 import 'app_footer.dart';
+import 'app_navigation.dart';
+import 'information_page.dart';
 import 'draft_editor.dart';
 import 'result_panel.dart';
 import 'settings_panel.dart';
@@ -21,10 +24,14 @@ class WorthhitApp extends StatefulWidget {
     required this.controller,
     this.preferences,
     this.opener = openPage,
+    this.routeInformationProvider,
+    this.browserBack = goBackInBrowser,
   });
   final AppController controller;
   final PreferencesController? preferences;
   final PageOpener opener;
+  final RouteInformationProvider? routeInformationProvider;
+  final bool Function() browserBack;
   @override
   State<WorthhitApp> createState() => _WorthhitAppState();
 }
@@ -32,10 +39,48 @@ class WorthhitApp extends StatefulWidget {
 class _WorthhitAppState extends State<WorthhitApp> {
   late PreferencesController _preferences;
   bool _ownsPreferences = false;
+  late final WorthhitRouter _router;
   @override
   void initState() {
     super.initState();
     _usePreferences();
+    _router = WorthhitRouter(
+      browserBack: widget.browserBack,
+      workspaceBuilder: (_) => SelectionArea(
+        child: _Workspace(
+          controller: widget.controller,
+          preferences: _preferences,
+          opener: widget.opener,
+        ),
+      ),
+      settingsBuilder: (context) => SelectionArea(
+        child: Scaffold(
+          body: SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: BottomSheet(
+                  enableDrag: false,
+                  backgroundColor: Theme.of(context)
+                      .bottomSheetTheme
+                      .backgroundColor,
+                  onClosing: AppNavigation.maybeOf(context)!.back,
+                  builder: (_) => SettingsPanel(
+                    controller: widget.controller,
+                    preferences: _preferences,
+                    opener: widget.opener,
+                    onClose: AppNavigation.maybeOf(context)!.back,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      informationBuilder: (_, location) =>
+          InformationPage(location: location, opener: widget.opener),
+    );
   }
 
   void _usePreferences() {
@@ -59,13 +104,14 @@ class _WorthhitAppState extends State<WorthhitApp> {
   @override
   void dispose() {
     if (_ownsPreferences) _preferences.dispose();
+    _router.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: _preferences,
-    builder: (context, _) => MaterialApp(
+    builder: (context, _) => MaterialApp.router(
       title: 'Worthhit — Second-hand prices, grounded in evidence',
       debugShowCheckedModeBanner: false,
       theme: worthhitTheme(),
@@ -76,13 +122,9 @@ class _WorthhitAppState extends State<WorthhitApp> {
       localizationsDelegates: AppStrings.localizationsDelegates,
       localeListResolutionCallback: AppStrings.resolveLocales,
       builder: (context, child) => _DocumentPreferences(child: child!),
-      home: SelectionArea(
-        child: _Workspace(
-          controller: widget.controller,
-          preferences: _preferences,
-          opener: widget.opener,
-        ),
-      ),
+      routeInformationProvider: widget.routeInformationProvider,
+      routerDelegate: _router,
+      routeInformationParser: const AppRouteParser(),
     ),
   );
 }
@@ -189,19 +231,8 @@ class _WorkspaceState extends State<_Workspace> {
     _tabletTab = 0;
   });
 
-  void _settings() => showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    constraints: const BoxConstraints(maxWidth: 640),
-    builder: (_) => SelectionArea(
-      child: SettingsPanel(
-        controller: widget.controller,
-        preferences: widget.preferences,
-        opener: widget.opener,
-      ),
-    ),
-  );
+  void _settings() =>
+      AppNavigation.maybeOf(context)!.open(const AppLocation('settings'));
 
   Future<void> _clear() async {
     final clear = await showSelectableDialog<bool>(

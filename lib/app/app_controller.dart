@@ -393,7 +393,6 @@ class AppController extends ChangeNotifier {
       currency: 'GBP',
       details: 'Fully working. Original cable included. No visible defects.',
       evidence: snippets.join('\n\n'),
-      goal: 'buy',
       asOf: date,
     );
     result = parseAppraisal(

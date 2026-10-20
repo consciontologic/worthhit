@@ -16,10 +16,12 @@ class SettingsPanel extends StatefulWidget {
     required this.controller,
     required this.preferences,
     this.opener = openPage,
+    this.onClose,
   });
   final AppController controller;
   final PreferencesController preferences;
   final PageOpener opener;
+  final VoidCallback? onClose;
 
   @override
   State<SettingsPanel> createState() => _SettingsPanelState();
@@ -63,7 +65,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   ),
                   SelectableIconButton(
                     tooltip: AppStrings.of(context).text('Close settings'),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: widget.onClose ?? () => Navigator.pop(context),
                     icon: const Icon(WorthhitIcons.close),
                   ),
                 ],
@@ -292,7 +294,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: widget.onClose ?? () => Navigator.pop(context),
                   icon: const Icon(WorthhitIcons.check, size: 18),
                   label: const AppText('Done'),
                 ),

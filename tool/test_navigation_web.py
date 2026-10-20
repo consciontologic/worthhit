@@ -16,6 +16,7 @@ const activeAnchors = new Set();
 const navigations = [];
 let denied = 0;
 let popupCalls = 0;
+let historyCalls = 0;
 const body = {
   appendChild(anchor) { activeAnchors.add(anchor); return anchor; },
 };
@@ -42,6 +43,10 @@ globalThis.document = {
 };
 globalThis.window = {
   document,
+  history: { back() {
+    if (navigationMode === 'history-denied') throw Error('History denied');
+    historyCalls++;
+  } },
   // Some mobile/standalone hosts do not expose a usable child WindowProxy.
   // Opening a placeholder cannot safely be followed by DOM/location mutation.
   open() { popupCalls++; return null; },
@@ -55,6 +60,7 @@ globalThis.verifyNavigation = () => {
     'http://localhost:8766/about/',
   ]);
   assert.equal(popupCalls, 0, 'Do not open a blank placeholder');
+  assert.equal(historyCalls, 1, 'Internal Back traverses existing browser history');
   assert.equal(denied, 1);
   assert.equal(activeAnchors.size, 0, 'Remove links after success and denial');
 };
