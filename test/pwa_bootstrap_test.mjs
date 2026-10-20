@@ -26,7 +26,7 @@ function events() {
     },
   };
 }
-function boot({supported = true, online = true, hidden = false} = {}) {
+function boot({supported = true, online = true, hidden = false, firstFrame = true} = {}) {
   let now = 0;
   let updateCalls = 0;
   let registerCalls = 0;
@@ -66,6 +66,7 @@ function boot({supported = true, online = true, hidden = false} = {}) {
     clearInterval(callback) {intervals.delete(callback);},
   };
   vm.runInNewContext(source, context);
+  if (firstFrame) window.emit('flutter-first-frame');
   return {
     window, document, navigator, serviceWorker, posted, intervals,
     get updateCalls() {return updateCalls;},
@@ -77,6 +78,42 @@ function boot({supported = true, online = true, hidden = false} = {}) {
     tick() {for (const callback of intervals.keys()) callback();},
   };
 }
+
+test('offline installation waits for the first Flutter frame, including lifecycle events', async () => {
+  const app = boot({firstFrame: false});
+  await settle();
+  app.advance(300_000);
+  app.window.emit('focus');
+  app.window.emit('online');
+  app.document.emit('visibilitychange');
+  app.window.emit('pageshow');
+  app.tick();
+  await settle();
+  assert.equal(app.registerCalls, 0);
+  assert.equal(app.updateCalls, 0);
+  assert.equal(app.intervals.size, 0);
+  assert.ok(app.posted.some(message => message.type === 'CLIENT_RELEASE'),
+    'An existing controller still receives this client release before rendering.');
+  app.window.emit('flutter-first-frame');
+  app.window.emit('flutter-first-frame');
+  await settle();
+  assert.equal(app.registerCalls, 1);
+  assert.equal(app.updateCalls, 1);
+  assert.equal(app.intervals.size, 1);
+});
+
+test('a first frame after pagehide does not start background installation', async () => {
+  const app = boot({firstFrame: false});
+  app.window.emit('pagehide');
+  app.window.emit('flutter-first-frame');
+  await settle();
+  assert.equal(app.registerCalls, 0);
+  assert.equal(app.intervals.size, 0);
+  app.window.emit('pageshow');
+  await settle();
+  assert.equal(app.registerCalls, 1);
+  assert.equal(app.intervals.size, 1);
+});
 
 test('startup and five-minute checks discover without activating or reloading', async () => {
   const app = boot();

@@ -5,6 +5,35 @@ Static destination: [consciontologic/worthhit.com](https://github.com/conscionto
 Canonical site: [worthhit.com](https://worthhit.com).
 Container: `ghcr.io/consciontologic/worthhit:<version>` (Linux amd64).
 
+## 1.1.2 mobile fix — prepared 2026-10-20
+
+About, Terms and Liability now dispatch their final URLs directly during the
+compact-menu tap, without a blank-window handoff. The compiled production bridge
+and widget regressions cover restricted window access, direct user activation,
+copy fallback and preserved draft/session key. Desktop Chromium at phone width
+opened all three pages; the reported physical Android Chrome failure was not
+reproduced on a physical device here.
+
+The clean build contains 52 manifest assets totaling 27,925,099 bytes, down from
+63,860,833 bytes in 1.1.1 (56.27%). Full-glyph text fonts fall from 20,802,748 to
+9,830,916 bytes; removing unselected renderer binaries/symbols saves 24,964,791
+bytes. These are encoded file sizes, not measured Android startup timings. Both
+full and Chromium CanvasKit remain available. Builds reject unsupported renderer
+configuration and clear only owned web output before compilation, preventing stale
+TTFs from entering an incremental release.
+
+Local verification passed 203 Flutter, 28 Node and 49 Python tests, both compiled
+Dart-to-JavaScript regressions, analysis, formatting, source hygiene and versions.
+Independent review passed, including the follow-up output-cleanup tests. Public
+build and web archive preparation passed. Browser checks confirmed English,
+Arabic shaping/RTL and Chinese glyphs without font warnings/errors. A fresh-origin
+final build reloaded its saved synthetic draft while the server returned HTTP 503;
+all three information pages also rendered from cache. PWA registration waits for
+the first Flutter frame; deterministic lifecycle/integrity tests retain explicit
+update activation and bounded recovery. Browser checks also observed the update
+notice and explicit reload between candidate builds. CI and owner production
+approval remain required before publication.
+
 ## Verified 1.1.1 publication — 2026-10-20
 
 Normal startup now stays on the theme background until Flutter displays the

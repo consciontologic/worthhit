@@ -1,5 +1,29 @@
 # Worthhit delivery plan
 
+## Worthhit 1.1.2 mobile navigation and loading — 2026-10-20
+
+Goal: open About, Terms and Liability reliably from Android Chrome and reduce
+measurable mobile startup overhead. Preserve drafts, memory-only keys, eight
+languages, selectable content, static-only hosting and verified offline assets.
+
+Scope: information-link dispatch and tests; measured startup/bundle/PWA bottlenecks
+and their regressions; version/changelog and existing architecture/delivery guides.
+Avoid unrelated redesign, provider changes or new infrastructure.
+
+Tests: reproduce compact-menu links in a browser and a failing regression; compare
+asset/startup costs before/after; test cache integrity, slow/offline loads and
+language support. Run the full gate, public build, independent review and CI.
+
+- [x] Diagnose and fix mobile information-page navigation with regression coverage.
+- [x] Measure and reduce the principal mobile loading costs without losing functionality.
+- [x] Set 1.1.2 and finish local, browser and independent verification.
+- [ ] Publish protected PR/promotion and prepare owner production approval.
+- [ ] After approval, verify the website, information links and container.
+
+Risks: popup policies differ by browser; retain direct user activation and prevent
+opener access. Bundle/cache changes must preserve locale glyphs and complete,
+verified offline releases; performance evidence must name its measurement limits.
+
 ## Worthhit 1.1.1 direct startup — 2026-10-20
 
 Goal: open the app without briefly displaying “Know the range. Make a fair deal.”
