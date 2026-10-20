@@ -28,6 +28,53 @@ void main() {
     await tester.pump();
   }
 
+  testWidgets('desktop exposes version and information footer at the bottom', (
+    tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = _UiController();
+    addTearDown(controller.dispose);
+    await size(tester, 1440);
+    await tester.pumpWidget(WorthhitApp(controller: controller));
+    await tester.pumpAndSettle();
+    final footer = find.byKey(const ValueKey('app-footer'));
+    expect(footer, findsOneWidget);
+    expect(find.text('v1.0.0'), findsOneWidget);
+    expect(find.text('GitHub'), findsOneWidget);
+    expect(find.text('About'), findsOneWidget);
+    expect(find.text('Terms and conditions'), findsOneWidget);
+    expect(find.text('Liability'), findsOneWidget);
+    expect(tester.getRect(footer).bottom, 1000);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final width in [390.0, 850.0]) {
+    testWidgets('compact $width navigation keeps information in the drawer', (
+      tester,
+    ) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final controller = _UiController();
+      addTearDown(controller.dispose);
+      await size(tester, width);
+      await tester.pumpWidget(WorthhitApp(controller: controller));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('app-footer')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('navigation-menu')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('sidebar-app-footer')), findsOneWidget);
+      expect(find.text('v1.0.0'), findsOneWidget);
+      expect(find.text('GitHub'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('footer-info-menu')));
+      await tester.pumpAndSettle();
+      expect(find.text('About'), findsOneWidget);
+      expect(find.text('Terms and conditions'), findsOneWidget);
+      expect(find.text('Liability'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('uses separate phone, tablet and desktop work flows', (
     tester,
   ) async {

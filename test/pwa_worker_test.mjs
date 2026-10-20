@@ -15,9 +15,12 @@ class Cache {
   async keys() { return [...this.data.keys()].map(url => ({url})); }
   async delete(key) { return this.data.delete(typeof key === 'string' ? key : key.url); }
 }
-async function harness({corrupt = false} = {}) {
+async function harness({corrupt = false, assets = {}} = {}) {
   const body = 'verified current bytes';
-  const manifest = {'main.dart.js': {bytes: body.length, sha256: await digest(body)}};
+  const files = {'main.dart.js': body, ...assets};
+  const manifest = Object.fromEntries(await Promise.all(Object.entries(files).map(async ([path, value]) =>
+    [path, {bytes: value.length, sha256: await digest(value)}])));
+  let offline = false;
   const stores = new Map(), listeners = {}, reports = [], fetches = [];
   const caches = {
     async open(name) { if (!stores.has(name)) stores.set(name, new Cache()); return stores.get(name); },
@@ -26,19 +29,25 @@ async function harness({corrupt = false} = {}) {
     async delete(name) { return stores.delete(name); },
   };
   const context = {URL, Request, Response, Headers, AbortController, crypto: webcrypto, caches,
-    fetch: async request => { fetches.push(typeof request === 'string' ? request : request.url); return new Response(corrupt ? 'broken' : body); },
+    fetch: async request => {
+      const url = typeof request === 'string' ? request : request.url;
+      fetches.push(url);
+      if (offline) throw new Error('offline');
+      const path = new URL(url).pathname.slice(new URL(scope).pathname.length);
+      return new Response(corrupt ? 'broken' : files[path] ?? 'missing', {status: path in files ? 200 : 404});
+    },
     self: {registration: {scope}, addEventListener: (name, callback) => listeners[name] = callback,
       clients: {matchAll: async () => [{id: 'old', url: scope, postMessage: value => reports.push(value)}], claim: async () => {}}, skipWaiting: async () => {}},
   };
   vm.runInNewContext(readFileSync('web/service_worker.js', 'utf8').replaceAll('__BUILD_ID__', current)
     .replace('__PRECACHE_MANIFEST__', JSON.stringify(manifest)), context);
-  async function request(path, clientId = '') {
+  async function request(path, clientId = '', mode = 'cors') {
     let result;
-    listeners.fetch({request: {url: new URL(path, scope).href, method: 'GET', mode: 'cors', headers: new Headers()}, clientId,
+    listeners.fetch({request: {url: new URL(path, scope).href, method: 'GET', mode, headers: new Headers()}, clientId,
       respondWith: value => result = value});
     return result;
   }
-  return {caches, listeners, request, reports, fetches, manifest, body};
+  return {caches, listeners, request, reports, fetches, manifest, body, goOffline: () => { offline = true; }};
 }
 
 test('flat install hashes all bytes before completion; configuration is not intercepted', async () => {
@@ -118,4 +127,31 @@ test('an older tab can load an asset removed from the current manifest', async (
   await clients.put(new URL('__pwa__/clients/old', scope).href, new Response(previous));
   assert.equal(await (await h.request(oldPath, 'old')).text(), 'old bytes');
   assert.equal(h.fetches.length, 0);
+});
+
+
+test('public directory documents load their exact cached page offline', async () => {
+  const assets = {'index.html': 'app shell', 'about/index.html': 'about page',
+    'terms/index.html': 'terms page', 'liability/index.html': 'liability page'};
+  const h = await harness({assets}); let done;
+  h.listeners.install({waitUntil: value => done = value}); await done;
+  assert.equal((await h.request('unknown/', '', 'navigate')).status, 404);
+  h.goOffline();
+  for (const [path, value] of Object.entries(assets)) {
+    const directory = path.replace('index.html', '');
+    assert.equal(await (await h.request(directory, '', 'navigate')).text(), value);
+    assert.equal(await (await h.request(path, '', 'navigate')).text(), value);
+  }
+  assert.equal(await h.request('terms/?token=private', '', 'navigate'), undefined);
+  await assert.rejects(h.request('unknown/', '', 'navigate'), /offline/);
+});
+
+test('analytics requests never enter the verified shell cache', async () => {
+  const h = await harness();
+  for (const url of ['https://www.googletagmanager.com/gtag/js?id=G-G4SYW37S81',
+    'https://www.google-analytics.com/g/collect?v=2', 'https://region1.google-analytics.com/g/collect?v=2']) {
+    assert.equal(await h.request(url), undefined);
+  }
+  assert.equal(h.fetches.length, 0);
+  assert.equal((await h.caches.keys()).length, 0);
 });

@@ -1,5 +1,33 @@
 # Worthhit delivery plan
 
+## Worthhit 1.0.0 information and analytics — 2026-10-20
+
+Goal: publish version 1.0.0 with Google tag G-G4SYW37S81, useful public information
+pages and wfform-style adaptive footer/drawer navigation.
+
+Boundaries: static client-only hosting, existing valuation/provider contracts and
+human production approval stay intact; no custom analytics events for user content,
+credentials or reports, and no invented legal jurisdiction or compliance guarantees.
+
+Files: Flutter footer/workspace/platform link helpers and translations; static About,
+Terms and Liability pages, analytics/CSP/sitemap/PWA worker; version identity and
+release tooling, tests, changelog, README and delivery documentation.
+
+Tests: visible footer/drawer and link failures at compact/large text layouts, retained
+drafts, one configured tag per page, CSP hashes/hosts, metadata/cross-links/version
+consistency, offline directory documents, unchanged API behavior and nginx delivery.
+
+- [x] Add shared adaptive footer/drawer information, source and version links.
+- [x] Complete About, Terms and Liability pages with accurate data/analytics disclosures.
+- [x] Integrate the single Google tag on every page and keep startup/offline caching independent.
+- [x] Set and verify the single 1.0.0 release identity and dated changelog.
+- [x] Complete tests, independent review, public build and browser/container checks.
+- [ ] Publish protected source PR/promotion, obtain owner production approval and verify live 1.0.0.
+
+Risks: external analytics can be blocked or configured independently in Google;
+app functionality must remain available. Registry availability can block CI. Preserve
+prior closeout evidence/blocked tracking while carrying it into this release work.
+
 ## Worthhit identity, internationalization and releases — 2026-10-20
 
 Goal: launch Worthhit at worthhit.com with a mature neo-brutalist light/dark UI,
@@ -26,7 +54,7 @@ website publication; nginx static-only and immutable GHCR release checks.
 - [x] Implement ownership-safe GitOps publication to separate worthhit.com repository.
 - [x] Build and verify a static-only non-root nginx image and GHCR release workflow.
 - [x] Run independent review, required tests and bounded browser verification.
-- [ ] Publish protected source PRs, obtain human release approval and verify domain/package/release.
+- [x] Publish protected source PRs, obtain human release approval and verify domain/package/release.
 
 Reference: the supplied image was blocked by browser safety policy. The user approved an independent graphite, warm-neutral and lime editorial direction; no claim is made that the image was analyzed. A destination-only deployment key is configured. Domain TLS propagation is external. Local
 browser data stays at its old origin; exports remain available. All validation limits
@@ -58,4 +86,14 @@ Test schema drift/zero prices/refresh/error/cancel boundaries; prohibited and in
 Live providers may reject a schema or be unavailable; preserve drafts and allow explicit retry/model choice. Search snippets may lack real sold comparables; abstain and request evidence. Browser storage is origin-local and may be cleared; surface save failures and export reports. Pages publication requires protection-compliant source promotion and human production approval.
 
 ## Publication status
-[Worthit is live](https://consciontologic.github.io/worthit/). Source PRs [#1](https://github.com/consciontologic/worthit/pull/1) and [#3](https://github.com/consciontologic/worthit/pull/3), and exact-tree promotions [#2](https://github.com/consciontologic/worthit/pull/2) and [#4](https://github.com/consciontologic/worthit/pull/4), are merged. The first deployment exposed a hidden-file archive mismatch; the corrected [release run](https://github.com/consciontologic/worthit/actions/runs/39440088378) deployed `d314ef56c9b6f2f6a59c885b9c30b15de4d0cae9` after the owner's production approval. All 41 published manifest assets passed size/hash verification, and the public UI restored its saved example after reload. See [deployment evidence and limits](../DEPLOYMENT.md) and [live evaluation](../LIVE_EVAL.md).
+[Worthhit 0.2.0 is live](https://worthhit.com), with enforced HTTPS and canonical
+www/HTTP redirects. Source PRs [#7](https://github.com/consciontologic/worthhit/pull/7)
+and [#8](https://github.com/consciontologic/worthhit/pull/8) are merged; the owner-approved
+[release run](https://github.com/consciontologic/worthhit/actions/runs/39459449385)
+published the matching GitHub release, public GHCR image and GitOps website.
+All 65 public release files passed byte-count/hash checks. See
+[publication evidence and limits](../DEPLOYMENT.md#verified-publication--2026-10-20).
+
+### Historical 0.1.0 deployment
+
+[Worthit was published](https://consciontologic.github.io/worthit/). Source PRs [#1](https://github.com/consciontologic/worthit/pull/1) and [#3](https://github.com/consciontologic/worthit/pull/3), and exact-tree promotions [#2](https://github.com/consciontologic/worthit/pull/2) and [#4](https://github.com/consciontologic/worthit/pull/4), are merged. The first deployment exposed a hidden-file archive mismatch; the corrected [release run](https://github.com/consciontologic/worthit/actions/runs/39440088378) deployed `d314ef56c9b6f2f6a59c885b9c30b15de4d0cae9` after the owner's production approval. All 41 published manifest assets passed size/hash verification, and the public UI restored its saved example after reload. See [deployment evidence and limits](../DEPLOYMENT.md) and [live evaluation](../LIVE_EVAL.md).
