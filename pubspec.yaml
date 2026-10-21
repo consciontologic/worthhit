@@ -1,7 +1,7 @@
 name: worthhit
-description: Evidence-led second-hand price estimates, made for real-world deals.
+description: Simple product price estimates with free models, optional web research and supported images or video.
 publish_to: none
-version: 1.1.4
+version: 2.0.0
 environment:
   sdk: ^3.13.0
   flutter: '>=3.47.3'
@@ -21,6 +21,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/appraisal_system_v1.txt
+    - assets/appraisal_system_v2.txt
     - assets/brand/
   fonts:
     - family: WorthhitIcons

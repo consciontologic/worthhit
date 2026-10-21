@@ -68,8 +68,8 @@ components:
 # Worthhit design and identity
 
 Worthhit is a price-checking workspace for careful second-hand decisions. Its
-visual hierarchy puts the item, accepted comparable evidence and explicit next
-action first. The user approved an editorial neo-brutalist direction after the
+visual hierarchy puts the product, simple inputs and explicit estimate action first.
+Sources and calculation assumptions belong in the result, not a required form. The user approved an editorial neo-brutalist direction after the
 reference host was blocked. That image was not analyzed or reproduced.
 
 ## Direction contract
@@ -95,12 +95,14 @@ the admitted price range gets a restrained hard shadow. Reading text remains
 selectable. Color never implies that an item, source or seller is verified.
 Keyboard focus, disabled states and warnings retain textual/structural cues.
 
-Phones use sequential item/evidence/result steps; tablets switch editing and
-result views; desktops show both together. Large text uses the compact flow.
-At standard text size, the phone action/step dock is at most 104px before device
-safe-area insets; controls keep at least 44px touch targets. Tablet tabs and the
-pinned action are compact too. Larger text can expand these regions. Optional
-explanations move to selectable contextual help; costs and privacy stay visible.
+Phones present one editor for product, currency, condition and optional notes, with
+an immediate estimate action and access to the result. Tablets and desktops can
+show editor and result together. The homepage Models button opens an anchored
+catalog with usable input capabilities and context limits. Images/Video controls
+remain visible but disabled with an explanation for unsupported models. Keep at
+least 44px touch targets and let large text expand. Optional explanations belong
+in contextual help; search fees, transmitted content and estimate limitations stay
+visible where users make the decision.
 Arabic uses directional padding and RTL. UI and explanatory text follow the
 selected language; evidence quotations do not change language.
 

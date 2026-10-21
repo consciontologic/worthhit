@@ -3,8 +3,8 @@
 // dart format off
 const informationContent = <String, dynamic>{
   "about": {
-    "title": "Evidence before estimates.",
-    "lead": "Compare the evidence. Know the range. Make a fair deal.",
+    "title": "A fair-price estimate, made simple.",
+    "lead": "Describe the product. Choose a currency and condition. Get an estimate.",
     "updated": "Updated 21 October 2026",
     "sections": [
       {
@@ -16,17 +16,17 @@ const informationContent = <String, dynamic>{
             "paragraphs": [
               [
                 {
-                  "text": "Describe the item honestly: condition, defects, age, accessories, location and currency."
+                  "text": "Enter the product, currency and condition. Any notes about defects, age, accessories or local market are optional."
                 }
               ],
               [
                 {
-                  "text": "Add dated comparable listing excerpts and sources, or explicitly enable paid web research through OpenRouter."
+                  "text": "Choose a free model from Models on the homepage. Add supported images or video if useful, and optionally enable separately billed web research. No evidence box or research setup is required."
                 }
               ],
               [
                 {
-                  "text": "Review the accepted comparables, price range, cautions and questions. Missing or unsupported evidence can prevent an estimate."
+                  "text": "Request an estimate and review the price, range and assumptions. The result distinguishes researched sales from an unverified model estimate when suitable comparisons are unavailable."
                 }
               ]
             ]
@@ -52,7 +52,7 @@ const informationContent = <String, dynamic>{
             "paragraphs": [
               [
                 {
-                  "text": "Our appraisal instructions consider attachment to possessions, anchoring, urgency, trust and uncertainty. The same evidence-led valuation applies whether you buy or sell. Guidance explains product condition, uncertainty and observable safeguards without choosing a trading side. It must not exploit vulnerability or invent scarcity, competing offers or evidence."
+                  "text": "Our appraisal instructions consider attachment to possessions, anchoring, urgency, trust and uncertainty. The same neutral valuation applies whether you buy or sell. Guidance explains product condition, uncertainty and observable safeguards without choosing a trading side. It must not exploit vulnerability or invent scarcity, competing offers or evidence."
                 }
               ]
             ]
@@ -78,7 +78,7 @@ const informationContent = <String, dynamic>{
             "paragraphs": [
               [
                 {
-                  "text": "The application runs in your browser without a Worthhit application database or API proxy. Drafts, validated reports and preferences use local browser storage. Your OpenRouter key stays in memory for the current session."
+                  "text": "The application runs in your browser without a Worthhit application database or API proxy. Drafts, validated reports and preferences use local browser storage. Selected images and video stay in memory and clear on reload. Your OpenRouter key stays in memory for the current session."
                 }
               ]
             ]
@@ -88,7 +88,7 @@ const informationContent = <String, dynamic>{
             "paragraphs": [
               [
                 {
-                  "text": "When you request an appraisal, submitted content goes directly to OpenRouter and the selected provider. Optional paid research may also involve a search provider. Website usage is measured with Google Analytics, a separate third-party service that may use cookies. See the "
+                  "text": "When you request an appraisal, submitted content and attached media go directly to OpenRouter and the selected provider. Optional paid research may also involve a search provider. Website usage is measured with Google Analytics, a separate third-party service that may use cookies. See the "
                 },
                 {
                   "text": "data and analytics explanation",
@@ -226,7 +226,7 @@ const informationContent = <String, dynamic>{
   "terms": {
     "title": "Terms and conditions",
     "lead": "The rules and data practices behind the price-check workspace. Read these together with our service limitations before using an estimate.",
-    "updated": "Updated 20 October 2026",
+    "updated": "Updated 21 October 2026",
     "sections": [
       {
         "id": "service",
@@ -438,6 +438,20 @@ const informationContent = <String, dynamic>{
                 }
               ]
             ]
+          },
+          {
+            "type": "paragraph",
+            "paragraphs": [
+              [
+                {
+                  "text": "Optional media.",
+                  "strong": true
+                },
+                {
+                  "text": " Images and video are held in memory for the current page session and sent directly to OpenRouter only when you request an estimate. Reload clears those files; they are not stored with local drafts or cached by the app. Model/provider format and size limits still apply."
+                }
+              ]
+            ]
           }
         ]
       },
@@ -502,7 +516,7 @@ const informationContent = <String, dynamic>{
   "liability": {
     "title": "Liability and limitations",
     "lead": "An estimate can support a decision. It cannot inspect the item, prove a source is true or guarantee what happens in a trade.",
-    "updated": "Updated 20 October 2026",
+    "updated": "Updated 21 October 2026",
     "sections": [
       {
         "id": "estimates",
@@ -523,7 +537,7 @@ const informationContent = <String, dynamic>{
             "paragraphs": [
               [
                 {
-                  "text": "Asking prices can differ from completed-sale prices. Comparables may be stale, incomplete, manipulated or from another market. Condition, provenance, location, fees, shipping, currency changes, inflation, demand and negotiation can materially affect the final price."
+                  "text": "When suitable researched sales are unavailable, Worthhit can show a model-based estimate. Its reference value and condition assumptions are unverified judgments, even though the price arithmetic is calculated locally. Asking prices can differ from completed-sale prices. Comparables may be stale, incomplete, manipulated or from another market. Condition, provenance, location, fees, shipping, currency changes, inflation, demand and negotiation can materially affect the final price."
                 }
               ]
             ]

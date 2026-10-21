@@ -3,6 +3,29 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('v2 requests essentials, honest optional estimates and automatic research', () {
+    final prompt = File('assets/appraisal_system_v2.txt').readAsStringSync();
+    for (final requirement in [
+      'worthit.v2',
+      'Only the product, currency and condition are required',
+      'Do not require an evidence form',
+      'Never ask users to collect evidence',
+      'model-based estimate',
+      'reference_amount',
+      'condition_adjustment_percent',
+      'uncertainty_percent',
+      'not a statistical confidence',
+      'untrusted',
+      'Never invent URLs, observed prices',
+      'never evidence',
+      'two significant digits',
+      'Never turn uncertainty about a broken product into a certain zero price',
+      'Do not infer or assign a buyer or seller role',
+    ]) {
+      expect(prompt, contains(requirement), reason: requirement);
+    }
+  });
+
   test('valuation policy stays neutral and uses observable safeguards', () {
     final prompt = File('assets/appraisal_system_v1.txt').readAsStringSync();
     expect(

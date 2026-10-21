@@ -6,14 +6,27 @@ import 'package:flutter/services.dart';
 
 import '../api/open_router_client.dart';
 import '../domain/appraisal.dart';
+import '../domain/product_media.dart';
 import '../platform/local_store.dart';
+import '../platform/media_picker.dart';
 
 class AppController extends ChangeNotifier {
-  AppController({OpenRouterClient? api, LocalStore? store})
-    : api = api ?? OpenRouterClient(),
-      store = store ?? createLocalStore();
+  AppController({
+    OpenRouterClient? api,
+    LocalStore? store,
+    MediaPicker? mediaPicker,
+  }) : api = api ?? OpenRouterClient(),
+       store = store ?? createLocalStore(),
+       mediaPicker = mediaPicker ?? createMediaPicker();
   final OpenRouterClient api;
   final LocalStore store;
+  final MediaPicker mediaPicker;
+  List<ProductMedia> _attachments = const [];
+  List<ProductMedia> get attachments => _attachments;
+  bool pickingMedia = false;
+  String? mediaError;
+  int _mediaSelection = 0;
+  bool resultUsedMedia = false;
   AppraisalInput draft = AppraisalInput();
   AppraisalResult? result;
   List<ModelInfo> models = [];
@@ -62,6 +75,7 @@ class AppController extends ChangeNotifier {
         );
         if (jsonEncode(previousInput.toJson()) == jsonEncode(draft.toJson())) {
           result = previousResult;
+          resultUsedMedia = data['had_media'] == true;
           isExample = isExample || data['example'] == true;
         }
       }
@@ -121,10 +135,20 @@ class AppController extends ChangeNotifier {
   void updateDraft(AppraisalInput value) {
     if (jsonEncode(value.toJson()) == jsonEncode(draft.toJson())) return;
     if (busy) cancel();
-    draft = value;
+    // Editing visible fields converts the demo into a real draft. Its invented
+    // listings must not remain hidden after the old Evidence field is removed.
+    final changedVisible =
+        value.product != draft.product ||
+        value.condition != draft.condition ||
+        value.currency != draft.currency ||
+        value.details != draft.details;
+    draft = isExample && changedVisible
+        ? value.copyWith(evidence: '', askingPrice: null, location: '')
+        : value;
     result = null;
+    resultUsedMedia = false;
     error = null;
-    isExample = _hasSyntheticEvidence(value);
+    isExample = _hasSyntheticEvidence(draft);
     _save();
     _changed();
   }
@@ -144,9 +168,106 @@ class AppController extends ChangeNotifier {
 
   void selectModel(ModelInfo? value) {
     if (busy) cancel();
+    if (pickingMedia) cancelMediaPick();
     selectedModel = value;
     error = null;
     _changed();
+  }
+
+  String? _mediaProblem(ModelInfo model) {
+    try {
+      validateProductMedia(attachments);
+    } on MediaFailure catch (failure) {
+      return failure.safeMessage;
+    }
+    if (attachments.any(
+      (file) => !model.allowedMediaMimeTypes.contains(file.mimeType),
+    )) {
+      return 'Choose a model that supports the attached images and videos, or remove those files.';
+    }
+    return null;
+  }
+
+  Future<void> pickMedia({Set<String>? allowedMimeTypes}) async {
+    if (_disposed || busy || updating || pickingMedia) return;
+    final model = selectedModel;
+    final allowed = model?.allowedMediaMimeTypes ?? <String>{};
+    final requested = allowedMimeTypes ?? allowed;
+    if (requested.isEmpty || !allowed.containsAll(requested)) {
+      mediaError = 'Choose a model that supports the selected media type.';
+      _changed();
+      return;
+    }
+    final selection = ++_mediaSelection;
+    pickingMedia = true;
+    mediaError = null;
+    _changed();
+    try {
+      final added = await mediaPicker.pick(
+        allowedMimeTypes: requested,
+        existingCount: attachments.length,
+        existingBytes: attachments.fold(
+          0,
+          (sum, file) => sum + file.byteLength,
+        ),
+      );
+      if (_disposed || selection != _mediaSelection) return;
+      if (selectedModel?.capabilitySignature != model!.capabilitySignature) {
+        throw const MediaFailure(
+          'The model changed while files were loading. Select them again.',
+        );
+      }
+      if (added.any((file) => !requested.contains(file.mimeType))) {
+        throw const MediaFailure(
+          'A selected file type is unsupported by this model. Choose one of the offered file types.',
+        );
+      }
+      if (added.isEmpty) return;
+      final combined = [...attachments, ...added];
+      validateProductMedia(combined);
+      _attachments = List.unmodifiable(combined);
+      result = null;
+      resultUsedMedia = false;
+    } on MediaFailure catch (failure) {
+      if (!_disposed && selection == _mediaSelection && !failure.cancelled) {
+        mediaError = failure.safeMessage;
+      }
+    } catch (_) {
+      if (!_disposed && selection == _mediaSelection) {
+        mediaError =
+            'The selected files could not be read. Try selecting them again.';
+      }
+    } finally {
+      if (!_disposed && selection == _mediaSelection) {
+        pickingMedia = false;
+        _changed();
+      }
+    }
+  }
+
+  void cancelMediaPick() {
+    _mediaSelection++;
+    mediaPicker.cancel();
+    pickingMedia = false;
+    _changed();
+  }
+
+  void removeMedia(String id) {
+    if (_disposed || busy || pickingMedia) return;
+    _attachments = List.unmodifiable(
+      attachments.where((file) => file.id != id),
+    );
+    mediaError = null;
+    result = null;
+    resultUsedMedia = false;
+    _changed();
+  }
+
+  void _clearMedia() {
+    cancelMediaPick();
+    _attachments = const [];
+    mediaError = null;
+    resultUsedMedia = false;
   }
 
   Future<void> refreshModels() {
@@ -171,10 +292,9 @@ class AppController extends ChangeNotifier {
       if (selectedModel != null) {
         final matches = models.where((m) => m.id == selectedModel!.id);
         if (matches.isEmpty ||
-            !setEquals(
-              matches.first.supportedParameters,
-              selectedModel!.supportedParameters,
-            )) {
+            matches.first.capabilitySignature !=
+                selectedModel!.capabilitySignature) {
+          if (pickingMedia) cancelMediaPick();
           selectedModel = null;
           statusText =
               'Your selected model changed. Choose from the refreshed list.';
@@ -184,7 +304,7 @@ class AppController extends ChangeNotifier {
       }
       if (selectedModel == null) {
         statusText =
-            '${models.length} free text models available. Choose one in Connection.';
+            '${models.length} free text models available. Choose one from Models.';
       }
       final cached = api.exportCatalog();
       if (cached != null) {
@@ -236,10 +356,15 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> appraise({String responseLanguage = 'en'}) async {
-    if (busy || updating) return;
+    if (busy || updating || _disposed) return;
     error = null;
+    if (pickingMedia) {
+      error = 'Wait for the selected files to finish loading.';
+      _changed();
+      return;
+    }
     if (isExample || _hasSyntheticEvidence(draft)) {
-      error = 'Replace the synthetic example evidence with real listing excerpts before requesting an appraisal.';
+      error = 'Edit the example product details or start a new check before requesting a real appraisal.';
       _changed();
       return;
     }
@@ -255,8 +380,9 @@ class AppController extends ChangeNotifier {
       _changed();
       return;
     }
-    if (!webSearch && draft.evidence.trim().isEmpty) {
-      error = 'Paste dated comparable listing excerpts in Evidence, or explicitly enable paid web research. A description alone is not price evidence.';
+    final mediaProblem = _mediaProblem(selectedModel!);
+    if (mediaProblem != null) {
+      error = mediaProblem;
       _changed();
       return;
     }
@@ -265,11 +391,12 @@ class AppController extends ChangeNotifier {
     final model = selectedModel!;
     final key = apiKey;
     final search = webSearch;
+    final media = List<ProductMedia>.of(attachments);
     busy = true;
     isExample = false;
     statusText = search
         ? 'Researching one bounded web search and checking the evidence…'
-        : 'Reading your supplied evidence…';
+        : 'Estimating from the product details…';
     _save();
     _changed();
     try {
@@ -282,7 +409,7 @@ class AppController extends ChangeNotifier {
         }
       }
       final system = await rootBundle.loadString(
-        'assets/appraisal_system_v1.txt',
+        'assets/appraisal_system_v2.txt',
       );
       if (id != _attempt || _disposed) return;
       final response = await api.complete(
@@ -292,12 +419,13 @@ class AppController extends ChangeNotifier {
           {
             'role': 'system',
             'content':
-                '$system\n\n${_responseLanguageInstruction(responseLanguage)}',
+                '$system\n\n${_responseLanguageInstruction(responseLanguage)}\n\n${search ? 'Web search is enabled for this request. Use it to research relevant current prices automatically; only one search with at most five results is available. An enabled tool alone is not proof of a search or useful evidence.' : 'No live web search is enabled. Offer an explicitly unverified model-based estimate when defensible; never claim to have researched current listings.'}',
           },
           {'role': 'user', 'content': buildUserPrompt(input)},
         ],
         schema: appraisalSchema(),
         webSearch: search,
+        attachments: media,
       );
       if (id != _attempt || _disposed) return;
       result = parseAppraisal(
@@ -305,11 +433,15 @@ class AppController extends ChangeNotifier {
         input: input,
         citedUrls: response.citedUrls,
         citations: response.citations,
+        allowLegacy: false,
       );
       draft = input;
+      resultUsedMedia = media.isNotEmpty;
       statusText = result!.status == AppraisalStatus.ready
           ? 'Estimate calculated from the accepted comparable evidence.'
-          : 'Evidence reviewed. See what is needed before estimating a price.';
+          : result!.isEstimate
+          ? 'Estimate calculated without verified recent sales.'
+          : 'The product was reviewed. See the result and any essential missing details.';
       _save();
       try {
         store.write(
@@ -319,6 +451,7 @@ class AppController extends ChangeNotifier {
             'result': result!.toJson(),
             'model': response.actualModel,
             'example': false,
+            'had_media': resultUsedMedia,
           }),
         );
       } catch (_) {
@@ -349,6 +482,8 @@ class AppController extends ChangeNotifier {
 
   void clearDraft() {
     cancel();
+    _clearMedia();
+    webSearch = false;
     draft = AppraisalInput();
     result = null;
     error = null;
@@ -364,6 +499,7 @@ class AppController extends ChangeNotifier {
 
   Future<void> loadExample() async {
     cancel();
+    _clearMedia();
     final date = DateTime.now().toUtc();
     final rows = <Map<String, dynamic>>[], snippets = <String>[];
     final day = date.toIso8601String().substring(0, 10);
@@ -436,10 +572,14 @@ class AppController extends ChangeNotifier {
         const JsonEncoder.withIndent('  ').convert({
           'format': 'worthit.report.v1',
           'example': isExample,
+          'had_media': resultUsedMedia,
           'input': draft.toJson(),
           'result': result?.toJson(),
-          'notice':
-              'An estimate from evidence, not a guaranteed transaction price.',
+          'notice': result?.isEstimate == true
+              ? 'An unverified model-based estimate, not verified against current sales or a guaranteed transaction price.'
+              : result?.status == AppraisalStatus.ready
+              ? 'An estimate from evidence, not a guaranteed transaction price.'
+              : 'No price estimate is available. See the result for missing details or limitations.',
         }),
       );
     } catch (_) {
@@ -485,6 +625,8 @@ class AppController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _attempt++;
+    _mediaSelection++;
+    mediaPicker.dispose();
     _updateTimer?.cancel();
     store.dispose();
     api.dispose();
@@ -509,7 +651,7 @@ String _responseLanguageInstruction(String code) {
   final language = languages[code] ?? languages['en']!;
   return 'RESPONSE LANGUAGE\n'
       'Write explanatory prose in $language. '
-      'Translate only reason, item_summary, factors, cautions and questions. '
+      'Translate only reason, item_summary, factors, cautions, questions and estimate.rationale. '
       'Keep JSON keys, version identifiers, schema enums, ISO currency codes '
       'and ISO dates unchanged. Keep source titles, URLs, evidence and '
       'support_quote verbatim in their original language. Never translate or '
