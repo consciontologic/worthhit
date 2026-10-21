@@ -299,6 +299,8 @@ def publish(output, apply=False):
                      method='POST', binary=(output / name).read_bytes())
         if result.get('digest') != 'sha256:' + expected[name]['sha256']:
             raise ValueError('Uploaded asset digest differs; release remains a draft.')
+    # Long uploads must not outlive source/develop or approval-policy changes.
+    release_guard.approval()
     if existing.get('draft'):
         api(base + f'/releases/{existing["id"]}', {
             'name': version, 'draft': False, 'make_latest': 'false'}, method='PATCH')

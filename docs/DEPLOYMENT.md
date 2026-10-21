@@ -264,8 +264,15 @@ count was not rechecked for 1.0.0.
    container smoke. No CI job receives an OpenRouter key or sends an appraisal.
 3. Promote the exact validated tree through a reviewed PR to `main`. Ordinary
    promotions do not repeat the quality/security jobs. Hotfix PRs to `main` run them.
-4. Dispatch **Packages and release** (`pages.yml`) on `main`. A read-only source
-   guard requires current main and successful prior PR **Verify**/**Security** jobs
+4. Dispatch **Packages and release** (`pages.yml`) on `main` with only `version`.
+   Use plain `MAJOR.MINOR.PATCH`, matching the committed pubspec and dated changelog;
+   prefixes, leading zeroes, prerelease suffixes and build metadata are rejected.
+   It must exceed published stable versions; the same version/source may resume.
+   Empty version builds artifacts only and never enters production approval.
+   CI captures its source SHA automatically. A read-only source guard rejects
+   unpromoted content ahead on `develop`: promote those changes through a PR first.
+   Content-neutral backmerge commits and develop behind a tested main hotfix are
+   allowed. The guard also requires current main and successful prior PR **Verify**/**Security** jobs
    for exactly its tree; skipped jobs cannot authorize publication. The workflow
    builds the root-path static app and Linux amd64 image once, saves release
    archives/checksums, and uploads one source-specific artifact.
@@ -277,11 +284,14 @@ count was not rechecked for 1.0.0.
    rejects existing version conflicts, publishes GHCR, pushes managed website
    artifacts to `worthhit.com/main`, then publishes a Git tag and GitHub release
    both named exactly `MAJOR.MINOR.PATCH`, without a product-name or `v` prefix.
+   Source, develop, version and approval checks repeat before publication and after
+   release uploads; changed state leaves a draft rather than finalizing it.
    Resumed drafts receive the same plain version name when finalized.
    The website repository's Pages branch deployment serves `/`.
 7. Verify HTTPS/domain redirects, `release.json` plus all asset hashes, browser
    rendering and the package/release links. A green unit suite does not prove DNS,
    search-engine indexing or real-device PWA installation.
+8. Back-merge main into develop through a protected PR after release.
 
 ## One-time repository setup
 
