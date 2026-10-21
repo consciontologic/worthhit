@@ -118,10 +118,10 @@ void main() {
           addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
           await tester.pumpAndSettle();
         }
-        await selectText(tester, 'Evidence before estimates.');
+        await selectText(tester, 'A fair-price estimate, made simple.');
         await shortcut(tester, LogicalKeyboardKey.keyA);
         await shortcut(tester, LogicalKeyboardKey.keyC);
-        expect(copied, contains('Evidence before estimates.'));
+        expect(copied, contains('A fair-price estimate, made simple.'));
         expect(
           copied,
           contains('An asking price is not proof of a completed sale.'),
@@ -131,7 +131,7 @@ void main() {
         expect(
           copied!.replaceAll(RegExp(r'\s+'), ' '),
           contains(
-            'When you request an appraisal, submitted content goes directly to OpenRouter and the selected provider. '
+            'When you request an appraisal, submitted content and attached media go directly to OpenRouter and the selected provider. '
             'Optional paid research may also involve a search provider. Website usage is measured with Google Analytics, '
             'a separate third-party service that may use cookies. See the data and analytics explanation for details.',
           ),

@@ -90,7 +90,7 @@ void main() {
     await tester.pumpWidget(WorthhitApp(controller: controller));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('phone-layout')), findsOneWidget);
-    expect(find.byKey(const ValueKey('next-step')), findsOneWidget);
+    expect(find.byKey(const ValueKey('submit-check')), findsOneWidget);
 
     await size(tester, 850);
     expect(find.byKey(const ValueKey('tablet-layout')), findsOneWidget);
@@ -114,7 +114,7 @@ void main() {
       await size(tester, 390);
       await tester.pumpWidget(WorthhitApp(controller: controller));
       await tester.pumpAndSettle();
-      for (final destination in ['details', 'evidence', 'estimate']) {
+      for (final destination in ['details', 'estimate']) {
         await tester.tap(find.byKey(ValueKey('phone-$destination-tab')));
         await tester.pump();
         final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -122,7 +122,7 @@ void main() {
           tester.getSize(find.byWidget(scaffold.bottomNavigationBar!)).height,
           lessThanOrEqualTo(104),
         );
-        for (final key in ['details', 'evidence', 'estimate']) {
+        for (final key in ['details', 'estimate']) {
           final target = find.byKey(ValueKey('phone-$key-tab'));
           expect(tester.getSize(target).height, greaterThanOrEqualTo(44));
           expect(tester.getSize(target).width, greaterThanOrEqualTo(44));
@@ -213,7 +213,7 @@ void main() {
         await size(tester, width);
         await tester.pumpAndSettle();
         final actions = width < 700
-            ? {'next-step': 'Continue'}
+            ? {'submit-check': 'Estimate'}
             : {
                 'appraisal-submit': 'Find a fair price',
                 if (width < 1100) ...{
@@ -291,7 +291,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('phone navigation keeps evidence and exposes estimate state', (
+  testWidgets('phone navigation keeps notes and exposes estimate state', (
     tester,
   ) async {
     addTearDown(tester.view.resetPhysicalSize);
@@ -301,25 +301,22 @@ void main() {
     await size(tester, 390);
     await tester.pumpWidget(WorthhitApp(controller: controller));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('next-step')));
-    await tester.pump();
-    final evidence = find.byKey(const ValueKey('evidence-field'));
-    await tester.enterText(evidence, 'Two comparable listings, with dates.');
     await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('phone-evidence-tab')));
+    final notes = find.byKey(const ValueKey('details-field'));
+    await tester.enterText(notes, 'Used at home, with its charging cable.');
+    await tester.tap(find.byKey(const ValueKey('phone-estimate-tab')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
     await tester.pump();
     expect(
-      tester.widget<TextField>(evidence).controller!.text,
-      'Two comparable listings, with dates.',
+      tester.widget<TextField>(notes).controller!.text,
+      'Used at home, with its charging cable.',
     );
     await tester.tap(find.byKey(const ValueKey('phone-estimate-tab')));
     await tester.pump();
     expect(find.byKey(const ValueKey('result-panel')), findsOneWidget);
-    expect(
-      find.text('A fair price starts with good evidence.'),
-      findsOneWidget,
-    );
+    expect(find.text('A few details. A useful price range.'), findsOneWidget);
   });
 
   testWidgets('large type uses compact scrollable flow without overflow', (
@@ -336,7 +333,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('phone-layout')), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await tester.tap(find.byKey(const ValueKey('next-step')));
+    await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
     await tester.pump();
     expect(tester.takeException(), isNull);
   });
@@ -388,7 +385,7 @@ void main() {
   });
 
   testWidgets(
-    'invalid asking price blocks keyboard submission until corrected',
+    'currency normalizes and arbitrary notes never block submission',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -397,26 +394,19 @@ void main() {
       addTearDown(controller.dispose);
       await tester.pumpWidget(WorthhitApp(controller: controller));
       await tester.pumpAndSettle();
-      final price = find.byKey(const ValueKey('askingPrice-field'));
-      await tester.enterText(
-        find.byKey(const ValueKey('currency-field')),
-        'eur',
-      );
-      expect(controller.draft.currency, 'EUR');
-      await tester.enterText(price, '-20');
-      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-      await tester.pump();
-      expect(controller.submissions, 0);
-      expect(find.textContaining('positive amount'), findsOneWidget);
-      await tester.enterText(price, '120');
+      final currency = find.byKey(const ValueKey('currency-field'));
+      await tester.enterText(currency, 'eur');
+      final notes = find.byKey(const ValueKey('details-field'));
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, 'I saw one for -20, but I am not sure.');
       await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       await tester.pump();
       expect(controller.submissions, 1);
-      expect(controller.draft.askingPrice, 120);
+      expect(controller.draft.currency, 'EUR');
+      expect(controller.draft.details, 'I saw one for -20, but I am not sure.');
+      expect(controller.draft.askingPrice, isNull);
     },
   );
 
@@ -445,25 +435,25 @@ void main() {
     );
   });
 
-  testWidgets('starting fresh clears invalid price text and its error', (
-    tester,
-  ) async {
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await size(tester, 1440);
-    final controller = _UiController();
-    addTearDown(controller.dispose);
-    await tester.pumpWidget(WorthhitApp(controller: controller));
-    await tester.pumpAndSettle();
-    final price = find.byKey(const ValueKey('askingPrice-field'));
-    await tester.enterText(price, 'not a price');
-    await tester.pump();
-    expect(find.textContaining('positive amount'), findsOneWidget);
-    controller.clearDraft();
-    await tester.pump();
-    expect(tester.widget<TextField>(price).controller!.text, isEmpty);
-    expect(find.textContaining('positive amount'), findsNothing);
-  });
+  testWidgets(
+    'starting fresh clears optional notes and preserves the simple form',
+    (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await size(tester, 1440);
+      final controller = _UiController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(WorthhitApp(controller: controller));
+      await tester.pumpAndSettle();
+      final notes = find.byKey(const ValueKey('details-field'));
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, 'Anything about the product');
+      controller.clearDraft();
+      await tester.pump();
+      expect(tester.widget<TextField>(notes).controller!.text, isEmpty);
+      expect(find.byKey(const ValueKey('askingPrice-field')), findsNothing);
+    },
+  );
 
   testWidgets('narrow phone and large text keep each destination usable', (
     tester,
@@ -479,7 +469,7 @@ void main() {
     await tester.pumpWidget(WorthhitApp(controller: controller));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tester.tap(find.byKey(const ValueKey('phone-evidence-tab')));
+    await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
     await tester.pump();
     expect(tester.takeException(), isNull);
     await tester.tap(find.byKey(const ValueKey('phone-estimate-tab')));
@@ -520,7 +510,7 @@ void main() {
   });
 
   testWidgets(
-    'Arabic layout keeps stable navigation and localized decimal validation',
+    'Arabic layout keeps stable navigation and arbitrary localized notes',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -536,28 +526,26 @@ void main() {
       await tester.pumpAndSettle();
       final product = find.byKey(const ValueKey('product-field'));
       expect(Directionality.of(tester.element(product)), TextDirection.rtl);
-      await tester.tap(find.byKey(const ValueKey('phone-evidence-tab')));
+      await tester.tap(find.byKey(const ValueKey('phone-estimate-tab')));
       await tester.pump();
-      expect(find.byKey(const ValueKey('evidence-field')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
       await tester.pump();
       preferences.setLocale(const Locale('tr'));
       await tester.pumpAndSettle();
-      final price = find.byKey(const ValueKey('askingPrice-field'));
-      await tester.enterText(price, '120,50');
-      expect(controller.draft.askingPrice, 120.5);
-      await tester.enterText(price, '1.200,50');
-      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-      await tester.pump();
-      expect(controller.submissions, 0);
-      expect(controller.draft.askingPrice, 120.5);
-      await tester.enterText(price, '120,50');
+      final notes = find.byKey(const ValueKey('details-field'));
+      await tester.ensureVisible(notes);
+      await tester.enterText(
+        notes,
+        '120,50 gibi bir fiyat gördüm; emin değilim.',
+      );
       await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       expect(controller.submittedLanguage, 'tr');
+      expect(
+        controller.draft.details,
+        '120,50 gibi bir fiyat gördüm; emin değilim.',
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -633,7 +621,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        await tester.tap(find.byKey(const ValueKey('phone-evidence-tab')));
+        await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
         await tester.pump();
         expect(tester.takeException(), isNull);
         await tester.tap(find.byKey(const ValueKey('phone-estimate-tab')));

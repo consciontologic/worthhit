@@ -11,6 +11,7 @@ import 'app_footer.dart';
 import 'app_navigation.dart';
 import 'information_page.dart';
 import 'draft_editor.dart';
+import 'homepage_model_picker.dart';
 import 'result_panel.dart';
 import 'settings_panel.dart';
 import 'selectable_surface.dart';
@@ -112,7 +113,7 @@ class _WorthhitAppState extends State<WorthhitApp> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: _preferences,
     builder: (context, _) => MaterialApp.router(
-      title: 'Worthhit — Second-hand prices, grounded in evidence',
+      title: 'Worthhit — Simple fair-price estimates',
       debugShowCheckedModeBanner: false,
       theme: worthhitTheme(),
       darkTheme: worthhitTheme(brightness: Brightness.dark),
@@ -198,7 +199,7 @@ class _WorkspaceState extends State<_Workspace> {
     setState(() {
       if (widget.controller.result != null &&
           !identical(_lastResult, widget.controller.result)) {
-        _step = 2;
+        _step = 1;
         _tabletTab = 1;
       }
       _lastResult = widget.controller.result;
@@ -218,7 +219,7 @@ class _WorkspaceState extends State<_Workspace> {
       return;
     }
     setState(() {
-      _step = 2;
+      _step = 1;
       _tabletTab = 1;
     });
     widget.controller.appraise(
@@ -279,7 +280,6 @@ class _WorkspaceState extends State<_Workspace> {
             key: _editor,
             controller: widget.controller,
             compact: phone,
-            step: _step,
             onSubmit: _submit,
           );
           final result = ResultPanel(
@@ -387,7 +387,7 @@ class _WorkspaceState extends State<_Workspace> {
                                   )
                                 : IndexedStack(
                                     index: phone
-                                        ? (_step == 2 ? 1 : 0)
+                                        ? (_step == 1 ? 1 : 0)
                                         : _tabletTab,
                                     children: [editor, result],
                                   ),
@@ -447,7 +447,9 @@ class _WorkspaceState extends State<_Workspace> {
                       : Theme.of(context).textTheme.titleLarge,
                 ),
               ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 6),
+            if (!phone) HomepageModelsButton(controller: widget.controller),
+            const SizedBox(width: 6),
             SelectableIconButton(
               key: const ValueKey('settings-button'),
               tooltip: AppStrings.of(context).text('Settings'),
@@ -465,6 +467,21 @@ class _WorkspaceState extends State<_Workspace> {
             ),
           ],
         ),
+        if (phone)
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.controller.selectedModel?.name ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 8),
+              HomepageModelsButton(controller: widget.controller),
+            ],
+          ),
       ],
     ),
   );
@@ -728,8 +745,6 @@ class _WorkspaceState extends State<_Workspace> {
                 message: AppStrings.of(context).text(
                   widget.controller.busy
                       ? 'Cancel price check'
-                      : _step == 0
-                      ? 'Continue to evidence'
                       : widget.controller.result == null
                       ? 'Find a fair price'
                       : 'Check again',
@@ -745,11 +760,9 @@ class _WorkspaceState extends State<_Workspace> {
                     textStyle: Theme.of(context).textTheme.labelLarge
                         ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
-                  key: ValueKey(_step == 0 ? 'next-step' : 'submit-check'),
+                  key: const ValueKey('submit-check'),
                   onPressed: widget.controller.busy
                       ? widget.controller.cancel
-                      : _step == 0
-                      ? () => setState(() => _step = 1)
                       : _submit,
                   icon: Icon(
                     widget.controller.busy
@@ -760,8 +773,6 @@ class _WorkspaceState extends State<_Workspace> {
                   label: AppText(
                     widget.controller.busy
                         ? 'Cancel'
-                        : _step == 0
-                        ? 'Continue'
                         : widget.controller.result == null
                         ? 'Estimate'
                         : 'Check again',
@@ -774,8 +785,7 @@ class _WorkspaceState extends State<_Workspace> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _phoneTab(0, 'Details', WorthhitIcons.edit_outlined),
-                _phoneTab(1, 'Evidence', WorthhitIcons.search),
-                _phoneTab(2, 'Estimate', WorthhitIcons.receipt_long_outlined),
+                _phoneTab(1, 'Estimate', WorthhitIcons.receipt_long_outlined),
               ],
             ),
           ],

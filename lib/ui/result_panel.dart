@@ -50,7 +50,7 @@ class ResultPanel extends StatelessWidget {
         children: [
           Expanded(
             child: AppText(
-              'A fair price starts with good evidence.',
+              'A few details. A useful price range.',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
@@ -61,22 +61,21 @@ class ResultPanel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const AppText(
-                  'Describe the item and bring comparable prices. We’ll put the range, '
-                  'the reasons, and the unknowns in one place.',
+                  'Enter a product, currency and condition. Add any notes or photos. Worthhit estimates a range and explains its assumptions.',
                 ),
                 const SizedBox(height: 20),
                 _explanation(
                   context,
                   WorthhitIcons.compare_arrows,
-                  'Comparable, not just similar',
-                  'Model, condition, market, and date matter.',
+                  'Your product, in context',
+                  'The product model and condition shape the estimate.',
                 ),
                 const SizedBox(height: 16),
                 _explanation(
                   context,
                   WorthhitIcons.visibility_outlined,
                   'See where the price comes from',
-                  'Source excerpts stay attached to the estimate.',
+                  'Verified sales and model estimates are clearly distinguished.',
                 ),
                 const SizedBox(height: 16),
                 _explanation(
@@ -140,7 +139,7 @@ class ResultPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
-          'Checking the evidence…',
+          'Estimating a fair price…',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 18),
@@ -149,8 +148,7 @@ class ResultPanel extends StatelessWidget {
         const LinearProgressIndicator(minHeight: 7),
         const SizedBox(height: 22),
         const AppText(
-          'Comparing the item, checking the sources, and keeping uncertainty '
-          'visible. Your draft stays here if the request fails.',
+          'Researching when enabled, calculating a range, and keeping uncertainty visible. Your draft stays here if the request fails.',
         ),
         const SizedBox(height: 24),
         OutlinedButton.icon(
@@ -163,11 +161,15 @@ class ResultPanel extends StatelessWidget {
   );
 
   Widget _result(BuildContext context, AppraisalResult result) {
-    final ready = result.status == AppraisalStatus.ready;
+    final ready =
+        result.status == AppraisalStatus.ready ||
+        result.status == AppraisalStatus.estimated;
     final title = switch (result.status) {
       AppraisalStatus.ready => 'The price picture.',
+      AppraisalStatus.estimated => 'Estimated fair price',
       AppraisalStatus.needsDetails => 'A few details first.',
-      AppraisalStatus.insufficientEvidence => 'We need stronger evidence.',
+      AppraisalStatus.insufficientEvidence =>
+        'A reliable range isn’t available yet.',
       AppraisalStatus.blocked => 'This item can’t be appraised.',
     };
     return Column(
@@ -199,6 +201,12 @@ class ResultPanel extends StatelessWidget {
           const SizedBox(height: 8),
         ],
         Text(AppStrings.of(context).safeMessage(result.reason)),
+        if (controller.resultUsedMedia && controller.attachments.isEmpty) ...[
+          const SizedBox(height: 12),
+          const StatusNotice(
+            message: 'This saved result used images or videos. Files are not stored; add them again for a new check.',
+          ),
+        ],
         if (ready &&
             result.low != null &&
             result.median != null &&
@@ -225,7 +233,9 @@ class ResultPanel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  'Observed comparable range',
+                  result.isEstimate
+                      ? 'Estimated price range'
+                      : 'Observed comparable range',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: WorthhitPalette.of(context).onLime,
@@ -240,7 +250,9 @@ class ResultPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 AppText(
-                  '{currency} · median {amount}',
+                  result.isEstimate
+                      ? '{currency} · fair price {amount}'
+                      : '{currency} · median {amount}',
                   params: {
                     'currency': result.currency ?? controller.draft.currency,
                     'amount': AppStrings.of(context).number(result.median!),
@@ -250,13 +262,44 @@ class ResultPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 AppText(
-                  'An evidence-based estimate, not a guaranteed transaction '
-                  'price. Asking prices may differ from final sales.',
+                  result.isEstimate
+                      ? 'Not verified against current sales. This is a starting estimate, not a guaranteed transaction price.'
+                      : 'An evidence-based estimate, not a guaranteed transaction price. Asking prices may differ from final sales.',
                   style: TextStyle(color: WorthhitPalette.of(context).onLime),
                 ),
               ],
             ),
           ),
+        ],
+        if (result.isEstimate) ...[
+          const SizedBox(height: 16),
+          const AppText(
+            'Not verified against current sales',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          if (result.estimate != null) Text(result.estimate!.rationale),
+          if (result.estimate != null)
+            ExpansionTile(
+              title: const AppText('How the estimate was calculated'),
+              tilePadding: EdgeInsets.zero,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: AppText(
+                    'Reference {amount} {currency}; condition adjustment {adjustment}%; uncertainty ±{uncertainty}%. Rounded estimate, not a confidence interval.',
+                    params: {
+                      'amount': AppStrings.of(context)
+                          .number(result.estimate!.referenceAmount),
+                      'currency': result.currency ?? controller.draft.currency,
+                      'adjustment': AppStrings.of(context)
+                          .number(result.estimate!.conditionAdjustmentPercent),
+                      'uncertainty': AppStrings.of(context)
+                          .number(result.estimate!.uncertaintyPercent),
+                    },
+                  ),
+                ),
+              ],
+            ),
         ],
         if (result.factors.isNotEmpty)
           _list(context, 'What moves the price', result.factors),

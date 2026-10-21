@@ -5,12 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:worthhit/api/open_router_client.dart';
 import 'package:worthhit/app/app_controller.dart';
 import 'package:worthhit/domain/appraisal.dart';
+import 'package:worthhit/domain/product_media.dart';
 import 'package:worthhit/platform/local_store.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('response language is trusted system policy while evidence and schema stay canonical', () async {
+  test('response language is trusted while visible notes and schema stay canonical', () async {
     const languages = {
       'en': 'English',
       'tr': 'Turkish',
@@ -36,8 +37,12 @@ void main() {
       expect(messages.first['content'], contains('verbatim'));
       expect(messages.first['content'], contains('ISO'));
       expect(messages.last['role'], 'user');
-      expect(messages.last['content'], contains(jsonEncode(evidence)));
-      expect(controller.result?.toJson()['version'], 'worthit.v1');
+      expect(messages.last['content'], isNot(contains(jsonEncode(evidence))));
+      expect(
+        messages.last['content'],
+        contains(jsonEncode(controller.draft.details)),
+      );
+      expect(controller.result?.toJson()['version'], 'worthit.v2');
       expect(controller.store.read('worthit.last-report.v1'), isNotNull);
       controller.dispose();
     }
@@ -341,29 +346,34 @@ void main() {
     reloaded.dispose();
   });
 
-  test('demo evidence is never sent until the user replaces it', () async {
-    final api = FakeApi();
-    final controller = connected(api: api);
-    await controller.loadExample();
-    controller.updateDraft(
-      controller.draft.copyWith(details: 'A small cosmetic change'),
-    );
+  test(
+    'demo is not submitted, and visible editing removes its invented evidence',
+    () async {
+      final api = FakeApi();
+      final controller = connected(api: api);
+      await controller.loadExample();
+      await controller.appraise();
+      expect(api.completionCalls, 0);
+      expect(controller.error, isNotNull);
+      expect(controller.isExample, isTrue);
 
-    await controller.appraise();
-
-    expect(api.completionCalls, 0);
-    expect(controller.error, isNotNull);
-    expect(controller.isExample, isTrue);
-
-    controller.updateDraft(
-      controller.draft.copyWith(evidence: 'New user-supplied evidence.'),
-    );
-    expect(controller.isExample, isFalse);
-    await controller.appraise();
-    expect(api.completionCalls, 1);
-    expect(controller.result?.status, AppraisalStatus.insufficientEvidence);
-    controller.dispose();
-  });
+      controller.updateDraft(
+        controller.draft.copyWith(
+          details: 'My lamp has a small cosmetic mark.',
+        ),
+      );
+      expect(controller.isExample, isFalse);
+      expect(controller.draft.evidence, isEmpty);
+      await controller.appraise();
+      expect(api.completionCalls, 1);
+      expect(
+        api.capturedMessages!.last['content'],
+        isNot(contains('synthetic-lamp')),
+      );
+      expect(controller.result?.status, AppraisalStatus.insufficientEvidence);
+      controller.dispose();
+    },
+  );
 
   test(
     'clear removes the saved report so reload cannot resurrect it',
@@ -708,6 +718,10 @@ class FakeApi extends OpenRouterClient {
   int completionCalls = 0;
   List<Map<String, dynamic>>? capturedMessages;
   ApiFailure? failure;
+  String? responseContent;
+  List<ProductMedia> capturedAttachments = const [];
+  bool capturedWebSearch = false;
+  Map<String, dynamic>? capturedSchema;
 
   @override
   CatalogSnapshot get snapshot =>
@@ -729,22 +743,29 @@ class FakeApi extends OpenRouterClient {
     required List<Map<String, dynamic>> messages,
     required Map<String, dynamic> schema,
     bool webSearch = false,
+    List<ProductMedia> attachments = const [],
   }) async {
     completionCalls++;
     capturedMessages = messages;
+    capturedAttachments = attachments;
+    capturedWebSearch = webSearch;
+    capturedSchema = schema;
     if (failure != null) throw failure!;
     return CompletionEnvelope(
-      content: jsonEncode({
-        'version': 'worthit.v1',
-        'status': 'insufficient_evidence',
-        'reason': 'Test fixture has no independently supported sales.',
-        'currency': 'GBP',
-        'item_summary': 'Desk lamp',
-        'comparables': <Object>[],
-        'factors': <String>[],
-        'cautions': <String>[],
-        'questions': ['Add dated completed sales.'],
-      }),
+      content:
+          responseContent ??
+          jsonEncode({
+            'version': 'worthit.v2',
+            'estimate': null,
+            'status': 'insufficient_evidence',
+            'reason': 'Test fixture has no independently supported sales.',
+            'currency': 'GBP',
+            'item_summary': 'Desk lamp',
+            'comparables': <Object>[],
+            'factors': <String>[],
+            'cautions': <String>[],
+            'questions': ['Add dated completed sales.'],
+          }),
       actualModel: model.id,
     );
   }
@@ -819,6 +840,7 @@ class DelayedApi extends FakeApi {
     required List<Map<String, dynamic>> messages,
     required Map<String, dynamic> schema,
     bool webSearch = false,
+    List<ProductMedia> attachments = const [],
   }) {
     completedBeforeFresh = stale;
     return super.complete(
@@ -827,6 +849,7 @@ class DelayedApi extends FakeApi {
       messages: messages,
       schema: schema,
       webSearch: webSearch,
+      attachments: attachments,
     );
   }
 }

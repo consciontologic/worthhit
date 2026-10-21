@@ -4,6 +4,30 @@ import 'package:worthhit/l10n/app_strings.dart';
 import 'package:worthhit/l10n/translations.dart';
 
 void main() {
+  test('simple valuation and media controls translate in every language', () {
+    for (final locale in AppStrings.supportedLocales.skip(1)) {
+      final strings = AppStrings(locale);
+      for (final key in [
+        'Notes (optional)',
+        'Models',
+        'Choose a free model',
+        'Search models',
+        'Add images',
+        'Add video',
+        'Images supported',
+        'Video supported',
+        'No live web search. The estimate will be labeled as unverified.',
+        'Estimated fair price',
+        'Not verified against current sales',
+      ]) {
+        expect(
+          strings.text(key),
+          isNot(key),
+          reason: '${locale.languageCode}:$key',
+        );
+      }
+    }
+  });
   test('compact controls and update guidance translate in every language', () {
     for (final locale in AppStrings.supportedLocales.skip(1)) {
       final strings = AppStrings(locale);

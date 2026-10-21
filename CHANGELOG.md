@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-21
+
+- Estimate a product’s fair price from product, currency and condition, with optional
+  notes. Remove required evidence boxes and the multi-step evidence workflow.
+- Calculate a clearly labeled model-based estimate when suitable researched sales
+  are unavailable, while preserving stricter provenance for researched comparisons.
+- Choose free models directly on the homepage with visible text, image/video support,
+  context limits and optional research compatibility.
+- Attach supported images or MP4 video using capability-gated controls, bounded local
+  reads and direct provider uploads. Files remain in memory for the current session.
+- Preserve existing drafts and reports, eight languages, explicit paid-search opt-in,
+  free inference, safe previews and human-approved deployment.
+
 ## [1.1.4] - 2026-10-21
 
 - Start manual releases with only a version; CI checks SemVer progression and stops

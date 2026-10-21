@@ -1,12 +1,38 @@
-# Worthit appraisal contract
+# Worthhit appraisal contract
 
-Worthit estimates from comparable evidence; it cannot determine an exact true
-price. The versioned instructions live in
-[`assets/appraisal_system_v1.txt`](../assets/appraisal_system_v1.txt), and
+Worthhit estimates product prices; it cannot determine an exact true price.
+Only product, currency and condition are required. Notes and supported media are
+optional; users do not need to supply listing excerpts. The versioned instructions live in
+[`assets/appraisal_system_v2.txt`](../assets/appraisal_system_v2.txt)
+(with the [legacy v1 prompt](../assets/appraisal_system_v1.txt) retained), and
 [`lib/domain/appraisal.dart`](../lib/domain/appraisal.dart) owns schema validation,
 evidence admission, local arithmetic and report serialization.
 
-## What version 1 does
+## Version 2 estimates
+
+New requests use the version 2 response contract. The model researches automatically
+when the user has enabled separately billed web search. It extracts real supporting
+comparables when available and may supply a bounded reference estimate, condition
+adjustment and uncertainty when they are not. Dart computes the displayed numbers.
+
+A result based on sufficient admitted sales keeps the researched-comparison label.
+A model-based result is explicitly **estimated**, without verified current market
+sales. Reference value and adjustment are model judgments, not observed transactions;
+the locally computed range must not be presented as a calibrated confidence interval.
+If neither trustworthy observations nor a meaningful estimate is possible, explain
+what is unknown rather than fabricate a number or demand manual evidence collection.
+
+Currency symbols alone are ambiguous; the chosen currency code remains authoritative.
+Missing location does not block a request and currency is not proof of a local market.
+Notes are optional context, not instructions to override safety, provenance or prices.
+Images/video can help identify condition but cannot authenticate an item, establish
+an unseen defect or prove a completed transaction.
+
+Legacy `worthit.v1` responses and saved reports remain readable. Their strict evidence
+and arithmetic interpretation does not change when restored. New drafts preserve
+legacy extra fields for compatibility while the homepage omits the evidence workflow.
+
+## Researched comparables and legacy version 1
 
 The model extracts observations and gives short explanations. The browser accepts
 at least three distinct, exact-match completed sales within 90 days of the
@@ -30,8 +56,10 @@ may be wrong; passing the local checks does not authenticate a listing or item.
 
 ## Evidence provenance
 
-Paste each source URL first, followed by its quoted sale facts, before the next
-URL. Use separate blocks for readability:
+New appraisals use provider citations gathered by optional research. The homepage
+does not ask users to paste evidence. Legacy version 1 reports may contain
+user-supplied evidence in the following retained format: each source URL followed
+by its quoted sale facts, before the next URL.
 
 ```text
 <actual public listing URL>
@@ -62,7 +90,8 @@ User evidence is labeled **user-supplied, not independently verified**. Provider
 excerpts are labeled **provider-grounded, not independently verified**. Neither
 proves that a seller told the truth, an item is authentic, or a transaction
 completed. No arbitrary-page browser fetch is required. Search or citation
-failures produce an evidence gap, never invented data.
+failures leave a visible research gap. Version 2 can fall back to a clearly labeled
+model estimate; neither protocol invents comparable data.
 
 ## Behavioral theory and safeguards
 
@@ -92,10 +121,12 @@ No uploaded or generated content is executed.
 
 ## Contract and failure behavior
 
-`appraisalSchema()` supplies a strict JSON schema. Every declared property is
-required; unknown properties and versions are rejected. Statuses are `ready`,
-`needs_details`, `insufficient_evidence` and `blocked`. No model-returned numeric
-range is accepted. `parseAppraisal` returns only accepted comparables and records
+`appraisalSchema()` supplies a strict version 2 JSON schema. Every declared property
+is required; unknown properties and versions are rejected. New live replies must
+use version 2. The parser also accepts version 1 for legacy data. Statuses include
+`ready`, `needs_details`, `insufficient_evidence` and `blocked`; version 2 adds the
+distinct `estimated` status and structured assumptions from which Dart calculates
+a range. No model-returned numeric range is accepted. `parseAppraisal` returns only accepted comparables and records
 rejection reasons; malformed responses throw a safe `FormatException`.
 
 Money must be finite, non-negative and within the explicit supported bound.

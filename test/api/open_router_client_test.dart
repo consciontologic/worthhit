@@ -351,7 +351,13 @@ void main() {
       expect(sent['provider'], {
         'allow_fallbacks': false,
         'require_parameters': true,
-        'max_price': {'prompt': 0, 'completion': 0},
+        'max_price': {
+          'prompt': 0,
+          'completion': 0,
+          'request': 0,
+          'image': 0,
+          'audio': 0,
+        },
       });
       expect(sent['response_format']['json_schema']['strict'], isTrue);
       expect(sent['response_format']['json_schema']['schema'], schema);
