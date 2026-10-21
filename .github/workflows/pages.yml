@@ -1,6 +1,13 @@
 name: Packages and release
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Plain MAJOR.MINOR.PATCH matching main (leave empty for artifacts only)'
+        type: string
+        default: ''
+env:
+  WORTHHIT_RELEASE_VERSION: ${{ inputs.version }}
 permissions:
   contents: read
   actions: read
@@ -16,7 +23,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Require the exact previously validated source tree
+      - name: Require version, promoted develop content and validated source
+        if: inputs.version != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: tool/ci-step.sh 'Prior source validation' python3 tool/release_guard.py source
@@ -31,6 +39,7 @@ jobs:
       - run: tool/ci-step.sh 'Version and archive' make release.prepare
       - run: tool/ci-step.sh 'Build and save versioned image once' make image
       - name: Preflight immutable release identity
+        if: inputs.version != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: tool/ci-step.sh 'Release preflight' python3 tool/release.py preflight
@@ -43,7 +52,7 @@ jobs:
           compression-level: 0
   publish:
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && inputs.version != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:

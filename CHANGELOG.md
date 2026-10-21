@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Start manual releases with only a version; CI checks SemVer progression and stops
+  for unpromoted develop changes while allowing content-neutral backmerges. Empty
+  version builds artifacts only; production still requires owner approval.
+
 ## [1.1.3] - 2026-10-21
 
 - Replace buy/sell modes with one neutral product-worth check; older saved drafts and reports remain readable.
