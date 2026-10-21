@@ -1,5 +1,38 @@
 # Worthhit delivery plan
 
+## Worthhit 2.0.0 simple product estimates — 2026-10-21
+
+Goal: give a fair-price estimate from product, currency and condition, with optional
+notes and supported images/video, without asking users to collect evidence.
+
+Boundaries: direct Flutter/OpenRouter transport, free model inference, explicit
+separately billed search opt-in, honest uncertainty, safe media, preserved legacy
+reports/drafts, eight languages and the owner's production approval remain.
+
+Files: appraisal schema/prompt/controller; catalog/request/media picker; adaptive
+editor/results/home Models dropdown/translations; corresponding tests; existing
+guides/public pages and synchronized 2.0.0 release identities.
+
+Tests: minimal-input appraisal, deterministic estimate arithmetic and provenance,
+legacy restore, search cost boundaries, image/video MIME/size/capability requests,
+model dropdown/draft continuity, 320px/large-text/RTL layouts, full verification,
+public build, independent review and actual browser interaction.
+
+- [x] Accept product/currency/condition and optional notes; generate a useful labeled
+  estimate without mandatory user evidence, preserving strict researched provenance.
+- [x] Add bounded safe image/video inputs and capability-aware free-model metadata,
+  retain files on errors/model changes and dispatch only after explicit submission.
+- [x] Replace evidence steps with a simple adaptive homepage and Models dropdown;
+  show media availability/limits and preserve localized accessible input/results.
+- [x] Set 2.0.0 and update existing appraisal, architecture and public descriptions.
+- [x] Complete focused/full gates, public build, independent review and browser checks.
+- [x] Publish the validated work branch and [PR #31](https://github.com/consciontologic/worthhit/pull/31) into develop.
+
+Risks: model estimates are uncertain and research may find no useful comparable.
+Clearly distinguish model estimates from grounded sales, never invent citations,
+keep calculation bounded, disclose paid search and preserve explicit retries.
+
+
 ## Worthhit 1.1.3 neutral valuation and in-app navigation — 2026-10-21
 
 Goal: estimate a product's worth without buy/sell modes, and let people read

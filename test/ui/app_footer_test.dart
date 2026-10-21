@@ -173,54 +173,55 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('compact information navigation closes drawer and retains step', (
-    tester,
-  ) async {
-    size(tester, 390, 900);
-    final controller = AppController()..setApiKey('test-memory-only');
-    addTearDown(controller.dispose);
-    final opened = <Uri>[];
-    await tester.pumpWidget(
-      WorthhitApp(
-        controller: controller,
-        opener: (uri) {
-          opened.add(uri);
-          return true;
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey('product-field')),
-      'Preserved mobile draft',
-    );
-    await tester.tap(find.byKey(const ValueKey('phone-evidence-tab')));
-    await tester.pumpAndSettle();
-    for (final destination in {
-      'About': 'about',
-      'Terms and conditions': 'terms',
-      'Liability': 'liability',
-    }.entries) {
-      await tester.tap(find.byKey(const ValueKey('navigation-menu')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('footer-info-menu')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(destination.key));
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(ValueKey('information-${destination.value}')),
-        findsOneWidget,
+  testWidgets(
+    'compact information navigation closes drawer and retains editing view',
+    (tester) async {
+      size(tester, 390, 900);
+      final controller = AppController()..setApiKey('test-memory-only');
+      addTearDown(controller.dispose);
+      final opened = <Uri>[];
+      await tester.pumpWidget(
+        WorthhitApp(
+          controller: controller,
+          opener: (uri) {
+            opened.add(uri);
+            return true;
+          },
+        ),
       );
-      expect(opened, isEmpty);
-      expect(controller.draft.product, 'Preserved mobile draft');
-      expect(controller.apiKey, 'test-memory-only');
-      await tester.tap(find.byKey(const ValueKey('information-back')));
       await tester.pumpAndSettle();
-      expect(find.byType(Drawer), findsNothing);
-      expect(find.byKey(const ValueKey('web-search-toggle')), findsOneWidget);
-    }
-    expect(tester.takeException(), isNull);
-  });
+      await tester.enterText(
+        find.byKey(const ValueKey('product-field')),
+        'Preserved mobile draft',
+      );
+      await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
+      await tester.pumpAndSettle();
+      for (final destination in {
+        'About': 'about',
+        'Terms and conditions': 'terms',
+        'Liability': 'liability',
+      }.entries) {
+        await tester.tap(find.byKey(const ValueKey('navigation-menu')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('footer-info-menu')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(destination.key));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(ValueKey('information-${destination.value}')),
+          findsOneWidget,
+        );
+        expect(opened, isEmpty);
+        expect(controller.draft.product, 'Preserved mobile draft');
+        expect(controller.apiKey, 'test-memory-only');
+        await tester.tap(find.byKey(const ValueKey('information-back')));
+        await tester.pumpAndSettle();
+        expect(find.byType(Drawer), findsNothing);
+        expect(find.byKey(const ValueKey('web-search-toggle')), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'internal navigation works even when external opening is denied',

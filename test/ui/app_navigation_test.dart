@@ -250,7 +250,7 @@ void main() {
       final product = find.byKey(const ValueKey('product-field'));
       await tester.enterText(product, 'Private draft to preserve');
       final productController = tester.widget<TextField>(product).controller;
-      await tester.tap(find.byKey(const ValueKey('phone-evidence-tab')));
+      await tester.tap(find.byKey(const ValueKey('phone-details-tab')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('settings-button')));
       await tester.pumpAndSettle();

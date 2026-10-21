@@ -23,17 +23,17 @@ void main() {
       expect(find.text('Sell fairly'), findsNothing);
       final product = find.byKey(const ValueKey('product-field'));
       await tester.enterText(product, 'Studio headphones');
-      final location = find.byKey(const ValueKey('location-field'));
-      await tester.ensureVisible(location);
-      await tester.enterText(location, 'London, UK');
-      final price = find.byKey(const ValueKey('askingPrice-field'));
-      await tester.ensureVisible(price);
-      await tester.enterText(price, '125');
+      final notes = find.byKey(const ValueKey('details-field'));
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, 'London, UK');
+      final currency = find.byKey(const ValueKey('currency-field'));
+      await tester.ensureVisible(currency);
+      await tester.enterText(currency, 'GBP');
       await tester.pump();
 
       expect(controller.draft.product, 'Studio headphones');
-      expect(controller.draft.location, 'London, UK');
-      expect(controller.draft.askingPrice, 125);
+      expect(controller.draft.details, 'London, UK');
+      expect(controller.draft.currency, 'GBP');
       expect(controller.draft.validate(), isNull);
       expect(controller.draft.toJson(), isNot(contains('goal')));
       expect(store.values['worthit.draft.v1'], isNot(contains('"goal"')));

@@ -1,6 +1,6 @@
 # Worthhit architecture
 
-Worthhit runs entirely in the browser. Flutter/Dart owns forms, evidence admission,
+Worthhit runs entirely in the browser. Flutter/Dart owns simple product input, evidence admission,
 arithmetic, API requests and recovery. GitHub Pages serves static assets. There is
 no Go service, application proxy or hosted database; this follows the user's
 explicit runtime decision on 2026-10-20.
@@ -8,19 +8,31 @@ explicit runtime decision on 2026-10-20.
 | Boundary | Responsibility |
 |---|---|
 | `lib/api/` | Public model discovery, exact-zero price eligibility, endpoint metadata, bounded/cancellable OpenRouter completion, typed safe failures |
-| `lib/domain/` | Versioned appraisal schema, exclusions, source provenance and recency, same-currency comparable gates, deterministic observed range and median |
+| `lib/domain/` | Versioned appraisal schema, exclusions, source provenance and recency, same-currency comparable gates, local observed and model-estimate arithmetic |
 | `lib/app/` | Request admission, draft/result ownership, explicit model selection, persistence and recovery |
-| `lib/ui/` | Phone guided flow, tablet focus view, desktop comparison workbench; keyboard, large text and selection |
-| `lib/platform/` | Origin-local browser storage, report download, PWA update port |
+| `lib/ui/` | Simple adaptive product editor, homepage model dropdown and reports; keyboard, large text, RTL and selection |
+| `lib/platform/` | Origin-local browser storage, bounded session-only file picker, report download, PWA update port |
 | `web/`, `tool/` | Hash-verified static shell; build identity and safe publication |
 
-The model extracts evidence and suggests short explanations; it does not control
-the displayed numeric range. Dart accepts three distinct recent exact-match sold
-comparables in the requested currency and a consistent price basis, then computes
-their observed minimum, median and maximum. This is an estimate derived from those
-observations, not a calibrated confidence interval or guaranteed transaction price.
-User-pasted evidence is labeled as supplied, not independently verified. Provider
-citations require supporting content. A search request alone is not evidence.
+The homepage requires only product, currency and condition; arbitrary notes and
+supported images/video are optional. Legacy location/evidence fields remain readable
+in stored drafts but are not required or presented as a workflow step.
+
+The versioned appraisal parser separates researched comparisons from model estimates.
+With three accepted recent exact-match sales in the requested currency, Dart computes
+their minimum, median and maximum. Without sufficient verified comparables, a bounded
+reference value, condition adjustment and uncertainty can produce a clearly labeled
+unverified estimate. The UI must never describe that fallback as current market
+research. Neither range is a calibrated confidence interval or guaranteed sale price.
+Legacy reports retain their original interpretation and do not become new appraisals.
+Provider citations need supporting content; a search request alone is not evidence.
+
+Media validation checks count, byte limits, signatures and the selected model’s
+usable modalities at admission and dispatch. Selected files remain session-only and
+are never placed in browser-local drafts or service-worker caches. Incompatible
+model changes retain the files for explicit removal or model reselection. The browser
+picker reads bounded local files and the API sends structured image/video content
+parts directly to OpenRouter. No arbitrary media URLs, transcoding or execution.
 
 Free-model inference is admitted only from a freshly validated catalog. Unknown
 pricing fails closed. No automatic provider/model fallback or content resend.
@@ -71,7 +83,7 @@ from `pubspec.yaml`; source checks and public builds reject stale identities.
 
 The custom Worthhit icon font and matching transparent SVGs share reproducible
 vector geometry in `tool/generate_icons.py`. Icons inherit theme colors and keep
-localized labels/tooltips. Phone navigation uses a compact action and step row;
+localized labels/tooltips. Phone navigation uses compact input and estimate controls;
 large text can expand it instead of clipping labels or reducing touch targets.
 Optional explanations live in contextual help; fees, data transmission and
 estimate limitations remain visible where decisions are made.

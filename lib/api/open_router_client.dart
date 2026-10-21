@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../domain/product_media.dart';
+
 enum ApiFailureKind {
   network,
   timeout,
@@ -45,17 +47,70 @@ class ModelInfo {
     required this.id,
     required this.name,
     this.contextLength = 0,
+    this.description = '',
+    this.maxCompletionTokens,
+    Iterable<String> inputModalities = const ['text'],
+    Map<String, String> pricing = const {'prompt': '0', 'completion': '0'},
     Iterable<String> supportedParameters = const [],
-  }) : supportedParameters = Set.unmodifiable(supportedParameters);
+  }) : supportedParameters = Set.unmodifiable(supportedParameters),
+       inputModalities = Set.unmodifiable(inputModalities),
+       pricing = Map.unmodifiable(pricing);
 
   final String id;
   final String name;
   final int contextLength;
   final Set<String> supportedParameters;
+  final Set<String> inputModalities;
+  final Map<String, String> pricing;
+  final String description;
+  final int? maxCompletionTokens;
 
   bool get supportsStructuredOutputs =>
       supportedParameters.contains('structured_outputs');
   bool get supportsTools => supportedParameters.contains('tools');
+  bool get acceptsImages => mediaUnavailableReason('image') == null;
+  bool get acceptsVideo => mediaUnavailableReason('video') == null;
+  Set<String> get allowedMediaMimeTypes => {
+    if (acceptsImages) ...productImageMimeTypes,
+    if (acceptsVideo) 'video/mp4',
+  };
+
+  String? mediaUnavailableReason(String modality) {
+    if (!const {'image', 'video'}.contains(modality) ||
+        !inputModalities.contains(modality)) {
+      return 'This model does not advertise this media input.';
+    }
+    final applicable = modality == 'image'
+        ? const {'image', 'image_token'}
+        : const {'image', 'image_token', 'audio', 'input_audio_cache', 'video'};
+    for (final required in ['prompt', 'completion']) {
+      if (!OpenRouterClient._exactZero(pricing[required])) {
+        return 'Free model pricing could not be confirmed.';
+      }
+    }
+    for (final entry in pricing.entries) {
+      if ((!OpenRouterClient._optionalInputFees.contains(entry.key) ||
+              applicable.contains(entry.key)) &&
+          !OpenRouterClient._exactZero(entry.value)) {
+        return 'Free media pricing could not be confirmed. Choose another model.';
+      }
+    }
+    if (modality == 'video' && !id.endsWith(':free')) {
+      return 'Video requires a verified free model variant.';
+    }
+    return null;
+  }
+
+  String get capabilitySignature => jsonEncode({
+    'id': id,
+    'context': contextLength,
+    'output': maxCompletionTokens,
+    'input': inputModalities.toList()..sort(),
+    'parameters': supportedParameters.toList()..sort(),
+    'pricing': {
+      for (final key in pricing.keys.toList()..sort()) key: pricing[key],
+    },
+  });
 }
 
 class CatalogSnapshot {
@@ -121,6 +176,20 @@ class OpenRouterClient {
     r'^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._:-]*$',
   );
   static final _zeroPrice = RegExp(r'^[+]?0+(?:\.0+)?(?:[eE][+-]?[0-9]+)?$');
+  static final _decimalPrice = RegExp(
+    r'^[+]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$',
+  );
+  static const _optionalInputFees = {
+    'image',
+    'image_token',
+    'image_output',
+    'audio',
+    'audio_output',
+    'input_audio_cache',
+    'video',
+    'file',
+    'web_search',
+  };
   static const _catalogBytes = 5 * 1024 * 1024;
   static const _completionBytes = 512 * 1024;
   static const _requestBytes = 128 * 1024;
@@ -319,6 +388,7 @@ class OpenRouterClient {
     required List<Map<String, dynamic>> messages,
     required Map<String, dynamic> schema,
     bool webSearch = false,
+    List<ProductMedia> attachments = const [],
   }) async {
     if (_disposed) throw _cancelled;
     final current = snapshot;
@@ -329,10 +399,7 @@ class OpenRouterClient {
         'Refresh the free model list before requesting an estimate.',
       );
     }
-    if (selected.contextLength != model.contextLength ||
-        selected.supportedParameters.length !=
-            model.supportedParameters.length ||
-        !selected.supportedParameters.containsAll(model.supportedParameters)) {
+    if (selected.capabilitySignature != model.capabilitySignature) {
       throw const ApiFailure(
         ApiFailureKind.policy,
         'This model changed. Select it again from the refreshed model list.',
@@ -369,20 +436,44 @@ class OpenRouterClient {
         throw _badSchema;
       }
     }
+    try {
+      validateProductMedia(attachments);
+    } on MediaFailure catch (failure) {
+      throw ApiFailure(ApiFailureKind.policy, failure.safeMessage);
+    }
+    for (final file in attachments) {
+      final reason = selected.mediaUnavailableReason(file.kind.name);
+      if (reason != null) throw ApiFailure(ApiFailureKind.policy, reason);
+    }
+    if (attachments.isNotEmpty && messages.last['role'] != 'user') {
+      throw _badSchema;
+    }
     // Only explicitly supported optional parameters are used. There is never a
     // second request that silently strips a rejected response_format or tool.
     final outgoingMessages = messages
-        .map((m) => {'role': m['role'], 'content': m['content']})
+        .map(
+          (m) => <String, dynamic>{'role': m['role'], 'content': m['content']},
+        )
         .toList();
     final body = <String, dynamic>{
       'model': selected.id,
       'messages': outgoingMessages,
       'stream': false,
-      'max_tokens': 4096,
+      'max_tokens':
+          selected.maxCompletionTokens != null &&
+              selected.maxCompletionTokens! < 4096
+          ? selected.maxCompletionTokens
+          : 4096,
       'provider': {
         'allow_fallbacks': false,
         'require_parameters': true,
-        'max_price': {'prompt': 0, 'completion': 0},
+        'max_price': {
+          'prompt': 0,
+          'completion': 0,
+          'request': 0,
+          'image': 0,
+          'audio': 0,
+        },
       },
       if (selected.supportedParameters.contains('temperature'))
         'temperature': 0,
@@ -428,6 +519,20 @@ class OpenRouterClient {
       throw _badSchema;
     }
     if (utf8.encode(encoded).length > _requestBytes) throw _badSchema;
+    // Keep the original text/schema budget independent from bounded media.
+    // Only the final user turn receives files; no remote URL is accepted.
+    if (attachments.isNotEmpty) {
+      final last = outgoingMessages.last;
+      last['content'] = [
+        {'type': 'text', 'text': last['content']},
+        ...attachments.map((file) => file.toContentPart()),
+      ];
+      encoded = jsonEncode(body);
+      final maxMediaBytes = ((maxProductMediaTotalBytes + 2) ~/ 3) * 4;
+      if (utf8.encode(encoded).length > _requestBytes + maxMediaBytes + 4096) {
+        throw _badSchema;
+      }
+    }
 
     final operation = _begin(_completionTimeout);
     try {
@@ -755,6 +860,9 @@ class OpenRouterClient {
         'supported_parameters': model.supportedParameters.toList()..sort(),
         'architecture': value['architecture'],
         'pricing': value['pricing'],
+        'description': model.description,
+        if (model.maxCompletionTokens != null)
+          'top_provider': {'max_completion_tokens': model.maxCompletionTokens},
       };
     }
     if (models.isEmpty) {
@@ -780,6 +888,11 @@ class OpenRouterClient {
     final parameters = row['supported_parameters'];
     final architecture = row['architecture'];
     final pricing = row['pricing'];
+    final description = row['description'];
+    final provider = row['top_provider'];
+    final outputLimit = provider is Map<String, dynamic>
+        ? provider['max_completion_tokens']
+        : null;
     if (id is! String ||
         !_validId(id) ||
         name is! String ||
@@ -790,13 +903,26 @@ class OpenRouterClient {
         context > 100000000 ||
         architecture is! Map<String, dynamic> ||
         architecture['input_modalities'] is! List ||
+        (architecture['input_modalities'] as List).any((m) => m is! String) ||
         !(architecture['input_modalities'] as List).contains('text') ||
         architecture['output_modalities'] is! List ||
+        (architecture['output_modalities'] as List).length != 1 ||
         !(architecture['output_modalities'] as List).contains('text') ||
         pricing is! Map<String, dynamic> ||
         !pricing.containsKey('prompt') ||
         !pricing.containsKey('completion') ||
-        pricing.values.any((fee) => !_exactZero(fee)) ||
+        pricing.entries.any(
+          (entry) => _optionalInputFees.contains(entry.key)
+              ? !_validOptionalPrice(entry.value)
+              : !_exactZero(entry.value),
+        ) ||
+        (description != null &&
+            (description is! String || description.length > 20000)) ||
+        (provider != null && provider is! Map<String, dynamic>) ||
+        (outputLimit != null &&
+            (outputLimit is! int ||
+                outputLimit < 1 ||
+                outputLimit > 100000000)) ||
         (parameters != null &&
             (parameters is! List || parameters.any((p) => p is! String)))) {
       return null;
@@ -805,6 +931,11 @@ class OpenRouterClient {
       id: id,
       name: name.trim(),
       contextLength: context,
+      description: description is String ? description : '',
+      maxCompletionTokens: outputLimit as int?,
+      inputModalities: (architecture['input_modalities'] as List)
+          .cast<String>(),
+      pricing: pricing.cast<String, String>(),
       supportedParameters: parameters == null
           ? const []
           : (parameters as List).cast<String>(),
@@ -816,6 +947,11 @@ class OpenRouterClient {
   // the original price was zero. Provider-style strings retain that evidence.
   static bool _exactZero(Object? fee) =>
       fee is String && fee.length <= 128 && _zeroPrice.hasMatch(fee);
+
+  static bool _validOptionalPrice(Object? fee) =>
+      fee is String &&
+      fee.length <= 128 &&
+      (fee == '-1' || _decimalPrice.hasMatch(fee));
 
   static bool _validId(String id) =>
       id.length <= 200 &&

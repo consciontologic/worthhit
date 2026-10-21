@@ -7,7 +7,7 @@
   "display": "standalone",
   "background_color": "#161A18",
   "theme_color": "#161A18",
-  "description": "Know the range. Make a fair deal. Evidence-led second-hand price checks.",
+  "description": "Enter a product, currency and condition for a fair-price estimate, with optional notes, images, video and web research.",
   "lang": "en",
   "categories": ["shopping", "utilities"],
   "icons": [

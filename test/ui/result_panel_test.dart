@@ -21,6 +21,39 @@ void main() {
     await tester.pump();
   }
 
+  testWidgets(
+    'model estimate shows uncertainty and local calculation clearly',
+    (tester) async {
+      final controller = AppController()
+        ..result = const AppraisalResult(
+          status: AppraisalStatus.estimated,
+          reason: 'A provisional estimate.',
+          currency: 'USD',
+          low: 64,
+          median: 80,
+          high: 96,
+          estimate: ModelEstimate(
+            referenceAmount: 100,
+            conditionAdjustmentPercent: -20,
+            uncertaintyPercent: 20,
+            rationale: 'Wear reduces the reference value.',
+          ),
+        );
+      addTearDown(controller.dispose);
+      await mount(tester, controller);
+      expect(find.text('Estimated fair price'), findsOneWidget);
+      expect(find.text('Estimated price range'), findsOneWidget);
+      expect(find.text('USD · fair price 80'), findsOneWidget);
+      expect(find.text('Not verified against current sales'), findsOneWidget);
+      expect(find.text('Observed comparable range'), findsNothing);
+      await tester.ensureVisible(find.text('How the estimate was calculated'));
+      await tester.tap(find.text('How the estimate was calculated'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('condition adjustment -20%'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('empty report keeps explanations in selectable contextual help', (
     tester,
   ) async {
@@ -28,7 +61,9 @@ void main() {
     addTearDown(controller.dispose);
     await mount(tester, controller);
     expect(
-      find.text('Source excerpts stay attached to the estimate.'),
+      find.text(
+        'Verified sales and model estimates are clearly distinguished.',
+      ),
       findsNothing,
     );
     expect(
@@ -40,7 +75,9 @@ void main() {
     await tester.tap(find.byTooltip('How it works'));
     await tester.pumpAndSettle();
     expect(
-      find.text('Source excerpts stay attached to the estimate.'),
+      find.text(
+        'Verified sales and model estimates are clearly distinguished.',
+      ),
       findsOneWidget,
     );
     expect(find.byType(AlertDialog), findsOneWidget);
@@ -145,7 +182,7 @@ void main() {
 
     controller.busy = true;
     await mount(tester, controller);
-    expect(find.text('Checking the evidence…'), findsOneWidget);
+    expect(find.text('Estimating a fair price…'), findsOneWidget);
     await tester.tap(find.text('Cancel price check'));
     expect(controller.busy, isFalse);
     expect(controller.statusText, contains('cancelled'));

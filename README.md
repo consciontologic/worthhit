@@ -1,26 +1,29 @@
 # Worthhit
 
-**Know the range. Make a fair deal.** A Flutter PWA for evidence-led second-hand price
-checks, with one neutral estimate regardless of whether you buy or sell. Phone
-users get guided steps, tablets get a focused editing surface, and desktops get
-a comparison workbench.
+**Know the range. Make a fair deal.** A Flutter PWA for simple second-hand price
+estimates. Enter a **product**, **currency** and **condition**, add any optional notes,
+and request an estimate. No evidence collection or multi-step form is required.
+
+Use **Models** on the homepage to choose a free OpenRouter model and inspect its
+text, image/video capabilities and limits. **Images** and **Video** become available
+only when the chosen model supports the input under the app’s free-price rules.
+Media stays in memory until removed or the page reloads; only submitting sends it.
 
 Worthhit runs in your browser and calls OpenRouter directly with your own key.
-There is no Worthhit API server or remote database. Model inference is restricted
-to explicitly free routes. Web research is a separate, optional paid OpenRouter
-search. Keys remain in memory and are cleared when the tab closes.
+There is no Worthhit API server or remote database. Model inference remains
+restricted to explicitly free routes. Web research is a separate optional billed
+OpenRouter search, requiring explicit opt-in. Keys remain in memory.
 
-The application extracts comparable observations, validates their provenance and
-computes the accepted sold-price minimum, median and maximum locally. With fewer
-than three suitable recent sold comparables, it asks for evidence instead of
-inventing a price. User-supplied excerpts are not independently verified. The
-range is an estimate from observed comparables, not a guaranteed selling price.
+When enough suitable researched sales exist, Worthhit validates their provenance
+and calculates their minimum, median and maximum locally. Otherwise it can calculate
+a clearly labeled **model estimate** from a reference value, condition adjustment
+and uncertainty. That fallback is not verified against current market sales.
+The app never treats a search request alone as evidence or invents sources to fill
+gaps. Neither result is a guaranteed selling price or a certified appraisal.
 
-The built-in example is explicitly synthetic and cannot be submitted as a real
-appraisal. Replace its evidence before checking a real item. Prohibited and unsafe
-goods are outside scope. The model considers ownership attachment, anchoring,
-urgency and remote trust without applying invented psychological premiums or
-encouraging manipulation.
+Prohibited and unsafe goods remain outside scope. Existing drafts and reports stay
+readable, including older evidence-based reports. Descriptions and model output are
+data: the app never executes uploaded/generated code, HTML or scripts.
 
 ## Run
 
@@ -56,7 +59,7 @@ Blocking analytics does not prevent use of the app. See [About](https://worthhit
 and [Terms](https://worthhit.com/terms/) for data-use details.
 
 There is no account system, marketplace transaction/payment service or shared
-embedded API credential. Appraisal requests send product facts and evidence
+embedded API credential. Appraisal requests send product facts, optional notes and attached media
 directly to OpenRouter, its selected provider and optional search provider.
 Do not include secrets, personal records or confidential documents in listings.
 

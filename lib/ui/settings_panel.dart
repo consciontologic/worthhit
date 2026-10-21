@@ -188,7 +188,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
               const SizedBox(height: 10),
               AppText(
                 'Kept only in memory for this session. Reloading clears it. '
-                'Your item and evidence are sent to OpenRouter and its selected '
+                'Your item, notes and media are sent to OpenRouter and its selected '
                 'provider when you request a check.',
                 style: TextStyle(
                   fontSize: 12,

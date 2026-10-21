@@ -84,11 +84,11 @@ class AppStrings {
       });
     }
     final count = RegExp(
-      r'^([0-9]+) free text models available\. Choose one in Connection\.$',
+      r'^([0-9]+) free text models available\. Choose one from Models\.$',
     ).firstMatch(original);
     if (count != null) {
       return text(
-        '{count} free text models available. Choose one in Connection.',
+        '{count} free text models available. Choose one from Models.',
         {'count': count[1]!},
       );
     }
