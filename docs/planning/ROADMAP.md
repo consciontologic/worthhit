@@ -26,7 +26,7 @@ public build, independent review and actual browser interaction.
   show media availability/limits and preserve localized accessible input/results.
 - [x] Set 2.0.0 and update existing appraisal, architecture and public descriptions.
 - [x] Complete focused/full gates, public build, independent review and browser checks.
-- [ ] Publish the validated work branch and PR into develop.
+- [x] Publish the validated work branch and [PR #31](https://github.com/consciontologic/worthhit/pull/31) into develop.
 
 Risks: model estimates are uncertain and research may find no useful comparable.
 Clearly distinguish model estimates from grounded sales, never invent citations,
