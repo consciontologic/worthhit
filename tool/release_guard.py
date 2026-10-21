@@ -1,6 +1,8 @@
 """Read-only release authorization. Never submits or bypasses approvals."""
 import json
 import os
+from pathlib import Path
+import re
 import sys
 import urllib.request
 
@@ -26,6 +28,44 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def release_request(api, sha, tree, root=Path(__file__).resolve().parents[1]):
+    from tool.release import SEMVER, release_version, release_notes
+    version = os.environ.get("WORTHHIT_RELEASE_VERSION", "")
+    require(re.fullmatch(SEMVER, version), "Enter a plain MAJOR.MINOR.PATCH version.")
+    require(version == release_version(root), "Requested version differs from pubspec.yaml.")
+    release_notes(version, root)
+    require(re.fullmatch(r"[0-9a-f]{40}", sha), "Release source must be an immutable commit.")
+    base = "/repos/" + REPOSITORY
+    develop = api(base + "/commits/develop") or {}
+    develop_sha = develop.get("sha", "")
+    develop_tree = develop.get("commit", {}).get("tree", {}).get("sha", "")
+    require(re.fullmatch(r"[0-9a-f]{40}", develop_sha)
+            and re.fullmatch(r"[0-9a-f]{40}", develop_tree), "Cannot verify develop source.")
+    comparison = api(base + f"/compare/{sha}...{develop_sha}") or {}
+    ahead = comparison.get("ahead_by")
+    require(type(ahead) is int and ahead >= 0, "Cannot verify changes ahead on develop.")
+    if ahead and develop_tree != tree:
+        ancestor_tree = comparison.get("merge_base_commit", {}).get("commit", {}).get("tree", {}).get("sha")
+        require(develop_tree == ancestor_tree,
+                "develop has unpromoted changes; promote them through a PR before releasing.")
+    # Content-neutral backmerge commits are allowed, including when main has a
+    # newer hotfix and develop is unchanged since their common ancestor.
+    requested = tuple(map(int, version.split('.')))
+    for page in range(1, 11):
+        releases = api(base + f"/releases?per_page=100&page={page}")
+        require(isinstance(releases, list), "Cannot verify published release versions.")
+        for item in releases:
+            tag = item.get("tag_name", "")
+            if item.get("draft") or item.get("prerelease") or not re.fullmatch(SEMVER, tag):
+                continue
+            published = tuple(map(int, tag.split('.')))
+            require(requested > published or (requested == published and item.get("target_commitish") == sha),
+                    "Release version must exceed published versions; only the same source may resume.")
+        if len(releases) < 100:
+            return
+    raise RuntimeError("Published release history exceeded its safety bound.")
+
+
 def source(api=get, sha=None):
     sha = sha or os.environ["GITHUB_SHA"]
     require(os.environ.get("GITHUB_REPOSITORY") == REPOSITORY, "Unexpected repository.")
@@ -34,6 +74,7 @@ def source(api=get, sha=None):
     current = api(base + "/commits/main")
     require(current["sha"] == sha, "Main changed; start a new release run.")
     tree = current["commit"]["tree"]["sha"]
+    release_request(api, sha, tree)
     runs = api(base + "/actions/workflows/ci.yml/runs?event=pull_request&status=success&per_page=50")
     for run in runs.get("workflow_runs", []):
         if (run.get("event") != "pull_request" or run.get("conclusion") != "success"
@@ -90,6 +131,7 @@ def approval():
 
 
 if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
         {"source": source, "approval": approval}[sys.argv[1]]()
     except Exception as error:

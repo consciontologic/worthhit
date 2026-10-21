@@ -261,7 +261,7 @@ class DeliveryTests(unittest.TestCase):
                 patch.object(self.release, 'api', api), \
                 patch.object(release_guard, 'approval') as approval:
             self.release.publish(output, apply=True)
-        approval.assert_called_once_with()
+        self.assertEqual(approval.call_count, 2)
         self.assertEqual(writes[0], (base + '/git/refs', 'POST', {
             'ref': 'refs/tags/1.0.0', 'sha': sha}, None))
         self.assertEqual(writes[1], (base + '/releases', 'POST', {
@@ -269,6 +269,14 @@ class DeliveryTests(unittest.TestCase):
             'draft': True, 'prerelease': False, 'body': notes}, None))
         self.assertEqual(writes[-1], (base + '/releases/73', 'PATCH', {
             'name': '1.0.0', 'draft': False, 'make_latest': 'false'}, None))
+
+        writes.clear()
+        with patch.object(self.release, 'verify_bundle', return_value=identity), \
+                patch.object(self.release, 'api', api), \
+                patch.object(release_guard, 'approval', side_effect=[None, RuntimeError('develop needs promotion')]):
+            with self.assertRaisesRegex(RuntimeError, 'develop needs promotion'):
+                self.release.publish(output, apply=True)
+        self.assertFalse(any(method == 'PATCH' for _, method, _, _ in writes))
 
     def test_release_resume_accepts_only_exact_source_and_asset_bytes(self):
         expected = {'release-identity.json': {'bytes': 4, 'sha256': 'a' * 64}}
